@@ -2,23 +2,35 @@
 
 > 每个阶段都必须产出可运行代码、测试和文档。VulnTell 是贯穿式示例应用，用于验证框架能力，不应成为框架核心的业务耦合。
 
+## 当前进度
+
+截至当前工作区检查：
+
+- 阶段 0：项目骨架、`pyproject.toml`、README 和测试配置已完成；参考项目对比文档尚未建立。
+- 阶段 1：核心代码已完成，提交为 `70c08e9`；阶段 1 代码的回归测试通过，Producer/Consumer 离线示例可运行。
+- 阶段 2：Graph、条件路由和校验代码已在工作区实现，当前总测试 39 个且通过，但尚未提交，也未完成阶段 2 收口验收。
+- 当前阻塞项：CompiledGraph 对外暴露可变结构、Graph 报告存在重复记录风险、GraphExecutor 尚未作为顶层公共 API 导出，以及阶段 1 的部分工程修正仍需确认。
+- 下一阶段：先完成阶段 2 收口，再实现阶段 3 的并发执行与 EventBus。
+
 ## 阶段 0 — 项目初始化与参考分析
 
 建立 `magent` 包、依赖管理和质量基线；阅读 LangGraph、AutoGen、CrewAI 的 Agent、State、Graph、Executor、Checkpoint 和错误处理设计，形成 `COMPARISON.md`。不复制第三方源码。
 
 验收：`pip install -e .`、`python -m pytest`、`import magent` 成功；参考分析和边界文档完成。
 
-## 阶段 1 — Agent、State 与 Result 最小执行模型
+## 阶段 1 — Agent、State 与 Result 最小执行模型（核心已完成）
 
-详细实施方案见 [`PHASE1.md`](F:/personal/tool/muti-agent/docs/PHASE1.md)。本阶段只建立单进程、单流程、确定性的最小内核，不提前实现 Graph、并发、EventBus、Checkpoint、LLM 或 VulnTell 业务。
+详细实施方案见 [`PHASE1.md`](F:/personal/tool/muti-agent/docs/PHASE1.md)。本阶段建立了单进程、单流程、确定性的最小内核，不提前实现 Graph、并发、EventBus、Checkpoint、LLM 或 VulnTell 业务。阶段 1 的工程收口项在 [`PHASE2.md`](F:/personal/tool/muti-agent/docs/PHASE2.md) 的“进入条件”中列出。
 
-## 阶段 2 — Graph 与顺序、条件执行
+验收状态：核心功能、单元测试、包导入和离线示例已通过；阶段 0 的参考项目对比文档和少量阶段 1 工程修正仍待补齐。
 
-实现节点注册、边、条件路由、图校验和顺序执行。验收：支持 A→B→C、B/C 条件分支；能够发现重复节点、无效边和孤立节点；轨迹包含节点顺序和最终状态。
+## 阶段 2 — Graph 与顺序、条件执行（实现中，待收口）
 
-## 阶段 3 — 并发执行与 EventBus
+详细实施方案见 [`PHASE2.md`](F:/personal/tool/muti-agent/docs/PHASE2.md)。当前已实现节点注册、边、条件路由、图校验和图上的顺序执行；需要先修复报告、不可变性和公共导出问题，再正式验收。暂不实现并发、循环、重试、Checkpoint、EventBus 或 VulnTell。验收：支持 A→B→C、B/C 条件分支；能够发现重复节点、无效边、孤立节点和环；轨迹包含节点顺序和最终状态，且每个节点最多一条最终记录。
 
-实现无依赖节点并行、并发限制、结果合并和明确的 Command/Event/Result/Error 语义。验收：并行性能相对串行基线可测量；覆盖消息顺序、异常、取消订阅和容量限制。
+## 阶段 3 — 并发执行与 EventBus（下一阶段）
+
+详细实施方案见 [`PHASE3.md`](F:/personal/tool/muti-agent/docs/PHASE3.md)。在阶段 2 收口后，实现无依赖节点并行、并发限制、状态 reducer、并行结果合并和明确的 Command/Event/Result/Error 语义。验收：并行性能相对串行基线可测量；覆盖状态冲突、消息顺序、异常、取消订阅和容量限制。
 
 ## 阶段 4 — 超时、重试、取消与错误策略
 

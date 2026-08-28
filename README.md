@@ -1,8 +1,9 @@
 # magent
 
 A minimal, reusable, recoverable **multi-agent execution framework**, built in
-phases. This repository currently contains **phase 1**: a deterministic kernel
-with a stable Agent/State/Result/Runtime contract and a sequential executor.
+phases. This repository currently contains **phase 1 + phase 2**: a deterministic
+kernel (Agent/State/Result/Runtime, sequential executor) plus a validated,
+conditionally-routed directed graph executor.
 
 VulnTell (an open vulnerability-intelligence collection & source-quality
 evaluation app) is planned as a downstream example that exercises this framework
@@ -69,6 +70,47 @@ asyncio.run(main())
 The executor enforces: unique agent names, unknown/typed-mismatched updates are
 rejected, a failure stops subsequent agents (marked `NOT_EXECUTED`), and there is
 **no implicit retry** in this phase.
+
+## Graph execution (phase 2)
+
+```python
+import asyncio
+from pydantic import BaseModel
+from magent import BaseAgent, AgentResult, ExecutionStatus, GraphBuilder, END
+
+
+class State(BaseModel):
+    score: int = 0
+    approved: bool = False
+
+
+class Review(BaseAgent):
+    async def run(self, state, runtime):
+        return AgentResult(updates={"approved": state.score >= 10})
+
+
+def route(state):
+    return "approved" if state.approved else "rejected"
+
+
+async def main():
+    graph = (
+        GraphBuilder()
+        .add_node("review", Review("review"))
+        .set_entry_point("review")
+        .add_conditional_edges("review", route, {"approved": END, "rejected": END})
+        .compile()
+    )
+    state, report = await graph.run(State(score=20))
+    print(state.approved, report.success)
+
+
+asyncio.run(main())
+```
+
+`compile()` validates the topology first (invalid graphs raise
+`GraphValidationError`); the executor walks one path to `END`. See
+`docs/API.md` for the full phase-2 API and current limits.
 
 ## Test
 

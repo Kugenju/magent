@@ -19,11 +19,13 @@ class GraphValidationError(MagentError):
         node_id: str | None = None,
         source: str | None = None,
         target: str | None = None,
+        parent: str | None = None,
     ) -> None:
         self.reason = reason
         self.node_id = node_id
         self.source = source
         self.target = target
+        self.parent = parent
         message = reason
         if node_id is not None:
             message += f" (node={node_id})"
@@ -31,4 +33,6 @@ class GraphValidationError(MagentError):
             message += f" (source={source})"
         if target is not None:
             message += f" (target={target})"
+        if parent is not None:
+            message += f" (parent={parent})"
         super().__init__(message)

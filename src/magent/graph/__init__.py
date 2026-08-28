@@ -4,6 +4,13 @@ from __future__ import annotations
 
 from .builder import GraphBuilder
 from .errors import GraphValidationError
+from .executor import GraphExecutor
 from .model import CompiledGraph, END
 
-__all__ = ["GraphBuilder", "CompiledGraph", "END", "GraphValidationError"]
+__all__ = [
+    "GraphBuilder",
+    "CompiledGraph",
+    "END",
+    "GraphValidationError",
+    "GraphExecutor",
+]

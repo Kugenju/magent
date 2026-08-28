@@ -169,3 +169,82 @@ non-join nodes may have at most one predecessor (use `add_join` for fan-in).
 ### Current limits (phase 3)
 No retry/timeout, no checkpoint/persistence, no distributed execution, no loops,
 no dynamic planning, no LLM. Those arrive in later phases.
+
+## Phase 4 — reliability (timeout / retry / cancellation / error strategy)
+
+Phase 4 adds configurable node timeout, bounded exponential-backoff retry, caller
+cancellation, and a retryable/non-retryable error classification. A single shared
+`run_node` runner implements all of this so `SequentialExecutor` and
+`GraphExecutor` never diverge. **Without configuration, behaviour is identical to
+phase 1–3** (`ReliabilityPolicy()` = `max_attempts=1`, no timeout, fail-fast).
+
+### `ReliabilityPolicy`
+```python
+ReliabilityPolicy(
+    retry: RetryPolicy | None = None,     # defaults to RetryPolicy() (no retry)
+    timeout: TimeoutPolicy | None = None,  # defaults to TimeoutPolicy() (no timeout)
+    on_failure: str = "fail_fast",        # only "fail_fast" in phase 4
+)
+```
+Policies are **immutable** after construction.
+
+### `RetryPolicy`
+```python
+RetryPolicy(
+    max_attempts: int = 1,          # total executions (initial call + retries)
+    backoff_base: float = 0.5,      # base delay (seconds)
+    backoff_max: float = 30.0,      # cap on the exponential delay
+    jitter: float = 0.1,            # [0, 1] fraction added as jitter*rng()
+    retryable_exceptions: tuple = (),  # extra exception types treated as retryable
+)
+```
+- `should_retry(attempt)` → `attempt < max_attempts`.
+- `backoff_delay(attempt, rng)` → `min(backoff_max, backoff_base * 2**(attempt-1)) + jitter*rng()`.
+- Validation: `max_attempts >= 1`, `backoff_base >= 0`, `backoff_max >= backoff_base`, `0 <= jitter <= 1`.
+
+### `TimeoutPolicy`
+```python
+TimeoutPolicy(node_timeout: float | None = None)   # seconds; None = no timeout
+```
+
+### Error classification (`magent.reliability.errors`)
+- `RetryableError` — agents raise/annotate to mark a transient failure. `TemporaryError` is a
+  convenience subclass.
+- `NonRetryableError` — explicitly fatal.
+- `classify_exception(exc, retryable_exceptions)` — `RetryableError` and any
+  `retryable_exceptions` are retryable; `StateUpdateError`, `StateMergeConflictError`,
+  `GraphValidationError`, `NonRetryableError` (and `CancelledError`) are **not**;
+  anything else is non-retryable by default.
+- `classify_result(result)` — a returned `AgentResult` with `error["retryable"] is True`
+  is retried.
+
+### `run_node(agent, state, runtime, *, policy, sleeper=asyncio.sleep, rng=random.random, clock=time.time, emit=None, attempts_log=None)`
+Runs a single node with the policy applied (timeout via `asyncio.wait_for`, retry
+loop, attempt events). Returns a `NodeRunOutcome(status, result, attempts, terminal_reason, error)`.
+It **never merges state** — only a successful attempt's `updates` are merged by the executor.
+
+### `ExecutionStatus` / `AttemptRecord` / report additions
+- `AttemptRecord`: `attempt`, `started_at`, `finished_at`, `duration_ms`, `status`, `error`.
+- `StepRecord.attempts: list[AttemptRecord]` and `StepRecord.terminal_reason`:
+  `success | skipped | failed | timeout | cancelled`.
+- `ExecutionReport.cancellation_reason: str | None` (`"caller"` on caller cancel),
+  `retry_count: int`, `timeout_count: int`.
+- A timeout is reported as `status = FAILED` with `terminal_reason = "timeout"` and an
+  `error["type"] == "NodeTimeoutError"` attempt record — `TIMEOUT` is intentionally **not**
+  a separate `ExecutionStatus` (per spec).
+
+### Executor wiring
+```python
+SequentialExecutor(agents, *, reliability=None, sleeper=None, rng=None, event_bus=None)
+CompiledGraph.run(initial_state, *, reliability=None, sleeper=None, rng=None, event_bus=None)
+```
+- `sleeper` / `rng` are injectable for deterministic tests (e.g. `sleeper=lambda _: asyncio.sleep(0)`).
+- `event_bus` receives attempt lifecycle events: `agent.attempt.started`,
+  `agent.attempt.succeeded`, `agent.attempt.failed`, `agent.attempt.timeout`, `agent.retry`.
+- **Caller cancellation:** cancelling the run task marks in-flight nodes `CANCELLED`,
+  never-started nodes `NOT_EXECUTED`, and sets `cancellation_reason = "caller"`. Caller
+  cancellation does **not** trigger a retry.
+
+### Current limits (phase 4)
+No `skip_dependents` / `continue` on_failure strategies yet (only `fail_fast`); no
+checkpoint/persistence; no distributed execution. Those arrive in later phases.

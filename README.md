@@ -1,11 +1,12 @@
 # magent
 
 A minimal, reusable, recoverable **multi-agent execution framework**, built in
-phases. This repository currently contains **phase 1 + phase 2 + phase 3**: a
-deterministic kernel (Agent/State/Result/Runtime, sequential executor), a
-validated conditionally-routed directed graph executor, and concurrent
-execution with fan-out/fan-in, branch-isolated state merging, a bounded
-`asyncio` scheduler, and an in-process `EventBus`.
+phases. This repository currently contains **phase 1 + phase 2 + phase 3 + phase 4**:
+a deterministic kernel (Agent/State/Result/Runtime, sequential executor), a
+validated conditionally-routed directed graph executor, concurrent execution with
+fan-out/fan-in, branch-isolated state merging, a bounded `asyncio` scheduler, an
+in-process `EventBus`, and configurable node **timeout / retry / cancellation /
+error classification** shared by both executors.
 
 VulnTell (an open vulnerability-intelligence collection & source-quality
 evaluation app) is planned as a downstream example that exercises this framework
@@ -20,7 +21,8 @@ evaluation app) is planned as a downstream example that exercises this framework
 | `merge_updates` with validation | Distributed execution |
 | `SequentialExecutor` (fail-fast) | Checkpoint / recovery / persistence |
 | Graph builder, validation, conditional routing | Loops, dynamic planning |
-| Concurrent DAG: fan-out/fan-in, reducers, `EventBus` | Timeouts, retries, cancellation policies |
+| Concurrent DAG: fan-out/fan-in, reducers, `EventBus` | Distributed execution |
+| Reliability: node timeout, bounded retry, caller cancellation, error strategy | Checkpoint / recovery / persistence |
 
 ## Install
 
@@ -72,7 +74,7 @@ asyncio.run(main())
 
 The executor enforces: unique agent names, unknown/typed-mismatched updates are
 rejected, a failure stops subsequent agents (marked `NOT_EXECUTED`), and there is
-**no implicit retry** in this phase.
+**no implicit retry** unless a `ReliabilityPolicy` is configured.
 
 ## Graph execution (phase 2)
 
@@ -170,6 +172,50 @@ raise `StateMergeConflictError`. A branch failure cancels its siblings
 (`CANCELLED`), leaves unstarted dependents `NOT_EXECUTED`, and never merges a
 cancelled branch's partial result. The `EventBus` is a side channel and never
 touches graph state.
+
+## Reliability (phase 4)
+
+```python
+import asyncio
+from pydantic import BaseModel
+from magent import (
+    BaseAgent, AgentResult, SequentialExecutor,
+    ReliabilityPolicy, RetryPolicy, TimeoutPolicy, RetryableError,
+)
+
+class State(BaseModel):
+    count: int = 0
+
+class Flaky(BaseAgent):
+    def __init__(self, name):
+        super().__init__(name)
+        self.calls = 0
+    async def run(self, state, runtime):
+        self.calls += 1
+        if self.calls < 3:
+            raise RetryableError("transient")
+        return AgentResult(updates={"count": state.count + 1})
+
+async def main():
+    policy = ReliabilityPolicy(
+        retry=RetryPolicy(max_attempts=5, backoff_base=0.1, backoff_max=2.0),
+        timeout=TimeoutPolicy(node_timeout=10.0),
+    )
+    state, report = await SequentialExecutor(
+        [Flaky("flaky")], reliability=policy
+    ).run(State())
+    print(state.count, report.retry_count)   # 1, 2
+
+asyncio.run(main())
+```
+
+`ReliabilityPolicy()` (no args) preserves the phase 1–3 behaviour: no retry, no
+timeout, fail-fast. Timeouts are reported as `status = FAILED` with
+`terminal_reason = "timeout"`. Cancelling the run task marks in-flight nodes
+`CANCELLED` and never-started nodes `NOT_EXECUTED` (`cancellation_reason = "caller"`),
+without triggering a retry. Both executors emit attempt lifecycle events on the
+`EventBus` (`agent.attempt.started`, `agent.attempt.succeeded`, `agent.attempt.failed`,
+`agent.attempt.timeout`, `agent.retry`).
 
 ## Test
 

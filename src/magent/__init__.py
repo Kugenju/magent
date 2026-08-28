@@ -51,6 +51,32 @@ from .checkpoint import (
     SqliteCheckpointStore,
     execution_key,
 )
+from .tools import (
+    ConcurrencyLimiter,
+    FunctionTool,
+    ToolContext,
+    ToolRegistry,
+    ToolResult,
+    ToolSpec,
+    tool,
+)
+from .llm import (
+    ChatMessage,
+    FakeProvider,
+    LLMProvider,
+    LLMRequest,
+    LLMResponse,
+    get_llm_provider,
+)
+from .middleware import (
+    LoggingMiddleware,
+    Middleware,
+    MiddlewareAgent,
+    RateLimitMiddleware,
+    RedactionMiddleware,
+    SizeLimitMiddleware,
+    compose,
+)
 
 __version__ = "0.1.0"
 
@@ -97,5 +123,25 @@ __all__ = [
     "SqliteCheckpointStore",
     "SideEffectSink",
     "execution_key",
+    "ToolSpec",
+    "ToolResult",
+    "ToolContext",
+    "FunctionTool",
+    "ToolRegistry",
+    "ConcurrencyLimiter",
+    "tool",
+    "LLMProvider",
+    "FakeProvider",
+    "get_llm_provider",
+    "ChatMessage",
+    "LLMRequest",
+    "LLMResponse",
+    "Middleware",
+    "compose",
+    "MiddlewareAgent",
+    "LoggingMiddleware",
+    "RateLimitMiddleware",
+    "SizeLimitMiddleware",
+    "RedactionMiddleware",
     "__version__",
 ]

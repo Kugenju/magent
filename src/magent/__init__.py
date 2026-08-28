@@ -18,6 +18,7 @@ from .core import (
     MagentError,
     Runtime,
     SequentialExecutor,
+    StateMergeConflictError,
     StateT,
     StateUpdateError,
     StepRecord,
@@ -25,7 +26,8 @@ from .core import (
     new_run_id,
 )
 
-from .graph import GraphBuilder, CompiledGraph, END, GraphValidationError
+from .graph import CompiledGraph, END, GraphBuilder, GraphExecutor, GraphValidationError
+from .events import Event, EventBus, EventHandlerError
 
 __version__ = "0.1.0"
 
@@ -44,9 +46,14 @@ __all__ = [
     "SequentialExecutor",
     "ExecutionReport",
     "StepRecord",
+    "StateMergeConflictError",
     "GraphBuilder",
     "CompiledGraph",
     "END",
     "GraphValidationError",
+    "GraphExecutor",
+    "EventBus",
+    "Event",
+    "EventHandlerError",
     "__version__",
 ]

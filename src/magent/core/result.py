@@ -22,6 +22,7 @@ class ExecutionStatus(str, Enum):
     # Used only in execution reports for agents that never started because
     # a previous agent failed under the fail-fast policy.
     NOT_EXECUTED = "not_executed"
+    CANCELLED = "cancelled"
 
 
 class AgentResult(BaseModel):

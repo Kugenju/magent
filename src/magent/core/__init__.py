@@ -3,7 +3,13 @@
 from __future__ import annotations
 
 from .agent import BaseAgent
-from .errors import AgentError, DuplicateAgentNameError, MagentError, StateUpdateError
+from .errors import (
+    AgentError,
+    DuplicateAgentNameError,
+    MagentError,
+    StateMergeConflictError,
+    StateUpdateError,
+)
 from .executor import ExecutionReport, SequentialExecutor, StepRecord
 from .result import AgentResult, ExecutionStatus
 from .runtime import Runtime, new_run_id
@@ -14,6 +20,7 @@ __all__ = [
     "MagentError",
     "AgentError",
     "StateUpdateError",
+    "StateMergeConflictError",
     "DuplicateAgentNameError",
     "AgentResult",
     "ExecutionStatus",

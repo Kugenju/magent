@@ -49,6 +49,14 @@ class StateUpdateError(MagentError):
         super().__init__(f"invalid state update: {reason}")
 
 
+class StateMergeConflictError(MagentError):
+    """Raised when parallel branches update the same state field without a reducer."""
+
+    def __init__(self, reason: str) -> None:
+        self.reason = reason
+        super().__init__(f"state merge conflict: {reason}")
+
+
 class DuplicateAgentNameError(MagentError):
     """Raised when two agents in one execution share the same name."""
 

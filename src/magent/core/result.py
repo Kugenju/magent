@@ -25,6 +25,26 @@ class ExecutionStatus(str, Enum):
     CANCELLED = "cancelled"
 
 
+class AttemptRecord(BaseModel):
+    """One execution attempt of a node, recorded for the reliability report.
+
+    Attributes:
+        attempt: 1-based attempt index within the node's retry sequence.
+        started_at: Attempt start timestamp.
+        finished_at: Attempt end timestamp.
+        duration_ms: Attempt wall-clock duration in milliseconds.
+        status: Outcome of this attempt (SUCCESS / SKIPPED / FAILED / CANCELLED).
+        error: Optional structured error for a failed attempt.
+    """
+
+    attempt: int
+    started_at: float
+    finished_at: float
+    duration_ms: float
+    status: ExecutionStatus
+    error: Optional[dict[str, Any]] = None
+
+
 class AgentResult(BaseModel):
     """The structured outcome an agent returns from ``run``.
 

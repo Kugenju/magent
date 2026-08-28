@@ -8,6 +8,7 @@ failures are isolated so one bad subscriber cannot break the others.
 from __future__ import annotations
 
 import asyncio
+import fnmatch
 import logging
 from typing import Awaitable, Callable, Union
 
@@ -69,18 +70,26 @@ class InMemoryEventBus:
             raise EventHandlerError(event.topic, "cannot publish on a closed bus")
         self._published += 1
         self._by_topic[event.topic] = self._by_topic.get(event.topic, 0) + 1
-        for handler in list(self._topics.get(event.topic, [])):
-            try:
-                result = handler(event)
-                if asyncio.iscoroutine(result):
-                    await result
-            except Exception as exc:  # noqa: BLE001 - isolate handler failures
-                self._handler_errors += 1
-                if self._fail_on_handler_error:
-                    raise EventHandlerError(
-                        event.topic, str(exc), handler=handler, cause=exc
-                    ) from exc
-                _log.warning("event handler failed on topic %r: %s", event.topic, exc)
+        for sub_topic, handlers in self._topics.items():
+            matches = sub_topic == event.topic or (
+                "*" in sub_topic and fnmatch.fnmatch(event.topic, sub_topic)
+            )
+            if not matches:
+                continue
+            for handler in list(handlers):
+                try:
+                    result = handler(event)
+                    if asyncio.iscoroutine(result):
+                        await result
+                except Exception as exc:  # noqa: BLE001 - isolate handler failures
+                    self._handler_errors += 1
+                    if self._fail_on_handler_error:
+                        raise EventHandlerError(
+                            event.topic, str(exc), handler=handler, cause=exc
+                        ) from exc
+                    _log.warning(
+                        "event handler failed on topic %r: %s", event.topic, exc
+                    )
 
     async def close(self) -> None:
         self._closed = True

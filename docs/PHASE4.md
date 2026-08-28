@@ -1,4 +1,4 @@
-# 阶段 4：超时、重试、取消与错误策略
+# 阶段 4：超时、重试、取消与错误策略（已完成）
 
 ## 1. 当前基线
 
@@ -10,9 +10,9 @@
 - fan-out/fan-in、显式 reducer 和有界并发
 - `FAILED`、`CANCELLED`、`NOT_EXECUTED` 状态
 - 进程内 EventBus
-- 74 个离线测试通过
+- 103 个离线测试通过
 
-阶段 4 开始前必须完成阶段 3 发布收尾：提交报告字段变更，确认 `StepRecord`/`ExecutionReport` 向后兼容，并修正文档中的阶段状态。阶段 4 不应在未确认报告语义的情况下继续增加大量运行元数据。
+阶段 4 已完成阶段 3 发布收尾，确认 `StepRecord`/`ExecutionReport` 向后兼容，并将重试、超时、取消和尝试历史接入顺序/并发执行器。Checkpoint、进程恢复和持久化幂等属于下一阶段，详见 [`PHASE5.md`](F:/personal/tool/muti-agent/docs/PHASE5.md)。
 
 ## 2. 阶段目标
 

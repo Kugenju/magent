@@ -1,8 +1,9 @@
 # magent public API
 
-This document covers the stable public API shipped so far: phase 1 (agent /
-state / result / runtime / sequential executor) and phase 2 (graph builder,
-validation and conditional execution).
+This document covers the stable public API shipped so far: phases 1–5
+(agent/state/result/runtime, graph execution, concurrency/EventBus,
+timeout/retry/cancellation reliability, and opt-in checkpoint/recovery). Tool,
+LLM and Middleware extensions are planned for phase 6.
 
 ## Phase 1 — minimal kernel
 
@@ -246,5 +247,112 @@ CompiledGraph.run(initial_state, *, reliability=None, sleeper=None, rng=None, ev
   cancellation does **not** trigger a retry.
 
 ### Current limits (phase 4)
-No `skip_dependents` / `continue` on_failure strategies yet (only `fail_fast`); no
-checkpoint/persistence; no distributed execution. Those arrive in later phases.
+No `skip_dependents` / `continue` on_failure strategies yet (only `fail_fast`);
+no distributed execution. Checkpoint and persistence are described in phase 5.
+
+## Phase 5 — checkpoint, recovery & idempotency
+
+Phase 5 adds an **opt-in** `CheckpointStore` and an explicit `resume` operation
+to both executors. Without a `checkpoint_store` the executors behave exactly as
+in phases 1–4 (no I/O, no overhead). With a store, every node writes a
+`NODE_STARTED` snapshot before it runs and a `NODE_COMMITTED` record after it
+successfully merges its state; a crashed run can be continued from the last
+committed boundary.
+
+### `CheckpointStore` (protocol)
+```python
+class CheckpointStore(Protocol):
+    async def create_run(self, run: RunRecord) -> None
+    async def append(self, cp: CheckpointRecord) -> None          # idempotent; conflict => CheckpointConflictError
+    async def latest(self, run_id: str) -> CheckpointRecord | None
+    async def list_checkpoints(self, run_id: str) -> list[CheckpointRecord]  # ordered by seq
+    async def load_run(self, run_id: str) -> RunRecord
+    async def record_effect(self, rec: EffectRecord) -> bool       # True if newly recorded
+    async def get_effect(self, execution_key: str) -> EffectRecord | None
+    async def close(self) -> None
+```
+
+### Concrete stores
+- `InMemoryCheckpointStore()` — test / single-process default.
+- `SqliteCheckpointStore(path=":memory:")` — single-writer file store; all SQL
+  runs off the event loop via `run_in_executor`, WAL, transactional appends.
+
+### Record models (`magent.checkpoint.models`)
+- `CheckpointPhase` — `RUN_STARTED | NODE_STARTED | NODE_COMMITTED |
+  RUN_COMPLETED | RUN_FAILED | RUN_CANCELLED`.
+- `RunRecord(run_id, workflow_id, workflow_version, state_type, state_schema_hash,
+  initial_state, status, created_at, updated_at)`.
+- `CheckpointRecord(run_id, workflow_id, workflow_version, state_type,
+  state_schema_hash, checkpoint_seq, phase, node_id, node_version,
+  input_state, output_state, updates, route, activated_nodes, frontier,
+  attempts, created_at, checksum)` — `checksum` is auto-computed and stable.
+- `EffectRecord(execution_key, run_id, node_id, node_version, status, result_json, created_at)`.
+
+### `SequentialExecutor` additions
+```python
+SequentialExecutor(
+    agents, *,
+    checkpoint_store=None,
+    workflow_id="sequential",
+    workflow_version="1",
+)
+final_state, report = await ex.run(initial_state)
+final_state, report = await ex.resume(run_id, initial_state)   # requires a store
+```
+- `checkpoint_seq` is a monotonic integer within a run; `(run_id, checkpoint_seq)`
+  is the unique durability key.
+- `resume` replays only the uncommitted tail; already-committed nodes are
+  reconstructed as `SUCCESS` `StepRecord`s with no re-execution.
+
+### `GraphExecutor` additions
+```python
+GraphExecutor(
+    graph, *,
+    checkpoint_store=None,
+    workflow_id="graph",
+    workflow_version="1",
+)
+final_state, report = await ex.run(initial_state)
+final_state, report = await ex.resume(run_id, initial_state)
+```
+- On resume the committed frontier (node outputs, updates, conditional routes,
+  activated branches) is prefilled; fan-out/fan-in continue transparently.
+- `NODE_COMMITTED` for a conditional node carries `activated_nodes` so the chosen
+  branch resumes correctly.
+
+### `ExecutionReport` additions (phase 5)
+- `resumed: bool` — whether this run was a `resume`.
+- `resumed_from_seq: int | None` — the highest checkpoint seq before resume.
+- `abandoned_attempts: int` — `NODE_STARTED` records with no matching
+  `NODE_COMMITTED` (crashed attempts) at resume time.
+- `replayed_nodes: list[str]` — nodes actually (re-)executed during a resume.
+
+### Idempotency (`magent.checkpoint.idempotency`)
+```python
+from magent import SideEffectSink, execution_key
+
+sink = SideEffectSink(store, run_id=..., node_id=..., node_version="1", clock=...)
+result = await sink.write(input_state, "send_email", payload, send_email_fn)
+```
+- `execution_key(run_id, node_id, node_version, input_state, op)` is **stable
+  across retries and recovery replays** (it deliberately excludes `attempt`).
+- `SideEffectSink.write` invokes `effect_fn` at most once per key; on replay it
+  returns the previously recorded `result_json` instead of re-invoking the
+  side effect. `sink.write_count` counts real invocations.
+
+### Errors (`magent.checkpoint.errors`)
+`CheckpointError` → `CheckpointCompatibilityError` (run/state/version mismatch on
+resume, carries `field`/`expected`/`actual`) and `CheckpointConflictError`
+(same `(run_id, checkpoint_seq)` submitted with different content).
+
+### Current limits (phase 5)
+No distributed checkpoint, no leader election, no cross-DB distributed
+transaction, no pickle, no automatic schema migration; cyclic graphs, LLMs and
+tool registries remain out of scope.
+
+## Phase 6 — planned tools, LLM and middleware
+
+The implementation plan is in [`PHASE6.md`](F:/personal/tool/muti-agent/docs/PHASE6.md).
+It will add schema-validated tools, optional provider abstractions, a Fake
+Provider for offline tests, and composable middleware. These are not yet part
+of the public API and must not be imported as if implemented.

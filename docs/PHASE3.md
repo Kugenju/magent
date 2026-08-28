@@ -2,9 +2,9 @@
 
 ## 1. 当前状态
 
-阶段 3 的主要功能已经实现：fan-out/fan-in、状态 reducer、最大并发限制、失败时的兄弟分支取消和进程内 EventBus。当前工作区共有 74 个测试，全部通过。
+阶段 3 的主要功能已经实现并完成发布：fan-out/fan-in、状态 reducer、最大并发限制、失败时的兄弟分支取消和进程内 EventBus。阶段 4 回归后当前工作区共有 103 个离线测试，全部通过。
 
-阶段 3 仍需完成最终发布收尾：提交 `src/magent/core/executor.py` 中的报告字段变更，确认 `StepRecord` 与 `ExecutionReport` 的向后兼容性，并完成文档状态同步。测试通过不等于阶段已经完成发布。
+阶段 3 的能力已被阶段 4 的可靠性 runner 和结构化尝试报告复用；本文件保留阶段 3 的拓扑和并发语义，后续 checkpoint 语义见 [`PHASE5.md`](F:/personal/tool/muti-agent/docs/PHASE5.md)。
 
 ## 2. 阶段目标与范围
 

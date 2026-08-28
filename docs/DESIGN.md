@@ -103,9 +103,29 @@ Executor 负责调度和生命周期；Graph 只描述拓扑和路由规则。�
 
 ### 4.5 Checkpoint 与幂等性
 
-节点执行前后保存状态快照。恢复时从最近成功节点继续，而不是重做全部流程。外部副作用节点使用 `run_id + node_id + input_hash` 等执行键避免重试重复写入。
+Checkpoint 是执行状态的持久化提交记录，不是 EventBus 的日志缓存。节点执行前保存输入快照，
+节点成功后把“合并后的状态、路由结果和下一执行 frontier”以一个事务提交；只有成功提交的节点
+才算完成。进程在节点执行中断时，结果视为未知，恢复时从该节点输入快照重新执行。
 
-### 4.6 EventBus
+恢复协议必须保存 `run_id`、workflow/graph version、node ID/version、state schema hash、
+单调 checkpoint 序号、尝试历史、条件路由和并发 join 所需的父节点提交信息。顺序图和并发 DAG
+均不得依赖任务完成顺序恢复状态；reducer 按声明顺序重放。版本、schema、checksum 或 frontier
+无法验证时应明确拒绝恢复，不进行隐式迁移或猜测。
+
+外部副作用节点使用不包含 `attempt` 的稳定执行键（例如
+`run_id + node_id + node_version + canonical(input_state)`）。这只能让具备幂等协议或唯一键的
+副作用安全重试；对不受框架控制的 API、消息和文件系统，系统最多提供 at-least-once，不能由
+Checkpoint 单独保证 exactly-once。详细字段、SQLite 表和验收要求见 [`PHASE5.md`](F:/personal/tool/muti-agent/docs/PHASE5.md)。
+
+### 4.6 Tools、LLM 与 Middleware 扩展
+
+工具、LLM Provider 和 Middleware 属于框架扩展层，不改变 Executor 的状态合并、重试、
+Checkpoint 和取消主语义。工具必须经过 Registry、输入/输出 schema 和 allowlist；同步工具不能
+阻塞事件循环；LLM 只通过可替换 Provider 协议接入，核心不绑定厂商 SDK；middleware 只包装
+调用生命周期，不能复制一套 retry 或直接修改 State。阶段 6 的实施边界和验收标准见
+[`PHASE6.md`](F:/personal/tool/muti-agent/docs/PHASE6.md)。
+
+### 4.7 EventBus
 
 EventBus 是可插拔通信组件，不应成为所有状态交换的默认方式。应区分 Command、Event、Result 和 Error。首版需要明确消息顺序、异常处理、重复消费、取消订阅和队列容量；复杂持久化消息队列不属于首版范围。
 
@@ -197,6 +217,7 @@ muti-agent/
 │   ├── PHASE2.md
 │   ├── PHASE3.md
 │   ├── PHASE4.md
+│   ├── PHASE5.md
 │   ├── API.md
 │   ├── COMPARISON.md
 │   └── BENCHMARKS.md
@@ -211,6 +232,8 @@ muti-agent/
 │   │   └── events.py
 │   ├── graph/
 │   ├── checkpoint/
+│   ├── tools/
+│   ├── llm/
 │   ├── middleware/
 │   └── observability/
 ├── examples/vulntell/

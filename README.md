@@ -1,28 +1,30 @@
 # magent
 
 A minimal, reusable, recoverable **multi-agent execution framework**, built in
-phases. This repository currently contains **phase 1 + phase 2 + phase 3 + phase 4**:
-a deterministic kernel (Agent/State/Result/Runtime, sequential executor), a
-validated conditionally-routed directed graph executor, concurrent execution with
-fan-out/fan-in, branch-isolated state merging, a bounded `asyncio` scheduler, an
-in-process `EventBus`, and configurable node **timeout / retry / cancellation /
-error classification** shared by both executors.
+phases. This repository currently contains **phase 1 + phase 2 + phase 3 +
+phase 4 + phase 5**: a deterministic kernel (Agent/State/Result/Runtime,
+sequential executor), a validated conditionally-routed directed graph executor,
+concurrent execution with fan-out/fan-in, branch-isolated state merging, a
+bounded `asyncio` scheduler, an in-process `EventBus`, configurable node
+**timeout / retry / cancellation / error classification**, and opt-in
+**checkpointing, crash recovery and idempotent side effects**.
 
 VulnTell (an open vulnerability-intelligence collection & source-quality
 evaluation app) is planned as a downstream example that exercises this framework
 — it lives under `examples/vulntell` in later phases and never pollutes the
 `magent` core.
 
-## Phase 1–3 scope
+## Current scope (phases 1–5; phase 5 pending release hardening)
 
 | In scope | Out of scope (later phases) |
 |----------|------------------------------|
 | `BaseAgent` protocol, typed `State`, `AgentResult`, `Runtime` | LLM, tools, VulnTell business |
 | `merge_updates` with validation | Distributed execution |
-| `SequentialExecutor` (fail-fast) | Checkpoint / recovery / persistence |
+| `SequentialExecutor` (fail-fast) | Distributed execution |
 | Graph builder, validation, conditional routing | Loops, dynamic planning |
 | Concurrent DAG: fan-out/fan-in, reducers, `EventBus` | Distributed execution |
-| Reliability: node timeout, bounded retry, caller cancellation, error strategy | Checkpoint / recovery / persistence |
+| Reliability: node timeout, bounded retry, caller cancellation, error strategy | Distributed execution |
+| Opt-in SQLite checkpoint, recovery and idempotency | LLM, tools, VulnTell business |
 
 ## Install
 
@@ -33,7 +35,8 @@ pip install -e ".[dev]"   # dev extras add pytest + pytest-asyncio
 ## Quick start (offline example)
 
 ```bash
-python examples/producer_consumer.py
+python examples/producer_consumer.py      # phase 1: state visibility across agents
+python examples/checkpoint_resume.py      # phase 5: crash → resume → identical result
 ```
 
 `ProducerAgent` writes a value, `ConsumerAgent` reads it — proving that one
@@ -217,14 +220,52 @@ without triggering a retry. Both executors emit attempt lifecycle events on the
 `EventBus` (`agent.attempt.started`, `agent.attempt.succeeded`, `agent.attempt.failed`,
 `agent.attempt.timeout`, `agent.retry`).
 
+## Checkpoint & recovery (phase 5)
+
+```bash
+python examples/checkpoint_resume.py
+```
+
+Pass an opt-in `CheckpointStore` to either executor. Every node writes a
+`NODE_STARTED` snapshot before it runs and a `NODE_COMMITTED` record after its
+state is merged, so a crashed run can be continued from the last committed
+boundary:
+
+```python
+import asyncio
+from pydantic import BaseModel
+from magent import BaseAgent, AgentResult, SequentialExecutor, SqliteCheckpointStore
+
+class State(BaseModel):
+    value: int = 0
+
+class Step(BaseAgent):
+    async def run(self, state, runtime):
+        return AgentResult(updates={"value": state.value + 1})
+
+async def main():
+    store = SqliteCheckpointStore("run.db")
+    ex = SequentialExecutor([Step("a"), Step("b")], checkpoint_store=store, run_id="r1")
+    state, report = await ex.run(State())
+    # ... process dies after 'a' committed ...
+    ex2 = SequentialExecutor([Step("a"), Step("b")], checkpoint_store=store, run_id="r1")
+    state, report = await ex2.resume("r1", State())   # replays only 'b'
+    print(report.resumed, report.replayed_nodes)        # True, ['b']
+```
+
+`GraphExecutor` supports the same `checkpoint_store` + `resume` API, including
+fan-out/fan-in and conditional routes. External side effects can be made
+idempotent with `SideEffectSink` + `execution_key` (the key is stable across
+retries and recovery replays, so the effect runs at most once).
+
 ## Test
 
 ```bash
 python -m pytest
 ```
 
-All tests are offline (no network, no database).
+All tests are offline (no network, external services, or production database).
 
 ## Roadmap
 
-See `docs/DESIGN.md`, `docs/ROADMAP.md` and `docs/PHASE1.md`.
+See `docs/DESIGN.md`, `docs/ROADMAP.md`, `docs/PHASE5.md` and `docs/PHASE6.md`.

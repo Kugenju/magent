@@ -7,11 +7,16 @@
 截至当前工作区检查：
 
 - 阶段 0：项目骨架、`pyproject.toml`、README 和测试配置已完成；参考项目对比文档仍需补齐。
-- 阶段 1：核心执行内核已完成，阶段 1 的回归测试和 Producer/Consumer 离线示例可运行。
-- 阶段 2：Graph、条件路由、拓扑校验和顺序 Graph 执行已完成并形成提交。
-- 阶段 3：fan-out/fan-in、状态 reducer、并发执行、取消传播和内存 EventBus 已实现；当前总测试 74 个且全部通过。
-- 阶段 3 收尾：`src/magent/core/executor.py` 仍有未提交的报告字段变更；`PHASE3.md` 的进度描述需要同步，阶段 3 尚未形成最终发布提交。
-- 下一阶段：完成阶段 3 发布门禁后，进入阶段 4 的超时、重试、调用方取消和错误策略。
+- 阶段 1：核心执行内核已完成，Producer/Consumer 离线示例可运行。
+- 阶段 2：Graph、条件路由、拓扑校验和顺序 Graph 执行已完成。
+- 阶段 3：fan-out/fan-in、状态 reducer、并发执行、取消传播和内存 EventBus 已完成。
+- 阶段 4：超时、显式可重试错误、指数退避、调用方取消、失败传播和结构化尝试报告已完成；
+  当前全量离线测试为 103 个且全部通过，阶段 4 文档已在提交
+  `f45c672 docs: document phase-4 reliability semantics` 中同步。
+- 阶段 5：Checkpoint / SQLite 快照 / 顺序与并发 DAG 恢复 / 稳定 execution key / 幂等副作用已实现；
+  当前全量离线测试为 125 个且全部通过，执行器在无 `checkpoint_store` 时保持阶段 1–4 行为不变。
+  但阶段 5 改动仍在工作区，需先完成 checksum、并发序号、幂等竞态和运行状态等发布门禁。
+- 下一阶段：阶段 6 工具、LLM Agent 与 Middleware 扩展（以阶段 5 发布门禁关闭为前置条件）。
 
 ## 阶段 0 — 项目初始化与参考分析
 
@@ -27,21 +32,31 @@
 
 详细方案见 [`PHASE2.md`](F:/personal/tool/muti-agent/docs/PHASE2.md)。阶段 2 支持节点注册、无条件边、条件路由、拓扑校验和单路径顺序 Graph 执行；不包含并发、重试、Checkpoint、EventBus 或 VulnTell。
 
-## 阶段 3 — 并发执行与 EventBus（已实现，待发布收尾）
+## 阶段 3 — 并发执行与 EventBus（已完成）
 
-详细方案见 [`PHASE3.md`](F:/personal/tool/muti-agent/docs/PHASE3.md)。阶段 3 已实现无依赖节点并行、fan-out/fan-in、并发限制、显式 reducer、失败取消传播和内存 EventBus。当前需要完成未提交的报告字段变更、文档同步和最终回归后再标记为发布完成。
+详细方案见 [`PHASE3.md`](F:/personal/tool/muti-agent/docs/PHASE3.md)。阶段 3 已实现无依赖节点并行、fan-out/fan-in、并发限制、显式 reducer、失败取消传播和内存 EventBus，并已由阶段 4 回归测试覆盖。
 
-## 阶段 4 — 超时、重试、取消与错误策略（下一阶段）
+## 阶段 4 — 超时、重试、取消与错误策略（已完成）
 
 详细方案见 [`PHASE4.md`](F:/personal/tool/muti-agent/docs/PHASE4.md)。本阶段为 Agent 调用建立显式可靠性策略：节点超时、可重试错误分类、指数退避、调用方取消、失败传播和结构化尝试记录。阶段 3 已有的兄弟分支取消语义必须与本阶段的调用方取消区分。
 
-## 阶段 5 — Checkpoint、恢复与幂等
+## 阶段 5 — Checkpoint、恢复与幂等（功能完成，待发布门禁）
 
-实现 `CheckpointStore`、SQLite 快照、`run_id`、节点版本、恢复和外部副作用幂等。验收：进程中断后从最近成功节点恢复，不重复写入，覆盖失败和中断测试。
+详细实施计划见 [`PHASE5.md`](F:/personal/tool/muti-agent/docs/PHASE5.md)。本阶段实现 `CheckpointStore`、SQLite 快照、运行/图/节点版本、顺序与并发 DAG 恢复、
+稳定 execution key 和幂等记录。当前功能已实现，但发布前仍需验证 checkpoint checksum 读取校验、
+并发序号分配、同一幂等键的并发 claim、运行状态更新和恢复记录完整性。阶段 5 的具体门禁见
+[`PHASE5.md`](F:/personal/tool/muti-agent/docs/PHASE5.md) 第 12 节。
 
-## 阶段 6 — 工具、LLM Agent 与 Middleware 扩展
+本阶段只保证框架状态提交的原子性，以及接入幂等协议后的安全重试；任意外部 API 或数据库的
+exactly-once 不属于单独 checkpoint 能力。
 
-实现工具协议、同步/异步适配、可选 LLM Provider、日志/限流 Middleware 和工具白名单。验收：核心不绑定单一 LLM SDK；无 API Key 时确定性 Agent 仍可运行；工具结果经过 schema 校验。
+## 阶段 6 — 工具、LLM Agent 与 Middleware 扩展（下一阶段）
+
+详细实施计划见 [`PHASE6.md`](F:/personal/tool/muti-agent/docs/PHASE6.md)。先完成阶段 5 发布门禁，
+再实现 ToolSpec/ToolRegistry、输入输出 schema 校验、同步/异步适配、超时取消、allowlist、
+限流与脱敏；随后实现可选 `LLMProvider`、Fake Provider 和 Middleware 组合协议。验收重点是：
+核心不绑定单一 LLM SDK；无 API Key/网络时确定性 Agent 仍可运行；工具与 LLM 输出经过 schema
+和权限校验；重试、Checkpoint 和幂等语义不被扩展层复制或破坏。
 
 ## 阶段 7 — VulnTell 纵向示例
 
@@ -59,5 +74,5 @@
 
 ```text
 init → agent-state → graph → concurrency-events → reliability
-→ checkpoint → extensions → vulntell-example → benchmarks → release
+→ checkpoint/recovery → phase5-release-gate → tools/llm/middleware → vulntell-example → benchmarks → release
 ```

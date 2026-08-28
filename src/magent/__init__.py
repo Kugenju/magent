@@ -25,6 +25,8 @@ from .core import (
     new_run_id,
 )
 
+from .graph import GraphBuilder, CompiledGraph, END, GraphValidationError
+
 __version__ = "0.1.0"
 
 __all__ = [
@@ -42,5 +44,9 @@ __all__ = [
     "SequentialExecutor",
     "ExecutionReport",
     "StepRecord",
+    "GraphBuilder",
+    "CompiledGraph",
+    "END",
+    "GraphValidationError",
     "__version__",
 ]

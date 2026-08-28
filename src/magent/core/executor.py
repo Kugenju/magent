@@ -36,6 +36,7 @@ class StepRecord(BaseModel):
 
     order: int
     agent_name: str
+    node_id: Optional[str] = None
     status: ExecutionStatus
     started_at: float
     finished_at: float
@@ -135,6 +136,7 @@ class SequentialExecutor:
                 agent_name=agent.name,
                 started_at=self._clock(),
                 logger=logging.getLogger(f"magent.{agent.name}"),
+                clock=self._clock,
             )
             step_start = self._clock()
             try:

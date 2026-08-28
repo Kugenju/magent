@@ -143,3 +143,16 @@ async def test_fixed_run_id_and_non_negative_duration():
     assert report.run_id == "fixed-1"
     assert report.duration_ms >= 0
     assert state.value == 1
+
+
+class Skipper(BaseAgent):
+    async def run(self, state, runtime):
+        return AgentResult(status=ExecutionStatus.SKIPPED, message="skip")
+
+
+async def test_skipped_agent_does_not_update_and_continues():
+    executor = SequentialExecutor([Skipper("s"), Producer("p")])
+    state, report = await executor.run(DemoState())
+    assert report.success
+    assert ExecutionStatus.SKIPPED in [s.status for s in report.steps]
+    assert state.value == 1  # producer still ran after the skip

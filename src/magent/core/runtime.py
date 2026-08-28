@@ -9,6 +9,8 @@ phases). Agents must not stash executor-internal mutable state on it.
 
 from __future__ import annotations
 
+from typing import Callable, Optional
+
 import logging
 import time
 import uuid
@@ -28,16 +30,18 @@ class Runtime:
         agent_name: str,
         started_at: float,
         logger: logging.Logger,
+        clock: Optional[Callable[[], float]] = None,
     ) -> None:
         self.run_id = run_id
         self.agent_name = agent_name
         self.started_at = started_at
         self._logger = logger
+        self._clock = clock or time.time
 
     @property
     def logger(self) -> logging.Logger:
         return self._logger
 
     def elapsed(self) -> float:
-        """Seconds since this runtime was created."""
-        return time.time() - self.started_at
+        """Seconds since this runtime was created (uses the injected clock)."""
+        return self._clock() - self.started_at

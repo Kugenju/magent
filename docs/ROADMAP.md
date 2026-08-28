@@ -6,35 +6,34 @@
 
 截至当前工作区检查：
 
-- 阶段 0：项目骨架、`pyproject.toml`、README 和测试配置已完成；参考项目对比文档尚未建立。
-- 阶段 1：核心代码已完成，提交为 `70c08e9`；阶段 1 代码的回归测试通过，Producer/Consumer 离线示例可运行。
-- 阶段 2：Graph、条件路由和校验代码已在工作区实现，当前总测试 39 个且通过，但尚未提交，也未完成阶段 2 收口验收。
-- 当前阻塞项：CompiledGraph 对外暴露可变结构、Graph 报告存在重复记录风险、GraphExecutor 尚未作为顶层公共 API 导出，以及阶段 1 的部分工程修正仍需确认。
-- 下一阶段：先完成阶段 2 收口，再实现阶段 3 的并发执行与 EventBus。
+- 阶段 0：项目骨架、`pyproject.toml`、README 和测试配置已完成；参考项目对比文档仍需补齐。
+- 阶段 1：核心执行内核已完成，阶段 1 的回归测试和 Producer/Consumer 离线示例可运行。
+- 阶段 2：Graph、条件路由、拓扑校验和顺序 Graph 执行已完成并形成提交。
+- 阶段 3：fan-out/fan-in、状态 reducer、并发执行、取消传播和内存 EventBus 已实现；当前总测试 74 个且全部通过。
+- 阶段 3 收尾：`src/magent/core/executor.py` 仍有未提交的报告字段变更；`PHASE3.md` 的进度描述需要同步，阶段 3 尚未形成最终发布提交。
+- 下一阶段：完成阶段 3 发布门禁后，进入阶段 4 的超时、重试、调用方取消和错误策略。
 
 ## 阶段 0 — 项目初始化与参考分析
 
 建立 `magent` 包、依赖管理和质量基线；阅读 LangGraph、AutoGen、CrewAI 的 Agent、State、Graph、Executor、Checkpoint 和错误处理设计，形成 `COMPARISON.md`。不复制第三方源码。
 
-验收：`pip install -e .`、`python -m pytest`、`import magent` 成功；参考分析和边界文档完成。
+验收：`pip install -e .`、`python -m pytest`、`import magent` 成功；参考分析和边界文档完成。参考项目对比文档可在发布阶段补齐，但不能伪称已经完成。
 
-## 阶段 1 — Agent、State 与 Result 最小执行模型（核心已完成）
+## 阶段 1 — Agent、State 与 Result 最小执行模型（已完成）
 
-详细实施方案见 [`PHASE1.md`](F:/personal/tool/muti-agent/docs/PHASE1.md)。本阶段建立了单进程、单流程、确定性的最小内核，不提前实现 Graph、并发、EventBus、Checkpoint、LLM 或 VulnTell 业务。阶段 1 的工程收口项在 [`PHASE2.md`](F:/personal/tool/muti-agent/docs/PHASE2.md) 的“进入条件”中列出。
+详细方案见 [`PHASE1.md`](F:/personal/tool/muti-agent/docs/PHASE1.md)。阶段 1 建立单进程、单流程、确定性的最小内核：Agent、类型化状态更新、结构化结果、Runtime、顺序执行器和执行报告。
 
-验收状态：核心功能、单元测试、包导入和离线示例已通过；阶段 0 的参考项目对比文档和少量阶段 1 工程修正仍待补齐。
+## 阶段 2 — Graph 与顺序、条件执行（已完成）
 
-## 阶段 2 — Graph 与顺序、条件执行（实现中，待收口）
+详细方案见 [`PHASE2.md`](F:/personal/tool/muti-agent/docs/PHASE2.md)。阶段 2 支持节点注册、无条件边、条件路由、拓扑校验和单路径顺序 Graph 执行；不包含并发、重试、Checkpoint、EventBus 或 VulnTell。
 
-详细实施方案见 [`PHASE2.md`](F:/personal/tool/muti-agent/docs/PHASE2.md)。当前已实现节点注册、边、条件路由、图校验和图上的顺序执行；需要先修复报告、不可变性和公共导出问题，再正式验收。暂不实现并发、循环、重试、Checkpoint、EventBus 或 VulnTell。验收：支持 A→B→C、B/C 条件分支；能够发现重复节点、无效边、孤立节点和环；轨迹包含节点顺序和最终状态，且每个节点最多一条最终记录。
+## 阶段 3 — 并发执行与 EventBus（已实现，待发布收尾）
 
-## 阶段 3 — 并发执行与 EventBus（下一阶段）
+详细方案见 [`PHASE3.md`](F:/personal/tool/muti-agent/docs/PHASE3.md)。阶段 3 已实现无依赖节点并行、fan-out/fan-in、并发限制、显式 reducer、失败取消传播和内存 EventBus。当前需要完成未提交的报告字段变更、文档同步和最终回归后再标记为发布完成。
 
-详细实施方案见 [`PHASE3.md`](F:/personal/tool/muti-agent/docs/PHASE3.md)。在阶段 2 收口后，实现无依赖节点并行、并发限制、状态 reducer、并行结果合并和明确的 Command/Event/Result/Error 语义。验收：并行性能相对串行基线可测量；覆盖状态冲突、消息顺序、异常、取消订阅和容量限制。
+## 阶段 4 — 超时、重试、取消与错误策略（下一阶段）
 
-## 阶段 4 — 超时、重试、取消与错误策略
-
-实现节点超时、指数退避、错误分类、取消传播和终止/跳过/降级策略。验收：临时错误按策略重试，永久错误不无限重试，超时可取消，错误信息进入报告。
+详细方案见 [`PHASE4.md`](F:/personal/tool/muti-agent/docs/PHASE4.md)。本阶段为 Agent 调用建立显式可靠性策略：节点超时、可重试错误分类、指数退避、调用方取消、失败传播和结构化尝试记录。阶段 3 已有的兄弟分支取消语义必须与本阶段的调用方取消区分。
 
 ## 阶段 5 — Checkpoint、恢复与幂等
 

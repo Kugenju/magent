@@ -37,6 +37,20 @@ from .reliability import (
     TimeoutPolicy,
     run_node,
 )
+from .checkpoint import (
+    CheckpointCompatibilityError,
+    CheckpointConflictError,
+    CheckpointError,
+    CheckpointPhase,
+    CheckpointRecord,
+    CheckpointStore,
+    EffectRecord,
+    InMemoryCheckpointStore,
+    RunRecord,
+    SideEffectSink,
+    SqliteCheckpointStore,
+    execution_key,
+)
 
 __version__ = "0.1.0"
 
@@ -71,5 +85,17 @@ __all__ = [
     "TemporaryError",
     "NodeRunOutcome",
     "run_node",
+    "CheckpointError",
+    "CheckpointCompatibilityError",
+    "CheckpointConflictError",
+    "CheckpointPhase",
+    "CheckpointRecord",
+    "CheckpointStore",
+    "EffectRecord",
+    "RunRecord",
+    "InMemoryCheckpointStore",
+    "SqliteCheckpointStore",
+    "SideEffectSink",
+    "execution_key",
     "__version__",
 ]

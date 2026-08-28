@@ -25,8 +25,9 @@ class BaseAgent(ABC):
     must never mutate the framework-held state object directly.
     """
 
-    def __init__(self, name: str) -> None:
+    def __init__(self, name: str, version: str = "1") -> None:
         self.name = name
+        self.version = version
 
     @abstractmethod
     async def run(self, state: BaseModel, runtime: Runtime) -> AgentResult:

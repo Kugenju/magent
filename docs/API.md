@@ -1,9 +1,9 @@
 # magent public API
 
-This document covers the stable public API shipped so far: phases 1–5
+This document covers the stable public API shipped so far: phases 1–6
 (agent/state/result/runtime, graph execution, concurrency/EventBus,
-timeout/retry/cancellation reliability, and opt-in checkpoint/recovery). Tool,
-LLM and Middleware extensions are planned for phase 6.
+timeout/retry/cancellation reliability, opt-in checkpoint/recovery, and the
+tool / LLM-provider / middleware extension layer).
 
 ## Phase 1 — minimal kernel
 
@@ -347,12 +347,83 @@ resume, carries `field`/`expected`/`actual`) and `CheckpointConflictError`
 
 ### Current limits (phase 5)
 No distributed checkpoint, no leader election, no cross-DB distributed
-transaction, no pickle, no automatic schema migration; cyclic graphs, LLMs and
-tool registries remain out of scope.
+transaction, no pickle, no automatic schema migration; cyclic graphs remain out
+of scope. (Tools/LLM/middleware shipped in phase 6 — see below.)
 
-## Phase 6 — planned tools, LLM and middleware
+## Phase 6 — tools, LLM and middleware
 
-The implementation plan is in [`PHASE6.md`](F:/personal/tool/muti-agent/docs/PHASE6.md).
-It will add schema-validated tools, optional provider abstractions, a Fake
-Provider for offline tests, and composable middleware. These are not yet part
-of the public API and must not be imported as if implemented.
+### Tools (`magent.tools`)
+```python
+from magent import ToolRegistry, ToolContext, FunctionTool, ToolResult, ToolSpec, tool
+
+# Declarative decorator: schema-validated, sync or async.
+@tool("add", input_model=AddIn, output_model=AddOut)
+def add(args: AddIn, ctx: ToolContext) -> AddOut:
+    return AddOut(sum=args.a + args.b)
+
+reg = ToolRegistry(
+    allowlist=["add"],            # unknown/unlisted -> ToolPermissionError
+    max_input_bytes=4096,         # oversize input -> ToolValidationError
+    limiter=ConcurrencyLimiter(8),# caps concurrent invocations
+    redact_fields={"token"},     # observability redaction
+)
+reg.register(add)
+result: ToolResult = await reg.invoke("add", {"a": 1, "b": 2}, ctx)
+```
+- `ToolSpec` — immutable identity (`name`, `version`, `description`,
+  `input_model`, `output_model`, `side_effect`, `idempotent`). Exported via
+  `to_metadata()` (safe, no executable objects).
+- `FunctionTool.invoke` runs sync functions via `asyncio.to_thread` and async
+  functions directly; an optional `timeout` raises `ToolTimeoutError`.
+- `ToolRegistry.invoke` enforces: registration uniqueness, allowlist,
+  input/output pydantic validation (100%), input size limit, a concurrency
+  limiter, and a per-call timeout. Idempotent side-effect tools are funnelled
+  through `context.side_effect_sink` so the effect runs at most once.
+- Errors: `ToolError` → `ToolPermissionError` (not registered / not allowed /
+  side-effect without `idempotent=True`), `ToolValidationError` (schema/size),
+  `ToolTimeoutError`.
+
+### LLM (`magent.llm`)
+```python
+from magent import LLMProvider, FakeProvider, get_llm_provider, LLMRequest, LLMResponse, ChatMessage
+
+provider = FakeProvider()                      # deterministic, offline, no SDK
+resp: LLMResponse = await provider.complete(
+    LLMRequest(messages=[ChatMessage(role="user", content="hi")]).with_tools([spec])
+)
+provider = get_llm_provider("openai", api_key="...", model="gpt-4o-mini")  # lazy import
+```
+- `LLMProvider` is a runtime-checkable `Protocol` with `async complete(request, context)`.
+- `LLMRequest` / `LLMResponse` / `ChatMessage` / `Usage` are pure pydantic models;
+  `tools` carries only safe tool metadata, `response_schema` is a pydantic class
+  for output validation and is not serialized.
+- `FakeProvider` supports scripted `responses`, a `handler` callable, or an echo
+  mode — sufficient for offline tests and the deterministic core.
+- `get_llm_provider("openai", ...)` imports the OpenAI SDK lazily; the core never
+  depends on it. Provider errors map to `LLMError` → `LLMRateLimitError` /
+  `LLMAuthError` / `LLMInvalidParamError` / `LLMContentRefusedError`.
+
+### Middleware (`magent.middleware`)
+```python
+from magent import Middleware, compose, MiddlewareAgent, LoggingMiddleware, RateLimitMiddleware, SizeLimitMiddleware, RedactionMiddleware
+
+async def run = await compose(inner_async_call, [mw1, mw2])
+agent = MiddlewareAgent(inner_agent, [LoggingMiddleware(), RateLimitMiddleware(4), RedactionMiddleware({"token"})])
+```
+- `Middleware` is a `Protocol` with `before(inv)`, `after(inv, response)` and
+  `on_error(inv, error)` (all async). `Invocation` exposes
+  `agent_name`, `state`, `runtime`, `started_at`, `meta`.
+- `compose` runs `before` in registration order and `after` in reverse. An
+  exception propagates unchanged unless a middleware converts it in `on_error`.
+  Middleware must not silently mutate framework state — observability-only
+  changes go through `inv.meta`.
+- `MiddlewareAgent(BaseAgent)` wraps an inner agent so the executor stays
+  unchanged (retry/timeout/cancellation remain owned by `run_node`).
+- Built-ins: `LoggingMiddleware`, `RateLimitMiddleware` (async semaphore),
+  `SizeLimitMiddleware` (input/output byte caps), `RedactionMiddleware` (redacts
+  sensitive fields into `inv.meta` only).
+
+### Current limits (phase 6)
+No vendor SDK bundled in core; only `openai` is shipped as an optional, lazily
+imported adapter. `MiddlewareAgent` only wraps a single agent's `run`; graph-
+level middleware composition is a later concern.

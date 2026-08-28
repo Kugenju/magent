@@ -14,9 +14,13 @@
   当前全量离线测试为 103 个且全部通过，阶段 4 文档已在提交
   `f45c672 docs: document phase-4 reliability semantics` 中同步。
 - 阶段 5：Checkpoint / SQLite 快照 / 顺序与并发 DAG 恢复 / 稳定 execution key / 幂等副作用已实现；
-  当前全量离线测试为 125 个且全部通过，执行器在无 `checkpoint_store` 时保持阶段 1–4 行为不变。
-  但阶段 5 改动仍在工作区，需先完成 checksum、并发序号、幂等竞态和运行状态等发布门禁。
-- 下一阶段：阶段 6 工具、LLM Agent 与 Middleware 扩展（以阶段 5 发布门禁关闭为前置条件）。
+  发布门禁（checksum 读后校验、并发序号统一分配、幂等竞态原子 claim、运行状态一致性、
+  版本与 frontier 可追溯）已关闭，阶段 5 已提交。当前全量离线测试为 168 个且全部通过，
+  pyproject 中 `pythonpath=["src"]`、`asyncio_mode="auto"`；执行器在无 `checkpoint_store` 时保持阶段 1–4 行为不变。
+- 阶段 6：工具协议（ToolSpec/ToolRegistry、输入输出 schema 校验、同步/异步适配、超时/allowlist/
+  限流/脱敏、幂等副作用）、可插拔 `LLMProvider` 与确定性 `FakeProvider`、可选 OpenAI 适配器（懒加载）、
+  以及可组合 Middleware（logging/rate-limit/size-limit/redaction、确定性 compose）已完成。
+  核心不绑定单一 LLM SDK；无 API Key/网络时确定性 Agent 仍可运行；本阶段新增 38 个测试且全部通过。
 
 ## 阶段 0 — 项目初始化与参考分析
 
@@ -50,13 +54,12 @@
 本阶段只保证框架状态提交的原子性，以及接入幂等协议后的安全重试；任意外部 API 或数据库的
 exactly-once 不属于单独 checkpoint 能力。
 
-## 阶段 6 — 工具、LLM Agent 与 Middleware 扩展（下一阶段）
+## 阶段 6 — 工具、LLM Agent 与 Middleware 扩展（已完成）
 
-详细实施计划见 [`PHASE6.md`](F:/personal/tool/muti-agent/docs/PHASE6.md)。先完成阶段 5 发布门禁，
-再实现 ToolSpec/ToolRegistry、输入输出 schema 校验、同步/异步适配、超时取消、allowlist、
-限流与脱敏；随后实现可选 `LLMProvider`、Fake Provider 和 Middleware 组合协议。验收重点是：
-核心不绑定单一 LLM SDK；无 API Key/网络时确定性 Agent 仍可运行；工具与 LLM 输出经过 schema
-和权限校验；重试、Checkpoint 和幂等语义不被扩展层复制或破坏。
+详细实施计划见 [`PHASE6.md`](F:/personal/tool/muti-agent/docs/PHASE6.md)。已完成 ToolSpec/ToolRegistry、
+输入输出 schema 校验、同步/异步适配、超时取消、allowlist、限流与脱敏；随后实现可选 `LLMProvider`、
+确定性 Fake Provider 和 Middleware 组合协议。验收重点是：核心不绑定单一 LLM SDK；无 API Key/网络时
+确定性 Agent 仍可运行；工具与 LLM 输出经过 schema 和权限校验；重试、Checkpoint 和幂等语义不被扩展层复制或破坏。
 
 ## 阶段 7 — VulnTell 纵向示例
 

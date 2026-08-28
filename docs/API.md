@@ -88,6 +88,84 @@ from entry; every reachable path eventually reaches `END`.
 - Router exceptions / unknown labels are reported as `GraphRoutingError` and
   stop execution.
 
-### Current limits (phase 2)
-No fan-out/fan-in, no loops, no EventBus, no retry/timeout/checkpoint, no LLM.
-Those arrive in later phases.
+## Phase 3 — concurrency, fan-out/fan-in and EventBus
+
+### `GraphBuilder` additions
+```python
+GraphBuilder()
+    .add_parallel_edges(source, [t1, t2, ...])   # fan-out (explicit, keeps add_edge single-target)
+    .add_join(node_id, [p1, p2, ...])            # fan-in; parents must be the incoming edges
+```
+- `add_parallel_edges` and `add_join` are additive on top of the phase-2 API;
+  `add_edge(source, target)` still means a single unconditional successor.
+- A node keeps at most one *outgoing* edge kind (normal / parallel / conditional).
+- A join node's incoming edges must equal the parents declared in `add_join`.
+
+### `CompiledGraph.run` additions
+```python
+async run(initial_state, *, run_id=None, clock=None,
+          max_concurrency: int | None = None, event_bus=None)
+```
+`GraphExecutor` accepts the same `max_concurrency` / `event_bus` keyword args.
+
+### Concurrency semantics
+- Independent nodes run concurrently. `max_concurrency=None` (default) lets the
+  topology run as wide as possible; `max_concurrency=N` bounds simultaneous agents
+  via an `asyncio.Semaphore`, and the report records `peak_concurrency`.
+- **Branch isolation:** each fan-out branch starts from the same snapshot taken
+  at the parallel source. A branch can only submit updates via its
+  `AgentResult`; it never sees another branch's intermediate state.
+- **Fan-in merge:** at a join, the partial updates of all parents are merged over
+  the source snapshot in a stable (declared) order. Different fields merge
+  automatically; the same field updated by >1 branch raises
+  `StateMergeConflictError` unless a reducer is registered.
+- **Reducers:** declare `reducers: ClassVar[dict[str, Callable[[cur, new], new]]]`
+  on the state model. A reducer must be deterministic and ideally associative
+  (the merge order is the declared parent order, not completion order). Example:
+  `reducers = {"trace": lambda cur, new: cur + new}`.
+- **Failure lifecycle (fail-fast):** when a branch fails, sibling branches in the
+  same fan-out are cancelled (`CANCELLED`), not-yet-started dependents are
+  recorded `NOT_EXECUTED`, and no partial result of a cancelled branch is merged.
+  `FAILED` / `CANCELLED` / `NOT_EXECUTED` are distinct and distinguishable.
+
+### `ExecutionStatus` additions
+`CANCELLED = "cancelled"` was added alongside `SUCCESS`, `SKIPPED`, `FAILED`,
+`NOT_EXECUTED`.
+
+### `ExecutionReport` / `StepRecord` additions
+- `StepRecord.wait_ms: float` — time the node waited before it started running.
+- `ExecutionReport.peak_concurrency: int` — highest number of agents running at
+  once.
+- `ExecutionReport.event_stats: dict | None` — `bus.stats()` snapshot when an
+  EventBus was supplied.
+- Each node produces **exactly one** final `StepRecord` (no duplicate records
+  even when routing fails).
+
+### EventBus
+```python
+from magent import EventBus, Event, EventHandlerError
+
+bus = EventBus()                       # in-memory, at-most-once
+sub = await bus.subscribe("agent.completed", handler)
+await bus.publish(Event(topic="agent.completed", run_id=..., source=..., payload={...}))
+sub.unsubscribe()
+await bus.close()
+```
+- `Event`: `event_id`, `topic`, `run_id`, `source`, `created_at`, `payload`
+  (structured, not a log string).
+- Handlers may be sync or async. A handler exception is, by default, logged and
+  the bus continues notifying other subscribers (`stats()["handler_errors"]`
+  is incremented). With `EventBus(fail_on_handler_error=True)` it raises
+  `EventHandlerError`.
+- `publish`/`subscribe` after `close()` raise `EventHandlerError`.
+- The EventBus is a side channel: it never participates in state merging or
+  control flow, so it cannot corrupt graph state.
+
+### Validation additions (`GraphValidationError`)
+In addition to phase-2 rules: every parallel branch must reach a join; join
+parents must match incoming edges; a join node cannot be a conditional target;
+non-join nodes may have at most one predecessor (use `add_join` for fan-in).
+
+### Current limits (phase 3)
+No retry/timeout, no checkpoint/persistence, no distributed execution, no loops,
+no dynamic planning, no LLM. Those arrive in later phases.

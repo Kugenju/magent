@@ -1,23 +1,26 @@
 # magent
 
 A minimal, reusable, recoverable **multi-agent execution framework**, built in
-phases. This repository currently contains **phase 1 + phase 2**: a deterministic
-kernel (Agent/State/Result/Runtime, sequential executor) plus a validated,
-conditionally-routed directed graph executor.
+phases. This repository currently contains **phase 1 + phase 2 + phase 3**: a
+deterministic kernel (Agent/State/Result/Runtime, sequential executor), a
+validated conditionally-routed directed graph executor, and concurrent
+execution with fan-out/fan-in, branch-isolated state merging, a bounded
+`asyncio` scheduler, and an in-process `EventBus`.
 
 VulnTell (an open vulnerability-intelligence collection & source-quality
 evaluation app) is planned as a downstream example that exercises this framework
 — it lives under `examples/vulntell` in later phases and never pollutes the
 `magent` core.
 
-## Phase 1 scope
+## Phase 1–3 scope
 
 | In scope | Out of scope (later phases) |
 |----------|------------------------------|
-| `BaseAgent` protocol, typed `State`, `AgentResult`, `Runtime` | Directed Graph, conditional routing |
-| `merge_updates` with validation | Concurrency, EventBus |
-| `SequentialExecutor` (fail-fast) | Timeouts, retries, checkpoint/recovery |
-| Structured `ExecutionReport` | LLM, tools, VulnTell business |
+| `BaseAgent` protocol, typed `State`, `AgentResult`, `Runtime` | LLM, tools, VulnTell business |
+| `merge_updates` with validation | Distributed execution |
+| `SequentialExecutor` (fail-fast) | Checkpoint / recovery / persistence |
+| Graph builder, validation, conditional routing | Loops, dynamic planning |
+| Concurrent DAG: fan-out/fan-in, reducers, `EventBus` | Timeouts, retries, cancellation policies |
 
 ## Install
 
@@ -111,6 +114,62 @@ asyncio.run(main())
 `compile()` validates the topology first (invalid graphs raise
 `GraphValidationError`); the executor walks one path to `END`. See
 `docs/API.md` for the full phase-2 API and current limits.
+
+## Concurrent execution (phase 3)
+
+```python
+import asyncio
+from typing import ClassVar
+from pydantic import BaseModel
+from magent import BaseAgent, AgentResult, GraphBuilder, END, EventBus
+
+
+class State(BaseModel):
+    trace: list[str] = []
+    reducers: ClassVar[dict] = {"trace": lambda cur, new: cur + new}
+
+
+class Step(BaseAgent):
+    def __init__(self, name, tag):
+        super().__init__(name)
+        self.tag = tag
+
+    async def run(self, state, runtime):
+        return AgentResult(updates={"trace": [self.tag]})
+
+
+async def main():
+    bus = EventBus()
+    graph = (
+        GraphBuilder()
+        .add_node("a", Step("a", "A"))
+        .add_node("b", Step("b", "B"))
+        .add_node("c", Step("c", "C"))
+        .add_node("d", Step("d", "D"))
+        .set_entry_point("a")
+        .add_parallel_edges("a", ["b", "c"])   # fan-out
+        .add_edge("b", "d")
+        .add_edge("c", "d")
+        .add_join("d", ["b", "c"])             # fan-in (reducer merges "trace")
+        .add_edge("d", END)
+        .compile()
+    )
+    state, report = await graph.run(State(), max_concurrency=4, event_bus=bus)
+    print(sorted(state.trace))          # ['A', 'B', 'C', 'D']
+    print(report.peak_concurrency)      # 2 (a, then b+c, then d)
+    print(report.event_stats)           # delivery counts from the bus
+
+
+asyncio.run(main())
+```
+
+Fan-out branches each start from the same snapshot and only submit updates via
+`AgentResult`. At a join the parents' updates are merged in declared order;
+fields updated by more than one branch require a reducer on the state model or
+raise `StateMergeConflictError`. A branch failure cancels its siblings
+(`CANCELLED`), leaves unstarted dependents `NOT_EXECUTED`, and never merges a
+cancelled branch's partial result. The `EventBus` is a side channel and never
+touches graph state.
 
 ## Test
 

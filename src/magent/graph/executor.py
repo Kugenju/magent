@@ -1,17 +1,21 @@
-"""Single-process concurrent graph executor (phase 3 + phase 4).
+"""Single-process concurrent graph executor (phase 3 + phase 4 + phase 5).
 
-Walks a DAG from the entry point to ``END``. Independent nodes run
-concurrently under a bounded semaphore. Fan-out branches each start from the
-same state snapshot; fan-in merges their partial updates through explicit
-reducers. Failures are fail-fast: sibling branches in the same fan-out are
-cancelled, not-yet-started dependents are recorded ``NOT_EXECUTED``.
+Walks a DAG from the entry point to ``END``. Independent nodes run concurrently
+under a bounded semaphore. Fan-out branches each start from the same state
+snapshot; fan-in merges their partial updates through explicit reducers.
+Failures are fail-fast: sibling branches in the same fan-out are cancelled,
+not-yet-started dependents are recorded ``NOT_EXECUTED``.
 
 Phase 4 adds node timeouts, bounded retries and caller cancellation on top of
 the shared :func:`run_node` runner, so reliability semantics match the
 sequential executor exactly.
 
-Each node produces exactly one final :class:`StepRecord` (with a full attempt
-history); there is never a duplicate record for a node, even when routing fails.
+Phase 5 adds an optional :class:`CheckpointStore`. With a store, every node
+writes a ``NODE_STARTED`` snapshot before it runs and a ``NODE_COMMITTED``
+record after it successfully commits its merged state + frontier. A crashed run
+can be continued with :func:`GraphExecutor.resume`, which replays only the
+uncommitted (or dangling) nodes from the last committed boundary. Without a
+store, behaviour is identical to phase 4 and no I/O is performed.
 """
 
 from __future__ import annotations
@@ -48,6 +52,9 @@ class GraphExecutor:
         reliability=None,
         sleeper=asyncio.sleep,
         rng=random.random,
+        checkpoint_store=None,
+        workflow_id: str = "graph",
+        workflow_version: str = "1",
     ) -> None:
         if max_concurrency is not None and max_concurrency < 1:
             raise ValueError(f"max_concurrency must be >= 1, got {max_concurrency!r}")
@@ -59,15 +66,54 @@ class GraphExecutor:
         self._reliability = reliability
         self._sleeper = sleeper
         self._rng = rng
+        self._checkpoint_store = checkpoint_store
+        self._workflow_id = workflow_id
+        self._workflow_version = workflow_version
 
     async def run(self, initial_state: BaseModel) -> tuple[BaseModel, ExecutionReport]:
+        return await self._execute(initial_state, resumed=False, resume_run_id=None)
+
+    async def resume(
+        self, run_id: str, initial_state: BaseModel
+    ) -> tuple[BaseModel, ExecutionReport]:
+        if self._checkpoint_store is None:
+            raise ValueError("resume requires a checkpoint_store")
+        return await self._execute(initial_state, resumed=True, resume_run_id=run_id)
+
+    async def _execute(
+        self, initial_state: BaseModel, *, resumed: bool, resume_run_id: str | None
+    ) -> tuple[BaseModel, ExecutionReport]:
+        from magent.checkpoint.models import (
+            CheckpointPhase,
+            CheckpointRecord,
+            RunRecord,
+            state_schema_hash,
+            state_type_name,
+        )
+        from magent.checkpoint.recovery import build_graph_resume, load_history
         from magent.reliability.runner import run_node
         from magent.reliability.policy import ReliabilityPolicy
 
         policy = self._reliability or ReliabilityPolicy()
         graph = self._graph
-        run_id = self._run_id or new_run_id()
+        store = self._checkpoint_store
+        state_cls = type(initial_state)
+        state_type = state_type_name(state_cls)
+        state_hash = state_schema_hash(state_cls)
+        run_id = resume_run_id or self._run_id or new_run_id()
         started_ts = self._clock()
+
+        rc: dict = {}
+        if resumed:
+            _run, checkpoints = await load_history(
+                store,
+                run_id,
+                state_cls=state_cls,
+                workflow_id=self._workflow_id,
+                workflow_version=self._workflow_version,
+                initial_state=initial_state,
+            )
+            rc = build_graph_resume(checkpoints, graph, state_cls)
 
         input_state: dict[str, BaseModel] = {graph.entry: initial_state}
         out_state: dict[str, BaseModel] = {}
@@ -86,6 +132,59 @@ class GraphExecutor:
         peak = 0
         sem = asyncio.Semaphore(self._max_concurrency) if self._max_concurrency else None
         tasks: dict[str, asyncio.Task] = {}
+        replayed: list[str] = []
+
+        seq = [0]
+        cp_lock = asyncio.Lock()
+
+        async def _cp(phase, **kw) -> None:
+            if store is None:
+                return
+            async with cp_lock:
+                rec = CheckpointRecord(
+                    run_id=run_id,
+                    workflow_id=self._workflow_id,
+                    workflow_version=self._workflow_version,
+                    state_type=state_type,
+                    state_schema_hash=state_hash,
+                    checkpoint_seq=seq[0],
+                    phase=phase,
+                    created_at=self._clock(),
+                    **kw,
+                )
+                await store.append(rec)
+                seq[0] += 1
+
+        if resumed:
+            for n, st in rc["out_state"].items():
+                out_state[n] = st
+                updates[n] = rc["updates"][n]
+                status[n] = ExecutionStatus.SUCCESS
+            for n, act in rc["activated"].items():
+                activated[n] = set(act)
+            for n, step in rc["committed_steps"].items():
+                steps[n] = step
+                recorded.add(n)
+            order = len(steps)
+            seq[0] = rc["from_seq"] + 1
+            abandoned = rc["abandoned"]
+        else:
+            abandoned = 0
+            if store is not None:
+                await store.create_run(
+                    RunRecord(
+                        run_id=run_id,
+                        workflow_id=self._workflow_id,
+                        workflow_version=self._workflow_version,
+                        state_type=state_type,
+                        state_schema_hash=state_hash,
+                        initial_state=initial_state.model_dump(),
+                        status=CheckpointPhase.RUN_STARTED.value,
+                        created_at=started_ts,
+                        updated_at=started_ts,
+                    )
+                )
+                await _cp(CheckpointPhase.RUN_STARTED, input_state=initial_state.model_dump())
 
         preds = _compute_preds(graph)
         reducers = getattr(type(initial_state), "reducers", None) or {}
@@ -215,6 +314,13 @@ class GraphExecutor:
                     except Exception:  # noqa: BLE001 - events are best-effort
                         pass
 
+            await _cp(
+                CheckpointPhase.NODE_STARTED,
+                node_id=n,
+                node_version=getattr(agent, "version", "1"),
+                attempt=1,
+                input_state=input_state[n].model_dump(),
+            )
             try:
                 if sem:
                     await sem.acquire()
@@ -284,6 +390,15 @@ class GraphExecutor:
                     message=outcome.result.message if outcome.result else None,
                     attempts=outcome.attempts,
                     terminal_reason=outcome.terminal_reason,
+                )
+                await _cp(
+                    CheckpointPhase.NODE_COMMITTED,
+                    node_id=n,
+                    node_version=getattr(agent, "version", "1"),
+                    output_state=input_state[n].model_dump(),
+                    updates={},
+                    activated_nodes=None,
+                    attempts=[a.model_dump() for a in outcome.attempts],
                 )
                 await on_terminal(n, ExecutionStatus.SKIPPED)
                 return
@@ -376,6 +491,15 @@ class GraphExecutor:
                         attempts=outcome.attempts,
                         terminal_reason=outcome.terminal_reason,
                     )
+                    await _cp(
+                        CheckpointPhase.NODE_COMMITTED,
+                        node_id=n,
+                        node_version=getattr(agent, "version", "1"),
+                        output_state=new_state.model_dump(),
+                        updates=dict(result.updates),
+                        activated_nodes=list(activated[n]),
+                        attempts=[a.model_dump() for a in outcome.attempts],
+                    )
                     await on_terminal(n, ExecutionStatus.SUCCESS)
                     return
 
@@ -389,6 +513,15 @@ class GraphExecutor:
                     message=message,
                     attempts=outcome.attempts,
                     terminal_reason=outcome.terminal_reason,
+                )
+                await _cp(
+                    CheckpointPhase.NODE_COMMITTED,
+                    node_id=n,
+                    node_version=getattr(agent, "version", "1"),
+                    output_state=new_state.model_dump(),
+                    updates=dict(result.updates),
+                    activated_nodes=None,
+                    attempts=[a.model_dump() for a in outcome.attempts],
                 )
                 await on_terminal(n, ExecutionStatus.SUCCESS)
                 return
@@ -442,6 +575,8 @@ class GraphExecutor:
                         continue
                     ready_at[n] = self._clock()
                     started_set.add(n)
+                    if resumed:
+                        replayed.append(n)
                     tasks[n] = asyncio.create_task(run_one(n, run_id))
                     progress = True
 
@@ -499,6 +634,17 @@ class GraphExecutor:
             for a in s.attempts
             if a.error and a.error.get("type") == "NodeTimeoutError"
         )
+        if store is not None:
+            if caller_cancelled:
+                phase = CheckpointPhase.RUN_CANCELLED
+            elif not failed and all(
+                s in (ExecutionStatus.SUCCESS, ExecutionStatus.SKIPPED) for s in status.values()
+            ):
+                phase = CheckpointPhase.RUN_COMPLETED
+            else:
+                phase = CheckpointPhase.RUN_FAILED
+            await _cp(phase, output_state=(final_state if final_state is not None else initial_state).model_dump())
+            await store.update_run_status(run_id, phase.value)
         report = ExecutionReport(
             run_id=run_id,
             initial_state=initial_state.model_dump(),
@@ -517,6 +663,10 @@ class GraphExecutor:
             cancellation_reason="caller" if caller_cancelled else None,
             retry_count=retry_count,
             timeout_count=timeout_count,
+            resumed=resumed,
+            resumed_from_seq=rc["from_seq"] if resumed else None,
+            abandoned_attempts=abandoned,
+            replayed_nodes=replayed,
         )
         return (final_state if final_state is not None else initial_state), report
 

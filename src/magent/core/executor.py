@@ -1,15 +1,22 @@
-"""Sequential executor for phase 1, extended with phase-4 reliability.
+"""Sequential executor for phase 1, extended with phase-4/phase-5 reliability.
 
 The executor answers three questions for the minimal kernel:
 
 1. How is an agent uniformly described and invoked? (``BaseAgent``)
 2. How does an agent read state and return updates? (``AgentResult``)
 3. How does the framework run several agents in a fixed order, retry transient
-   failures, enforce node timeouts, and record what happened?
+   failures, enforce node timeouts, persist commit boundaries, and recover from
+   an interruption?
 
 Phase 4 adds an optional :class:`ReliabilityPolicy` (retry + timeout). With the
 default policy (``max_attempts=1``, no timeout, ``fail_fast``) behaviour is
 identical to the original phase-1 executor.
+
+Phase 5 adds an optional :class:`CheckpointStore`. With no store the executor is
+byte-for-byte the original behaviour (no file is created, no overhead). With a
+store it writes a ``NODE_STARTED`` snapshot before each node and atomically
+commits the merged state + frontier after a successful node, enabling
+:func:`SequentialExecutor.resume`.
 """
 
 from __future__ import annotations
@@ -62,6 +69,10 @@ class ExecutionReport(BaseModel):
     cancellation_reason: Optional[str] = None
     retry_count: int = 0
     timeout_count: int = 0
+    resumed: bool = False
+    resumed_from_seq: Optional[int] = None
+    abandoned_attempts: int = 0
+    replayed_nodes: list[str] = []
 
     @property
     def failed_agent(self) -> Optional[str]:
@@ -84,6 +95,11 @@ class SequentialExecutor:
         clock: Optional ``() -> float`` used for timings, injectable for tests.
         reliability: Optional :class:`ReliabilityPolicy`. Defaults to no retry
             and no timeout, preserving the original phase-1 behaviour.
+        checkpoint_store: Optional :class:`CheckpointStore`. When set, commit
+            boundaries are persisted and :func:`resume` can continue an
+            interrupted run. When ``None`` no checkpoint is written.
+        workflow_id / workflow_version: Stable identifiers for compatibility
+            checks on resume. ``node_version`` is read per-agent.
     """
 
     def __init__(
@@ -97,6 +113,9 @@ class SequentialExecutor:
         sleeper=None,
         rng=None,
         event_bus=None,
+        checkpoint_store=None,
+        workflow_id: str = "sequential",
+        workflow_version: str = "1",
     ) -> None:
         if conflict_strategy not in ("overwrite", "reject"):
             raise ValueError(f"unknown conflict_strategy: {conflict_strategy!r}")
@@ -108,6 +127,9 @@ class SequentialExecutor:
         self._sleeper = sleeper
         self._rng = rng
         self._bus = event_bus
+        self._checkpoint_store = checkpoint_store
+        self._workflow_id = workflow_id
+        self._workflow_version = workflow_version
         self._validate_names()
 
     def _validate_names(self) -> None:
@@ -118,33 +140,123 @@ class SequentialExecutor:
                 raise DuplicateAgentNameError(name)
             seen.add(name)
 
+    def _node_version(self, agent: BaseAgent) -> str:
+        return getattr(agent, "version", "1")
+
     async def run(self, initial_state: BaseModel) -> tuple[BaseModel, ExecutionReport]:
+        return await self._execute(initial_state, resumed=False, resume_run_id=None)
+
+    async def resume(
+        self, run_id: str, initial_state: BaseModel
+    ) -> tuple[BaseModel, ExecutionReport]:
+        if self._checkpoint_store is None:
+            raise ValueError("resume requires a checkpoint_store")
+        return await self._execute(initial_state, resumed=True, resume_run_id=run_id)
+
+    async def _execute(
+        self, initial_state: BaseModel, *, resumed: bool, resume_run_id: Optional[str]
+    ) -> tuple[BaseModel, ExecutionReport]:
+        from magent.checkpoint.models import (
+            CheckpointPhase,
+            CheckpointRecord,
+            RunRecord,
+            state_schema_hash,
+            state_type_name,
+        )
+        from magent.checkpoint.recovery import build_sequential_resume, load_history
         from magent.reliability.runner import run_node
         from magent.reliability.policy import ReliabilityPolicy
 
         policy = self._reliability or ReliabilityPolicy()
-        run_id = self._run_id or new_run_id()
+        store = self._checkpoint_store
+        state_cls = type(initial_state)
+        state_type = state_type_name(state_cls)
+        state_hash = state_schema_hash(state_cls)
+        run_id = resume_run_id or self._run_id or new_run_id()
+        started = self._clock()
+        rc: dict[str, Any] = {}
+        state = initial_state
 
         bus = self._bus
 
         async def emit(topic: str, data: dict) -> None:
             if bus is not None:
                 await bus.publish(Event(topic=topic, payload=data, run_id=run_id))
-        started = self._clock()
-        state = initial_state
+
+        seq = [0]
+
+        async def _cp(phase, **kw) -> None:
+            if store is None:
+                return
+            rec = CheckpointRecord(
+                run_id=run_id,
+                workflow_id=self._workflow_id,
+                workflow_version=self._workflow_version,
+                state_type=state_type,
+                state_schema_hash=state_hash,
+                checkpoint_seq=seq[0],
+                phase=phase,
+                created_at=self._clock(),
+                **kw,
+            )
+            await store.append(rec)
+            seq[0] += 1
+
+        if resumed:
+            _run, checkpoints = await load_history(
+                store,
+                run_id,
+                state_cls=state_cls,
+                workflow_id=self._workflow_id,
+                workflow_version=self._workflow_version,
+                initial_state=initial_state,
+            )
+            rc = build_sequential_resume(checkpoints, self.agents)
+            state = (
+                state_cls.model_validate(rc["restored_state"])
+                if rc["restored_state"] is not None
+                else initial_state
+            )
+            steps: list[StepRecord] = list(rc["committed_steps"])
+            seq[0] = rc["from_seq"] + 1
+            next_index = rc["next_index"]
+            abandoned = rc["abandoned"]
+            replayed: list[str] = []
+        else:
+            steps = []
+            next_index = 0
+            abandoned = 0
+            replayed = []
+            if store is not None:
+                await store.create_run(
+                    RunRecord(
+                        run_id=run_id,
+                        workflow_id=self._workflow_id,
+                        workflow_version=self._workflow_version,
+                        state_type=state_type,
+                        state_schema_hash=state_hash,
+                        initial_state=initial_state.model_dump(),
+                        status=CheckpointPhase.RUN_STARTED.value,
+                        created_at=started,
+                        updated_at=started,
+                    )
+                )
+                await _cp(CheckpointPhase.RUN_STARTED, input_state=initial_state.model_dump(),
+                )
+
         updated_fields: set[str] = set()
-        steps: list[StepRecord] = []
         success = True
         caller_cancelled = False
 
         try:
-            for index, agent in enumerate(self.agents):
+            for index in range(next_index, len(self.agents)):
+                agent = self.agents[index]
                 if not success:
                     now = self._clock()
                     steps.append(
                         StepRecord(
                             order=index,
-                            agent_name=agent.name,
+                            node_id=agent.name, agent_name=agent.name,
                             status=ExecutionStatus.NOT_EXECUTED,
                             started_at=now,
                             finished_at=now,
@@ -152,6 +264,9 @@ class SequentialExecutor:
                         )
                     )
                     continue
+
+                if resumed:
+                    replayed.append(agent.name)
 
                 runtime = Runtime(
                     run_id=run_id,
@@ -162,6 +277,12 @@ class SequentialExecutor:
                 )
                 step_start = self._clock()
                 log: list[AttemptRecord] = []
+                await _cp(CheckpointPhase.NODE_STARTED,
+                    node_id=agent.name,
+                    node_version=self._node_version(agent),
+                    attempt=1,
+                    input_state=state.model_dump(),
+                )
                 try:
                     outcome = await run_node(
                         agent,
@@ -179,7 +300,7 @@ class SequentialExecutor:
                     steps.append(
                         StepRecord(
                             order=index,
-                            agent_name=agent.name,
+                            node_id=agent.name, agent_name=agent.name,
                             status=ExecutionStatus.CANCELLED,
                             started_at=step_start,
                             finished_at=now,
@@ -196,7 +317,7 @@ class SequentialExecutor:
                     steps.append(
                         StepRecord(
                             order=index,
-                            agent_name=agent.name,
+                            node_id=agent.name, agent_name=agent.name,
                             status=ExecutionStatus.SKIPPED,
                             started_at=step_start,
                             finished_at=now,
@@ -209,6 +330,14 @@ class SequentialExecutor:
                                 else None
                             ),
                         )
+                    )
+                    await _cp(CheckpointPhase.NODE_COMMITTED,
+                        node_id=agent.name,
+                        node_version=self._node_version(agent),
+                        output_state=state.model_dump(),
+                        updates={},
+                        frontier={"next_index": index + 1},
+                        attempts=[a.model_dump() for a in outcome.attempts],
                     )
                     continue
 
@@ -223,7 +352,7 @@ class SequentialExecutor:
                             steps.append(
                                 StepRecord(
                                     order=index,
-                                    agent_name=agent.name,
+                                    node_id=agent.name, agent_name=agent.name,
                                     status=ExecutionStatus.FAILED,
                                     started_at=step_start,
                                     finished_at=now,
@@ -249,7 +378,7 @@ class SequentialExecutor:
                         steps.append(
                             StepRecord(
                                 order=index,
-                                agent_name=agent.name,
+                                node_id=agent.name, agent_name=agent.name,
                                 status=ExecutionStatus.FAILED,
                                 started_at=step_start,
                                 finished_at=now,
@@ -264,7 +393,7 @@ class SequentialExecutor:
                     steps.append(
                         StepRecord(
                             order=index,
-                            agent_name=agent.name,
+                            node_id=agent.name, agent_name=agent.name,
                             status=ExecutionStatus.SUCCESS,
                             started_at=step_start,
                             finished_at=now,
@@ -275,6 +404,14 @@ class SequentialExecutor:
                             error=result.error,
                         )
                     )
+                    await _cp(CheckpointPhase.NODE_COMMITTED,
+                        node_id=agent.name,
+                        node_version=self._node_version(agent),
+                        output_state=state.model_dump(),
+                        updates=dict(result.updates),
+                        frontier={"next_index": index + 1},
+                        attempts=[a.model_dump() for a in outcome.attempts],
+                    )
                     continue
 
                 # Terminal FAILED (incl. timeout). Fail-fast: stop the run.
@@ -283,7 +420,7 @@ class SequentialExecutor:
                 steps.append(
                     StepRecord(
                         order=index,
-                        agent_name=agent.name,
+                        node_id=agent.name, agent_name=agent.name,
                         status=ExecutionStatus.FAILED,
                         started_at=step_start,
                         finished_at=now,
@@ -305,7 +442,7 @@ class SequentialExecutor:
                     steps.append(
                         StepRecord(
                             order=index,
-                            agent_name=agent.name,
+                            node_id=agent.name, agent_name=agent.name,
                             status=ExecutionStatus.NOT_EXECUTED,
                             started_at=now,
                             finished_at=now,
@@ -323,6 +460,17 @@ class SequentialExecutor:
             for a in s.attempts
             if a.error and a.error.get("type") == "NodeTimeoutError"
         )
+        if store is not None:
+            if caller_cancelled:
+                phase = CheckpointPhase.RUN_CANCELLED
+            elif success:
+                phase = CheckpointPhase.RUN_COMPLETED
+            else:
+                phase = CheckpointPhase.RUN_FAILED
+            await _cp(phase,
+                output_state=state.model_dump(),
+            )
+            await store.update_run_status(run_id, phase.value)
         report = ExecutionReport(
             run_id=run_id,
             initial_state=initial_state.model_dump(),
@@ -335,5 +483,9 @@ class SequentialExecutor:
             cancellation_reason="caller" if caller_cancelled else None,
             retry_count=retry_count,
             timeout_count=timeout_count,
+            resumed=resumed,
+            resumed_from_seq=rc["from_seq"] if resumed else None,
+            abandoned_attempts=abandoned,
+            replayed_nodes=replayed,
         )
         return state, report

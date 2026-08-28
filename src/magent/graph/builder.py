@@ -103,6 +103,7 @@ class GraphBuilder:
             joins=self._joins,
             entry=self._entry,
         )
+        assert self._entry is not None
         return CompiledGraph(
             nodes=dict(self._nodes),
             edges=dict(self._edges),

@@ -97,6 +97,10 @@ def validate_graph(
         for target in mapping.values():
             if target != END:
                 preds[target].add(source)
+    for join_node, parents in joins.items():
+        for parent in parents:
+            if parent != END:
+                preds[join_node].add(parent)
 
     conditional_targets: set[str] = set()
     for source, (router, mapping) in conditional.items():
@@ -128,7 +132,7 @@ def validate_graph(
     _check_connectivity(nodes, edges, parallel, conditional, joins, entry)
 
 
-def _succs(node: str, edges, parallel, conditional) -> list[str]:
+def _succs(node: str, edges, parallel, conditional, joins) -> list[str]:
     out: list[str] = []
     if node in edges and edges[node] != END:
         out.append(edges[node])
@@ -136,6 +140,9 @@ def _succs(node: str, edges, parallel, conditional) -> list[str]:
         out.extend(t for t in parallel[node] if t != END)
     if node in conditional:
         out.extend(t for t in conditional[node][1].values() if t != END)
+    for join_node, parents in joins.items():
+        if node in parents:
+            out.append(join_node)
     return out
 
 
@@ -151,7 +158,7 @@ def _check_connectivity(nodes, edges, parallel, conditional, joins, entry) -> No
         if node in visited:
             return
         stack.add(node)
-        for nxt in _succs(node, edges, parallel, conditional):
+        for nxt in _succs(node, edges, parallel, conditional, joins):
             _visit(nxt, stack)
         stack.discard(node)
         visited.add(node)
@@ -182,7 +189,7 @@ def _check_connectivity(nodes, edges, parallel, conditional, joins, entry) -> No
         ):
             result = True
         else:
-            for nxt in _succs(node, edges, parallel, conditional):
+            for nxt in _succs(node, edges, parallel, conditional, joins):
                 if _reaches_end(nxt, stack):
                     result = True
                     break
@@ -206,7 +213,7 @@ def _check_connectivity(nodes, edges, parallel, conditional, joins, entry) -> No
             return join_memo[node]
         stack.add(node)
         result = False
-        for nxt in _succs(node, edges, parallel, conditional):
+        for nxt in _succs(node, edges, parallel, conditional, joins):
             if _reaches_join(nxt, stack):
                 result = True
                 break

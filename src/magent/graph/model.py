@@ -86,6 +86,9 @@ class CompiledGraph:
         clock=None,
         max_concurrency: int | None = None,
         event_bus=None,
+        reliability=None,
+        sleeper=None,
+        rng=None,
     ):
         """Execute this graph; see :class:`GraphExecutor` for semantics."""
         from .executor import GraphExecutor
@@ -96,4 +99,7 @@ class CompiledGraph:
             clock=clock,
             max_concurrency=max_concurrency,
             event_bus=event_bus,
+            reliability=reliability,
+            sleeper=sleeper,
+            rng=rng,
         ).run(initial_state)

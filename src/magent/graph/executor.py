@@ -1,4 +1,4 @@
-"""Single-process concurrent graph executor (phase 3).
+"""Single-process concurrent graph executor (phase 3 + phase 4).
 
 Walks a DAG from the entry point to ``END``. Independent nodes run
 concurrently under a bounded semaphore. Fan-out branches each start from the
@@ -6,14 +6,19 @@ same state snapshot; fan-in merges their partial updates through explicit
 reducers. Failures are fail-fast: sibling branches in the same fan-out are
 cancelled, not-yet-started dependents are recorded ``NOT_EXECUTED``.
 
-Each node produces exactly one final :class:`StepRecord` (phase-2 closure):
-there is never a duplicate record for a node, even when routing fails.
+Phase 4 adds node timeouts, bounded retries and caller cancellation on top of
+the shared :func:`run_node` runner, so reliability semantics match the
+sequential executor exactly.
+
+Each node produces exactly one final :class:`StepRecord` (with a full attempt
+history); there is never a duplicate record for a node, even when routing fails.
 """
 
 from __future__ import annotations
 
 import asyncio
 import logging
+import random
 import time
 
 from pydantic import BaseModel
@@ -40,6 +45,9 @@ class GraphExecutor:
         clock=None,
         max_concurrency: int | None = None,
         event_bus=None,
+        reliability=None,
+        sleeper=asyncio.sleep,
+        rng=random.random,
     ) -> None:
         if max_concurrency is not None and max_concurrency < 1:
             raise ValueError(f"max_concurrency must be >= 1, got {max_concurrency!r}")
@@ -48,8 +56,15 @@ class GraphExecutor:
         self._clock = clock or time.time
         self._max_concurrency = max_concurrency
         self._bus = event_bus
+        self._reliability = reliability
+        self._sleeper = sleeper
+        self._rng = rng
 
     async def run(self, initial_state: BaseModel) -> tuple[BaseModel, ExecutionReport]:
+        from magent.reliability.runner import run_node
+        from magent.reliability.policy import ReliabilityPolicy
+
+        policy = self._reliability or ReliabilityPolicy()
         graph = self._graph
         run_id = self._run_id or new_run_id()
         started_ts = self._clock()
@@ -96,7 +111,7 @@ class GraphExecutor:
                 return True
             return False
 
-        def record(n, st, start, end, wait, message=None, error=None):
+        def record(n, st, start, end, wait, message=None, error=None, attempts=None, terminal_reason=None):
             nonlocal order
             steps[n] = StepRecord(
                 order=order,
@@ -109,6 +124,8 @@ class GraphExecutor:
                 message=message,
                 error=error,
                 wait_ms=wait,
+                attempts=attempts or [],
+                terminal_reason=terminal_reason,
             )
             recorded.add(n)
             status[n] = st
@@ -187,20 +204,49 @@ class GraphExecutor:
                 logger=logging.getLogger(f"magent.{n}"),
                 clock=self._clock,
             )
+            log: list = []
+
+            async def emit(topic: str, payload: dict) -> None:
+                if self._bus is not None:
+                    try:
+                        await self._bus.publish(
+                            Event(topic=topic, run_id=rid, source=n, payload=payload)
+                        )
+                    except Exception:  # noqa: BLE001 - events are best-effort
+                        pass
+
             try:
                 if sem:
                     await sem.acquire()
                 running += 1
                 peak = max(peak, running)
                 try:
-                    result = await agent.run(input_state[n], runtime)
+                    outcome = await run_node(
+                        agent,
+                        input_state[n],
+                        runtime,
+                        policy=policy,
+                        sleeper=self._sleeper,
+                        rng=self._rng,
+                        clock=self._clock,
+                        emit=emit,
+                        attempts_log=log,
+                    )
                 finally:
                     running -= 1
                     if sem:
                         sem.release()
             except asyncio.CancelledError:
                 end = self._clock()
-                record(n, ExecutionStatus.CANCELLED, step_start, end, wait)
+                record(
+                    n,
+                    ExecutionStatus.CANCELLED,
+                    step_start,
+                    end,
+                    wait,
+                    attempts=list(log),
+                    terminal_reason="cancelled",
+                )
                 await on_terminal(n, ExecutionStatus.CANCELLED)
                 return
             except Exception as exc:  # noqa: BLE001 - normalize to AgentError
@@ -212,6 +258,8 @@ class GraphExecutor:
                     step_start,
                     end,
                     wait,
+                    attempts=list(log),
+                    terminal_reason="failed",
                     error={
                         "type": "AgentError",
                         "agent_name": agent.name,
@@ -223,39 +271,8 @@ class GraphExecutor:
                 await on_terminal(n, ExecutionStatus.FAILED)
                 return
 
-            if not isinstance(result, AgentResult):
-                end = self._clock()
-                record(
-                    n,
-                    ExecutionStatus.FAILED,
-                    step_start,
-                    end,
-                    wait,
-                    error={
-                        "type": "AgentError",
-                        "agent_name": agent.name,
-                        "run_id": rid,
-                        "message": "agent did not return an AgentResult",
-                    },
-                )
-                await on_terminal(n, ExecutionStatus.FAILED)
-                return
-
-            if result.status == ExecutionStatus.FAILED:
-                end = self._clock()
-                record(
-                    n,
-                    ExecutionStatus.FAILED,
-                    step_start,
-                    end,
-                    wait,
-                    message=result.message,
-                    error=result.error,
-                )
-                await on_terminal(n, ExecutionStatus.FAILED)
-                return
-
-            if result.status == ExecutionStatus.SKIPPED:
+            # Process the terminal outcome from the runner.
+            if outcome.status == ExecutionStatus.SKIPPED:
                 end = self._clock()
                 out_state[n] = input_state[n]
                 record(
@@ -264,139 +281,207 @@ class GraphExecutor:
                     step_start,
                     end,
                     wait,
-                    message=result.message,
+                    message=outcome.result.message if outcome.result else None,
+                    attempts=outcome.attempts,
+                    terminal_reason=outcome.terminal_reason,
                 )
                 await on_terminal(n, ExecutionStatus.SKIPPED)
                 return
 
-            # SUCCESS
-            try:
-                new_state = merge_updates(input_state[n], result.updates)
-            except StateUpdateError as exc:
+            if outcome.status == ExecutionStatus.SUCCESS:
+                result = outcome.result
+                assert result is not None
+                try:
+                    new_state = merge_updates(input_state[n], result.updates)
+                except StateUpdateError as exc:
+                    end = self._clock()
+                    record(
+                        n,
+                        ExecutionStatus.FAILED,
+                        step_start,
+                        end,
+                        wait,
+                        attempts=outcome.attempts,
+                        terminal_reason="failed",
+                        error={"type": "StateUpdateError", "reason": exc.reason},
+                    )
+                    await on_terminal(n, ExecutionStatus.FAILED)
+                    return
+
+                updates[n] = dict(result.updates)
+                out_state[n] = new_state
+                message = result.message
+
+                if n in graph.conditional:
+                    router, mapping = graph.conditional[n]
+                    try:
+                        if asyncio.iscoroutinefunction(router):
+                            label = await router(new_state)
+                        else:
+                            label = router(new_state)
+                    except Exception as exc:  # noqa: BLE001 - normalize routing failure
+                        end = self._clock()
+                        record(
+                            n,
+                            ExecutionStatus.FAILED,
+                            step_start,
+                            end,
+                            wait,
+                            attempts=outcome.attempts,
+                            terminal_reason="failed",
+                            error={
+                                "type": "GraphRoutingError",
+                                "message": str(exc),
+                                "cause": type(exc).__name__,
+                            },
+                        )
+                        await on_terminal(n, ExecutionStatus.FAILED)
+                        return
+                    if label not in mapping:
+                        end = self._clock()
+                        record(
+                            n,
+                            ExecutionStatus.FAILED,
+                            step_start,
+                            end,
+                            wait,
+                            attempts=outcome.attempts,
+                            terminal_reason="failed",
+                            error={
+                                "type": "GraphRoutingError",
+                                "reason": f"unknown routing label '{label}'",
+                            },
+                        )
+                        await on_terminal(n, ExecutionStatus.FAILED)
+                        return
+                    target = mapping[label]
+                    activated[n] = {target} if target != END else set()
+                    for lab, tgt in mapping.items():
+                        if (
+                            lab != label
+                            and tgt != END
+                            and tgt not in recorded
+                            and tgt not in started_set
+                        ):
+                            ts = self._clock()
+                            record(tgt, ExecutionStatus.NOT_EXECUTED, ts, ts, 0.0)
+                    end = self._clock()
+                    record(
+                        n,
+                        ExecutionStatus.SUCCESS,
+                        step_start,
+                        end,
+                        wait,
+                        message=message,
+                        attempts=outcome.attempts,
+                        terminal_reason=outcome.terminal_reason,
+                    )
+                    await on_terminal(n, ExecutionStatus.SUCCESS)
+                    return
+
                 end = self._clock()
                 record(
                     n,
-                    ExecutionStatus.FAILED,
+                    ExecutionStatus.SUCCESS,
                     step_start,
                     end,
                     wait,
-                    error={"type": "StateUpdateError", "reason": exc.reason},
+                    message=message,
+                    attempts=outcome.attempts,
+                    terminal_reason=outcome.terminal_reason,
                 )
-                await on_terminal(n, ExecutionStatus.FAILED)
-                return
-
-            updates[n] = dict(result.updates)
-            out_state[n] = new_state
-            message = result.message
-
-            if n in graph.conditional:
-                router, mapping = graph.conditional[n]
-                try:
-                    if asyncio.iscoroutinefunction(router):
-                        label = await router(new_state)
-                    else:
-                        label = router(new_state)
-                except Exception as exc:  # noqa: BLE001 - normalize routing failure
-                    end = self._clock()
-                    record(
-                        n,
-                        ExecutionStatus.FAILED,
-                        step_start,
-                        end,
-                        wait,
-                        error={
-                            "type": "GraphRoutingError",
-                            "message": str(exc),
-                            "cause": type(exc).__name__,
-                        },
-                    )
-                    await on_terminal(n, ExecutionStatus.FAILED)
-                    return
-                if label not in mapping:
-                    end = self._clock()
-                    record(
-                        n,
-                        ExecutionStatus.FAILED,
-                        step_start,
-                        end,
-                        wait,
-                        error={
-                            "type": "GraphRoutingError",
-                            "reason": f"unknown routing label '{label}'",
-                        },
-                    )
-                    await on_terminal(n, ExecutionStatus.FAILED)
-                    return
-                target = mapping[label]
-                activated[n] = {target} if target != END else set()
-                for lab, tgt in mapping.items():
-                    if (
-                        lab != label
-                        and tgt != END
-                        and tgt not in recorded
-                        and tgt not in started_set
-                    ):
-                        ts = self._clock()
-                        record(tgt, ExecutionStatus.NOT_EXECUTED, ts, ts, 0.0)
-                end = self._clock()
-                record(n, ExecutionStatus.SUCCESS, step_start, end, wait, message=message)
                 await on_terminal(n, ExecutionStatus.SUCCESS)
                 return
 
+            # Terminal FAILED (includes timeout).
             end = self._clock()
-            record(n, ExecutionStatus.SUCCESS, step_start, end, wait, message=message)
-            await on_terminal(n, ExecutionStatus.SUCCESS)
+            record(
+                n,
+                ExecutionStatus.FAILED,
+                step_start,
+                end,
+                wait,
+                message=outcome.result.message if outcome.result else None,
+                error=outcome.error,
+                attempts=outcome.attempts,
+                terminal_reason=outcome.terminal_reason,
+            )
+            await on_terminal(n, ExecutionStatus.FAILED)
 
         # Main scheduling loop.
-        while not all(status[n] is not None for n in graph.nodes):
-            progress = False
-            for n in list(graph.nodes):
-                if n in started_set or status[n] is not None:
-                    continue
-                if not preds_ready(n):
-                    continue
-                if failed and should_not_execute(n):
-                    ts = self._clock()
-                    record(n, ExecutionStatus.NOT_EXECUTED, ts, ts, 0.0)
-                    progress = True
-                    continue
-                try:
-                    input_state[n] = compute_input(n)
-                except StateMergeConflictError as exc:
-                    ts = self._clock()
-                    record(
-                        n,
-                        ExecutionStatus.FAILED,
-                        ts,
-                        ts,
-                        0.0,
-                        error={"type": "StateMergeConflictError", "reason": exc.reason},
-                    )
-                    await on_terminal(n, ExecutionStatus.FAILED)
-                    progress = True
-                    continue
-                ready_at[n] = self._clock()
-                started_set.add(n)
-                tasks[n] = asyncio.create_task(run_one(n, run_id))
-                progress = True
-
-            if tasks:
-                done_set, _ = await asyncio.wait(
-                    set(tasks.values()), return_when=asyncio.FIRST_COMPLETED
-                )
-                for t in done_set:
-                    for rn, tk in list(tasks.items()):
-                        if tk is t:
-                            del tasks[rn]
-                            break
-                progress = True
-
-            if not progress:
+        caller_cancelled = False
+        try:
+            while not all(status[n] is not None for n in graph.nodes):
+                progress = False
                 for n in list(graph.nodes):
-                    if status[n] is None and n not in started_set:
+                    if n in started_set or status[n] is not None:
+                        continue
+                    if not preds_ready(n):
+                        continue
+                    if failed and should_not_execute(n):
                         ts = self._clock()
                         record(n, ExecutionStatus.NOT_EXECUTED, ts, ts, 0.0)
-                break
+                        progress = True
+                        continue
+                    try:
+                        input_state[n] = compute_input(n)
+                    except StateMergeConflictError as exc:
+                        ts = self._clock()
+                        record(
+                            n,
+                            ExecutionStatus.FAILED,
+                            ts,
+                            ts,
+                            0.0,
+                            attempts=[],
+                            terminal_reason="failed",
+                            error={"type": "StateMergeConflictError", "reason": exc.reason},
+                        )
+                        await on_terminal(n, ExecutionStatus.FAILED)
+                        progress = True
+                        continue
+                    ready_at[n] = self._clock()
+                    started_set.add(n)
+                    tasks[n] = asyncio.create_task(run_one(n, run_id))
+                    progress = True
+
+                if tasks:
+                    done_set, _ = await asyncio.wait(
+                        set(tasks.values()), return_when=asyncio.FIRST_COMPLETED
+                    )
+                    for t in done_set:
+                        for rn, tk in list(tasks.items()):
+                            if tk is t:
+                                del tasks[rn]
+                                break
+                    progress = True
+
+                if not progress:
+                    for n in list(graph.nodes):
+                        if status[n] is None and n not in started_set:
+                            ts = self._clock()
+                            record(n, ExecutionStatus.NOT_EXECUTED, ts, ts, 0.0)
+                    break
+        except asyncio.CancelledError:
+            caller_cancelled = True
+            for t in tasks.values():
+                t.cancel()
+            if tasks:
+                await asyncio.gather(*tasks.values(), return_exceptions=True)
+            for n in graph.nodes:
+                if status[n] is None:
+                    ts = self._clock()
+                    if n in started_set:
+                        record(
+                            n,
+                            ExecutionStatus.CANCELLED,
+                            ts,
+                            ts,
+                            0.0,
+                            terminal_reason="cancelled",
+                        )
+                    else:
+                        record(n, ExecutionStatus.NOT_EXECUTED, ts, ts, 0.0)
 
         # Safety net: any node never recorded (should not happen).
         for n in list(graph.nodes):
@@ -407,6 +492,13 @@ class GraphExecutor:
         finished_ts = self._clock()
         steps_list = [steps[n] for n in sorted(steps, key=lambda x: steps[x].order)]
         final_state = _compute_final_state(steps, out_state, status, graph, initial_state)
+        retry_count = sum(max(0, len(s.attempts) - 1) for s in steps_list)
+        timeout_count = sum(
+            1
+            for s in steps_list
+            for a in s.attempts
+            if a.error and a.error.get("type") == "NodeTimeoutError"
+        )
         report = ExecutionReport(
             run_id=run_id,
             initial_state=initial_state.model_dump(),
@@ -418,9 +510,13 @@ class GraphExecutor:
             success=not failed
             and all(
                 s in (ExecutionStatus.SUCCESS, ExecutionStatus.SKIPPED) for s in status.values()
-            ),
+            )
+            and not caller_cancelled,
             peak_concurrency=peak,
             event_stats=self._bus.stats() if self._bus is not None else None,
+            cancellation_reason="caller" if caller_cancelled else None,
+            retry_count=retry_count,
+            timeout_count=timeout_count,
         )
         return (final_state if final_state is not None else initial_state), report
 

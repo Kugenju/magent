@@ -15,6 +15,20 @@ from __future__ import annotations
 class MagentError(Exception):
     """Base class for every error raised by the magent framework."""
 
+    def __init__(
+        self,
+        component: str = "",
+        run_id: str = "",
+        message: str = "",
+        *,
+        cause: BaseException | None = None,
+    ) -> None:
+        self.component = component
+        self.run_id = run_id
+        self.message = message
+        self.cause = cause
+        super().__init__(f"[{component}] {message}" if component else message)
+
 
 class AgentError(MagentError):
     """Raised when an agent fails during execution.

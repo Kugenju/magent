@@ -14,12 +14,11 @@
   恢复/幂等、Tools、LLM Provider、Middleware 和只读可观测性；
 - `examples/vulntell` 已提供固定 fixture 驱动的多源漏洞情报流程；
 - `benchmarks/` 已提供离线场景、VulnTell 质量评测和参考框架对比记录；
-- 当前全量测试基线为 **250 passed**，`mypy src/magent` 已通过；
+- 阶段 9 当前全量测试为 **260 passed**，`mypy src/magent` 已通过；阶段 9 专项发布门禁为 10 个测试；
 - 默认流程不需要网络、API Key 或真实 LLM；
-- 当前仓库已有 README、API、DESIGN、PHASE1～8 和 ROADMAP，但仍缺少完整的参考项目对比文档、
-  GitHub Actions、许可证文件和正式发布检查清单；
-- `pyproject.toml` 的 description 仍带有 phase 1 表述，开发依赖没有明确声明 `mypy`，需要在本阶段
-  决定并修正；
+- 当前仓库已有 README、API、DESIGN、PHASE1～9、ROADMAP、参考项目对比、许可证、第三方归属、
+  GitHub Actions 和正式发布检查清单；
+- `pyproject.toml` 已完成阶段 1～8 的项目描述、MIT license 和 `mypy` 开发依赖配置；
 - `benchmarks/out` 为生成目录，不应作为普通 Git 提交物。
 
 ## 2. 阶段目标
@@ -93,7 +92,7 @@ GitHub repository
 - 更新 `docs/API.md` 的版本范围、稳定 API、阶段 8 实际字段和已知限制；
 - 更新 `docs/DESIGN.md` 的架构、目录、观测与业务边界；
 - 将 `docs/PHASE8.md` 标为已完成，补充实际实现、测试数和结果入口；
-- 将本文件和 `docs/ROADMAP.md` 标为阶段 9 当前计划；
+- 将本文件和 `docs/ROADMAP.md` 标为阶段 9 当前计划，阶段完成后再切换为已完成；
 - 检查所有相对链接、绝对本地链接和命令在干净 checkout 中是否可用。
 
 ### Task 2：参考项目与许可证材料
@@ -166,7 +165,7 @@ GitHub repository
 阶段 9 不以盲目增加单元测试数量为目标，而以“干净环境可安装、可运行、可维护”为目标。至少
 完成以下验证：
 
-- 现有 250 个测试全部通过；
+- 当前 260 个测试全部通过；
 - `mypy src/magent` 通过；
 - 干净虚拟环境安装 `.[dev]` 成功，`import magent` 和版本读取成功；
 - 核心 Agent 示例、Graph 示例、Checkpoint 示例、Tools/LLM/Middleware 示例、VulnTell CLI 和
@@ -181,7 +180,8 @@ GitHub repository
 
 ## 8. 量化验收标准
 
-阶段 9 同时满足以下条件才算完成：
+阶段 9 已满足本地收口条件；正式 GitHub Release 仍以远程 CI、维护者确认和 tag 创建为最后条件。
+计划验收条件如下：
 
 1. `README.md` 能指导新用户在干净环境完成安装、核心示例、VulnTell 和 benchmark 运行；
 2. 全量测试、类型检查和 CI 在所有声明支持的 Python 版本上通过；

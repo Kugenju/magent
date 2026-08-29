@@ -40,7 +40,8 @@ python -m examples.vulntell --trace benchmarks/out/vulntell   # 生成 Trace/Spa
 - `cross_source_consistency`：共享 CVE 跨源 `published_at` 一致；
 - `report_completeness`、`partial_failure_usable`、`metric_reproducible`。
 
-全量测试基线：**250 passed**，`mypy src/magent` 通过；Phase 8 新增离线测试 39 个。
+阶段 8 完成时全量测试为 250 passed，新增离线测试 39 个；阶段 9 发布门禁加入后，当前全量测试为
+**260 passed**，`mypy src/magent` 通过。
 
 ## 结果解释边界（重要）
 

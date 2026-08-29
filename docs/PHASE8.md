@@ -15,7 +15,8 @@
 - 已支持 Tool Registry、可插拔 LLM Provider、离线 FakeProvider 和 Middleware；
 - `examples/vulntell` 已完成离线纵向流程：多源 fixture 采集→标准化→质量告警→去重→持久化→
   可恢复并发 Graph→指标→JSON/Markdown 报告；
-- 阶段 8 完成后全量测试为 **250 passed**，默认测试不依赖网络、API Key 或真实 LLM；
+- 阶段 8 完成时全量测试为 250 passed；阶段 9 发布门禁新增后，当前全量测试为 **260 passed**，
+  默认测试不依赖网络、API Key 或真实 LLM；
 - 阶段 7 已冻结数据集、时间窗口、解析器版本、去重版本和指标版本，本阶段不得私自替换。
 
 阶段 8 已交付统一 trace/span/run metadata、实验配置与结果 schema、串行/并行 benchmark、
@@ -229,7 +230,7 @@ repetitions / seed / sample_threshold
 
 阶段 8 已满足以下条件并完成发布：
 
-1. 新增离线测试 39 个，且全量测试为 250 passed；
+1. 阶段 8 新增离线测试 39 个；在阶段 9 发布门禁加入后，当前全量测试为 260 passed；
 2. Trace/Span/RunSummary schema、序列化格式和脱敏规则已文档化并有测试；
 3. 顺序、并行、失败/重试、超时/取消、Checkpoint 恢复五类场景均可生成结果；
 4. 至少 3 种并发度、每种配置至少 5 次重复，并保存原始样本与 n/mean/median/p95/min/max；

@@ -1,0 +1,67 @@
+{
+  "source": "nvd",
+  "dataset_id": "vulntell-demo",
+  "dataset_version": "2024Q1",
+  "records": [
+    {
+      "record_id": "NVD-1",
+      "cve_id": "CVE-2023-1001",
+      "title": "Reflected XSS in widget",
+      "description": "A reflected cross-site scripting flaw in the widget renderer.",
+      "published_at": "2023-01-15T00:00:00Z",
+      "modified_at": "2023-02-10T00:00:00Z",
+      "source_added_at": "2023-02-11T00:00:00Z",
+      "cvss_version": "3.1",
+      "cvss_vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:C/C:L/I:L/A:N",
+      "cvss_score": 6.1,
+      "severity": "MEDIUM",
+      "cwe": ["CWE-79"],
+      "affected": ["vendor:widget:1.0", "vendor:widget:1.1"],
+      "references": [
+        {"url": "https://example.com/advisories/1001", "type": "patch", "verified": true}
+      ]
+    },
+    {
+      "record_id": "NVD-2",
+      "cve_id": "CVE-2023-1002",
+      "title": "Missing CVSS record",
+      "published_at": "2023-03-01T00:00:00Z",
+      "cwe": [],
+      "affected": [],
+      "references": []
+    },
+    {
+      "record_id": "NVD-3",
+      "cve_id": "CVE-2023-1003",
+      "title": "Invalid date record",
+      "description": "Published date is malformed.",
+      "published_at": "not-a-date",
+      "modified_at": "2023-04-01T00:00:00Z",
+      "cvss_version": "3.1",
+      "cvss_score": 4.0,
+      "severity": "LOW",
+      "cwe": ["CWE-20"],
+      "affected": ["vendor:lib:2.0"],
+      "references": [
+        {"url": "https://example.com/advisories/1003", "type": "vendor", "verified": false}
+      ]
+    },
+    {
+      "record_id": "NVD-4",
+      "cve_id": "CVE-2023-1004",
+      "title": "Shared CVE with CNVD",
+      "description": "A buffer overflow shared across sources.",
+      "published_at": "2023-05-01T00:00:00Z",
+      "modified_at": "2023-05-02T00:00:00Z",
+      "cvss_version": "3.1",
+      "cvss_vector": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:H/I:H/A:H",
+      "cvss_score": 8.1,
+      "severity": "HIGH",
+      "cwe": ["CWE-120"],
+      "affected": ["vendor:core:3.0"],
+      "references": [
+        {"url": "https://example.com/advisories/1004", "type": "patch", "verified": true}
+      ]
+    }
+  ]
+}

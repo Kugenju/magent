@@ -1,0 +1,12 @@
+{
+  "dataset_id": "vulntell-demo",
+  "dataset_version": "2024Q1",
+  "window_start": "2023-01-01T00:00:00Z",
+  "window_end": "2023-12-31T23:59:59Z",
+  "parser_version": "1",
+  "deduplication_version": "1",
+  "metric_version": "1",
+  "framework_version": "0.1.0",
+  "license": "fixture-sample",
+  "sources": ["nvd", "cnvd"]
+}

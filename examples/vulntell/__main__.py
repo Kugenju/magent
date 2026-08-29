@@ -58,6 +58,19 @@ async def run_once(args) -> int:
             print(rep.model_dump_json(indent=2))
     else:
         print("no report produced; success =", report.success)
+
+    if args.trace:
+        from magent.checkpoint.models import state_schema_hash
+        from magent.observability import build_observability, write_json, write_jsonl
+
+        schema_hash = state_schema_hash(VulnTellState)
+        trace, spans, summary = build_observability(
+            report, workflow_id="graph", workflow_version="1", state_schema_version=schema_hash
+        )
+        write_jsonl(args.trace + ".jsonl", [trace, *spans])
+        write_json(args.trace + ".summary.json", summary)
+        print(f"[observability] wrote {args.trace}.jsonl ({len(spans)} spans) + summary")
+
     store.close()
     return 0 if report.success else 1
 
@@ -71,6 +84,7 @@ def main() -> int:
     parser.add_argument("--no-llm", action="store_true", help="禁用可选 LLM 解释")
     parser.add_argument("--json", action="store_true")
     parser.add_argument("--faulty", nargs="*", default=[], help="注入故障的来源名，如 nvd cnvd")
+    parser.add_argument("--trace", default=None, help="可选：写出 Trace/Span 观测 JSONL 与此路径前缀")
     args = parser.parse_args()
     try:
         return asyncio.run(run_once(args))

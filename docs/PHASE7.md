@@ -1,4 +1,4 @@
-# 阶段 7：VulnTell 纵向示例实施计划
+# 阶段 7：VulnTell 纵向示例实施计划（已完成）
 
 > **实施约束：** 本阶段首先冻结数据集、字段和指标定义，再开始编写 Agent。下游 Agent 不得
 > 在没有 fixture、验收样例和版本号的情况下接入真实网络源或 LLM。
@@ -6,8 +6,8 @@
 ## 1. 阶段定位
 
 阶段 1～6 已完成：`magent` 具备类型化 State、DAG 编排、并发 fan-out/fan-in、可靠性策略、
-Checkpoint/恢复/幂等、Tool Registry、可选 LLM Provider 和 Middleware。当前全量离线测试为
-168 个且全部通过。
+Checkpoint/恢复/幂等、Tool Registry、可选 LLM Provider 和 Middleware。阶段 7 已完成并提交；
+当前全量离线测试为 211 个且全部通过。
 
 阶段 7 不再扩展框架通用能力，而是使用现有 `magent` 实现一个可复现的 VulnTell 纵向示例，
 验证框架能否支撑真实业务流程：多源漏洞情报采集、标准化、持久化、聚合、质量评估和报告生成。
@@ -24,15 +24,19 @@ Checkpoint/恢复/幂等、Tool Registry、可选 LLM Provider 和 Middleware。
 - SQLite Checkpoint、恢复、稳定 execution key 和 `SideEffectSink`；
 - schema 校验的同步/异步 Tool、allowlist、限流、超时和脱敏；
 - `FakeProvider`、可选 OpenAI adapter 和 Middleware；
-- 离线示例、168 个测试和已提交的阶段 1～6实现。
+- 离线示例、211 个测试和已提交的阶段 1～7 实现。
 
-### 当前缺口
+### 已交付
 
-- 尚无 `examples/vulntell` 业务目录和漏洞领域模型；
-- 尚无 NVD/CNVD fixture、源适配器、统一解析器和跨源去重策略；
-- 尚无业务 SQLite schema、迁移/版本策略和报告数据模型；
-- 尚无固定时间窗口、样本集、指标版本和可重放评测；
-- 尚无业务级部分失败策略、数据质量告警和安全审计规则。
+- `examples/vulntell` 领域模型、固定 NVD/CNVD fixture 和来源适配器；
+- 确定性标准化、质量告警、跨源 CVE 去重和冲突可追溯；
+- 业务 SQLite schema、事务写入、稳定唯一键和幂等副作用协议；
+- 并发、可恢复、可处理部分来源失败的 VulnTell Graph；
+- 固定数据集/时间窗口/版本元数据、确定性指标和 JSON/Markdown 报告；
+- FakeProvider 解释边界、安全边界、恢复质量和端到端离线测试。
+
+固定数据集和指标定义已冻结。尚未完成的“可重放评测、统一 trace、性能基准和参考框架
+对比”属于阶段 8，不应倒填为阶段 7 的已交付内容。
 
 ## 3. 阶段目标
 
@@ -294,49 +298,49 @@ source record 和未知字段策略。
 提供 `python -m examples.vulntell` 或等价离线 CLI；补充边界、安全、恢复和性能测试；更新
 README、`API.md`、`DESIGN.md`、`ROADMAP.md`，形成阶段 7 独立提交。
 
-## 10. 测试要求
+## 10. 测试要求（验收记录）
 
-至少新增 40 个有意义的离线测试，并保留阶段 1～6 全部回归：
+阶段 7 已新增 43 个有意义的离线测试，并保留阶段 1～6 全部回归；以下清单均已完成：
 
 ### 数据和标准化
 
-- [ ] fixture 加载、版本和许可证元数据校验；
-- [ ] 合法/非法 CVE、时间、CVSS、CWE 和引用解析；
-- [ ] 缺失、无效、歧义字段分别产生对应质量问题；
-- [ ] 原始记录 hash 稳定，重复 source record 可识别；
-- [ ] 不同来源同一 CVE 能合并，缺少 CVE 的记录不被强行合并；
-- [ ] 字段冲突可追溯且遵守声明的聚合策略。
+- [x] fixture 加载、版本和许可证元数据校验；
+- [x] 合法/非法 CVE、时间、CVSS、CWE 和引用解析；
+- [x] 缺失、无效、歧义字段分别产生对应质量问题；
+- [x] 原始记录 hash 稳定，重复 source record 可识别；
+- [x] 不同来源同一 CVE 能合并，缺少 CVE 的记录不被强行合并；
+- [x] 字段冲突可追溯且遵守声明的聚合策略。
 
 ### Graph、恢复和持久化
 
-- [ ] NVD/CNVD 分支并发执行，分支状态互不污染；
-- [ ] 一个来源失败时仍生成部分结果和失败摘要；
-- [ ] join 等待成功分支并正确处理部分失败语义；
-- [ ] 中断后从最近成功 checkpoint 恢复，已提交节点不重跑；
-- [ ] 重复运行不产生重复 observation、entity 和 metric；
-- [ ] 业务唯一键、execution key 和 SQLite 事务共同生效；
-- [ ] schema/version 不兼容时明确拒绝恢复。
+- [x] NVD/CNVD 分支并发执行，分支状态互不污染；
+- [x] 一个来源失败时仍生成部分结果和失败摘要；
+- [x] join 等待成功分支并正确处理部分失败语义；
+- [x] 中断后从最近成功 checkpoint 恢复，已提交节点不重跑；
+- [x] 重复运行不产生重复 observation、entity 和 metric；
+- [x] 业务唯一键、execution key 和 SQLite 事务共同生效；
+- [x] schema/version 不兼容时明确拒绝恢复。
 
 ### 指标、报告和 LLM 边界
 
-- [ ] 固定窗口和 fixture 下指标结果可重复；
-- [ ] 样本不足返回 `insufficient_data`，不输出虚假排名；
-- [ ] 指标版本、数据集版本和窗口出现在报告中；
-- [ ] LLM 解释失败不影响结构化报告；
-- [ ] LLM 输出不能修改评分、去重或来源状态；
-- [ ] Fake Provider 无网络、无 API Key 时稳定运行。
+- [x] 固定窗口和 fixture 下指标结果可重复；
+- [x] 样本不足返回 `insufficient_data`，不输出虚假排名；
+- [x] 指标版本、数据集版本和窗口出现在报告中；
+- [x] LLM 解释失败不影响结构化报告；
+- [x] LLM 输出不能修改评分、去重或来源状态；
+- [x] Fake Provider 无网络、无 API Key 时稳定运行。
 
 ### 安全和质量
 
-- [ ] 恶意漏洞描述不会改变工具 allowlist 或执行权限；
-- [ ] 默认 CLI 不发起网络请求、不抓取引用、不执行命令；
-- [ ] 日志、State、checkpoint 和报告不包含 API Key；
-- [ ] 业务包不被 `magent` 核心导入，核心无漏洞领域依赖；
-- [ ] 全量测试、类型检查、导入检查和离线 CLI 通过。
+- [x] 恶意漏洞描述不会改变工具 allowlist 或执行权限；
+- [x] 默认 CLI 不发起网络请求、不抓取引用、不执行命令；
+- [x] 日志、State、checkpoint 和报告不包含 API Key；
+- [x] 业务包不被 `magent` 核心导入，核心无漏洞领域依赖；
+- [x] 全量测试、类型检查、导入检查和离线 CLI 通过。
 
 ## 11. 量化验收标准
 
-阶段 7 同时满足以下条件才算完成：
+阶段 7 已满足以下条件并完成发布：
 
 1. 新增离线测试不少于 40 个，阶段 1～6 全部回归通过；
 2. 至少包含 NVD/CNVD 两个来源、一个并发 Graph、一个 join 和一个可恢复中断场景；

@@ -428,6 +428,71 @@ No vendor SDK bundled in core; only `openai` is shipped as an optional, lazily
 imported adapter. `MiddlewareAgent` only wraps a single agent's `run`; graph-
 level middleware composition is a later concern.
 
+## Phase 8 — observability and evaluation (implemented)
+
+Phase 8 does not change the execution semantics documented above. It adds a
+read-only, framework-neutral observation and experiment contract under
+`src/magent/observability` and `benchmarks/`; it is optional and must not make
+EventBus data a source of state or recovery. Observability is enabled via the
+VulnTell CLI flag `--trace <path>`, which emits `<path>.jsonl` (one `Trace`/`Span`
+per line) and `<path>.summary.json` (`RunSummary`).
+
+### Observation models (implemented)
+
+```python
+from magent.observability import Trace, Span, SpanStatus, RunSummary, build_observability, redact
+
+trace, spans, summary = build_observability(
+    report,                       # magent.core.executor.ExecutionReport
+    workflow_id="graph",
+    workflow_version="1",
+    state_schema_version=state_schema_hash(VulnTellState),
+    trace_id=None,                # generated (uuid4/sha256) when omitted
+    checkpoint_records=None,      # list of recorded checkpoint objects
+    redact_fields={"token"},      # extra keys to redact
+)
+
+# Trace: trace_id, run_id, workflow_id, workflow_version, state_schema_version,
+#        started_at, finished_at, status, metadata
+# Span:  span_id, trace_id, parent_span_id, node_id, agent_name, attempt,
+#        attempt_role, queued_ms, duration_ms, status, error_type, retry_reason,
+#        metadata
+# RunSummary: trace_id, node_count, success_count, failure_count, cancelled_count,
+#        not_executed_count, skipped_count, retry_count, timeout_count,
+#        peak_concurrency, checkpoint_writes, recovery_count, replayed_nodes,
+#        duration_ms, resource_samples, event_count
+```
+
+`build_observability` derives spans from the `ExecutionReport` `steps` (one attempt
+→ one `Span`, with `SpanStatus` = `success`/`failed`/`timeout`/`cancelled`/
+`not_executed`), and enriches `RunSummary` from retry/timeout/resume/checkpoint
+counts. `redact(value, …)` truncates long strings, bounds depth/keys/list length,
+and replaces secret keys (`api_key`, `token`, `secret`, `password`, `authorization`,
+`cookie`) with `<redacted>`; observation data never records raw external text or
+credentials. A `TraceCollector` can `attach(bus)` to an `EventBus` and add
+`event_count`/`event_topics` to `Trace.metadata` without affecting execution.
+
+### Experiment result (implemented)
+
+`benchmarks/runner.run_scenario(config, scenario_fn, *, clock=time.monotonic)`
+returns a `ScenarioResult` whose `to_dict()` always includes `experiment_id`,
+`scenario_id`, `dataset_id`, `dataset_version`, `parser_version`, `dedup_version`,
+`metric_version`, `framework_version`, `environment`, `concurrency`, `repetitions`
+and `sample_count`, plus `n`, mean, median, p95, min, max. Scenarios (all offline,
+deterministic): `run_sequential_baseline`, `run_parallel`, `run_recovery`,
+`run_reliability`. `benchmarks/quality.evaluate_vulntell_quality(meta, final_state)`
+returns a `QualityReport` with `sample_count`, `insufficient_data`,
+`standardization`, `dedupe` (precision/recall/F1 only when ground truth exists),
+`cross_source_consistency`, `report_completeness`, `partial_failure_usable`,
+`metric_reproducible`. `benchmarks/reference_comparison.collect_reference_comparison()`
+records `framework`, `version`, `behavior_note` and `status="not_comparable"` for
+LangGraph/AutoGen/CrewAI; `to_comparison_report` always sets `ranking=None` and
+`comparable=False`. If the declared sample threshold is not met, emit
+`insufficient_data` and do not rank frameworks or sources.
+
+Run the suite with `python -m benchmarks.cli --out benchmarks/out` (writes
+`results.json`, `scenarios.csv`, `REPORT.md`). See `benchmarks/README.md`.
+
 ## Phase 7 — VulnTell vertical example (implemented)
 
 Documented in [`PHASE7.md`](F:/personal/tool/muti-agent/docs/PHASE7.md). VulnTell

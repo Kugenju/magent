@@ -182,28 +182,57 @@ CISA KEV 属于已利用漏洞目录，不与 NVD 按相同覆盖率直接排名
 
 论文历史数据只能作为基线或离线测试材料，不能直接当作当前系统结论。每次评估都必须记录数据集、时间窗口、采集时间、解析器版本和指标版本。
 
-## 6. 评测体系
+## 6. 评测、可观测性与对比实验
 
-### 框架评测
+阶段 8 的详细任务、验收标准和发布门禁见 [`PHASE8.md`](F:/personal/tool/muti-agent/docs/PHASE8.md)。
+本节定义架构约束：观测记录服务于诊断和实验复现，不能反向改变调度、状态合并、重试或业务指标
+语义。（阶段 8 已实现并随仓库提交：可观测性代码位于 `src/magent/observability`，实验代码位于
+`benchmarks/`，VulnTell CLI 通过 `--trace` 启用；见 [`benchmarks/README.md`](F:/personal/tool/muti-agent/benchmarks/README.md)。）
 
-- Agent 调度和路由正确率
-- 顺序与并行执行耗时
-- 失败重试成功率
-- 超时取消是否生效
-- Checkpoint 恢复成功率
-- 状态合并正确率
-- 重复运行的幂等性
-- 与简单串行基线的性能对比
+### 6.1 观测分层
 
-### 业务评测
+```text
+Agent/Graph execution
+        │ lifecycle events + ExecutionReport + checkpoint history
+        ▼
+TraceRecorder ──→ Trace/Span records ──→ JSONL/RunSummary
+        │                                  │
+        └──────────────→ benchmark runner ──→ CSV/Markdown report
+```
 
-- CVE 去重准确率
-- 字段标准化完整率
-- 跨源字段一致性
-- 固定样本覆盖率
-- 报告生成完整性
+- `Trace` 对应一次完整 run，至少包含 `trace_id/run_id`、workflow/graph 标识及版本、开始/结束时间、
+  最终状态和 schema 版本。
+- `Span` 对应一次节点执行或一次 attempt，至少包含 `span_id`、父节点/父 span、node/agent 标识、
+  attempt、状态、排队等待时间、执行耗时、错误类别、重试/超时/取消原因和脱敏 metadata。
+- `RunSummary` 是面向实验的聚合结果，记录节点数、成功/失败/取消数、重试次数、峰值并发、
+  checkpoint 写入/恢复次数、总耗时和资源采样；缺失值必须显式表示，不能用 0 冒充未采集。
 
-普通测试使用本地 fixture 和 mock，真实网络 smoke test 单独运行并设置超时、限速和重试。
+Trace 通过 EventBus、执行报告和 Checkpoint 适配器采集；EventBus 仍是观测旁路，不作为状态或恢复
+依据。记录器必须支持关闭或空实现，未启用观测时不改变现有执行结果。所有敏感字段按现有脱敏规则
+处理，原始漏洞描述默认不写入 trace。
+
+### 6.2 实验协议
+
+每个实验由不可变配置驱动，结果必须携带：`experiment_id`、`scenario_id`、`dataset_id`、
+`dataset_version`、时间窗口、`parser_version`、`deduplication_version`、`metric_version`、
+`framework_version`、Python/依赖版本、硬件/操作系统摘要、并发度、重复次数和样本数。
+计时使用单调时钟；随机性必须显式设置 seed；报告同时保存原始结果和聚合统计（至少 n、均值、
+中位数、p95、最小值、最大值）。
+
+所有框架运行必须使用等价的 DAG、输入、成功判定、重试/超时配置和并发度。应先建立本项目的
+串行基线，再比较并行调度；不能只报告最快一次，也不能把不同默认行为的结果直接排名。
+
+### 6.3 评测维度
+
+框架评测覆盖调度/路由正确率、顺序与并行耗时、吞吐量、并发上限、失败重试、超时取消、Checkpoint
+恢复开销、状态合并和幂等性。VulnTell 评测覆盖标准化字段有效率、去重 precision/recall/F1（有
+标注样本时）、跨源冲突保留率、固定窗口覆盖率、报告完整性和部分失败下的可用性。
+
+样本数低于预先声明的门槛时，结果标记 `insufficient_data`，只展示事实和置信信息，不进行来源或
+框架排名。论文历史数据只能作为标注/基线材料，不能伪装成当前线上观测。
+
+普通测试与 benchmark 必须使用本地 fixture、FakeProvider 和临时测试资源；真实网络 smoke test
+若未来加入，必须单独命名、显式启用，并设置超时、限速、数据许可和密钥隔离。
 
 ## 7. 安全与合规
 

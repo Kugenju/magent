@@ -21,9 +21,16 @@
   限流/脱敏、幂等副作用）、可插拔 `LLMProvider` 与确定性 `FakeProvider`、可选 OpenAI 适配器（懒加载）、
   以及可组合 Middleware（logging/rate-limit/size-limit/redaction、确定性 compose）已完成。
   核心不绑定单一 LLM SDK；无 API Key/网络时确定性 Agent 仍可运行；本阶段新增 38 个测试且全部通过。
-- 阶段 7：VulnTell 纵向示例已完成并提交（代码位于 `examples/vulntell`，文档位于 `docs/PHASE7.md`）。
-  业务包离线跑通：多源采集→标准化→质量告警→去重→持久化→并发可恢复 Graph→聚合指标→报告；
-  部分源失败仍可产出报告；重复运行幂等；核心不绑定业务。当前全量离线测试为 211 个且全部通过。
+ - 阶段 7：VulnTell 纵向示例已完成并提交（代码位于 `examples/vulntell`，文档位于 `docs/PHASE7.md`）。
+   业务包离线跑通：多源采集→标准化→质量告警→去重→持久化→并发可恢复 Graph→聚合指标→报告；
+   部分源失败仍可产出报告；重复运行幂等；核心不绑定业务。Phase 7 完成时全量离线测试为 211 个且全部通过。
+
+ - 阶段 8：评测、可观测性与对比实验已完成并提交（可观测性代码位于 `src/magent/observability`，
+   实验代码位于 `benchmarks/`，文档位于 `docs/PHASE8.md`，实验说明位于 `benchmarks/README.md`）。
+   只读 `Trace`/`Span`/`RunSummary` 可观测协议与 EventBus 接入；离线 `benchmarks/` runner 覆盖
+   确定性 / 隔离安全 / 并行可靠性（重试·超时）/ Checkpoint 恢复；VulnTell 源质量评测（去重
+   precision/recall/F1、跨源一致性、标准化率、可复现性、样本不足不排名）；参考框架对比记录器仅记录
+   版本、不输出排名。Phase 8 新增离线测试 39 个，全量离线测试为 250 个且全部通过。
 
 ## 阶段 0 — 项目初始化与参考分析
 
@@ -66,9 +73,12 @@ exactly-once 不属于单独 checkpoint 能力。
 
 详细实施计划见 [`PHASE7.md`](F:/personal/tool/muti-agent/docs/PHASE7.md)。本阶段使用现有框架实现 NVD/CNVD 等数据源 Agent、标准化、持久化、聚合、指标计算和报告。论文材料作为业务设计和离线 fixture 参考，不放入框架核心。验收：fixture 离线跑通、部分源失败可生成报告、重复运行幂等、业务不修改 `magent` 执行逻辑。阶段 7 已提交，新增 43 个离线测试（模型/标准化/去重/指标/持久化/Graph 端到端/恢复/部分失败/LLM 边界/安全），全量 211 个测试通过。
 
-## 阶段 8 — 评测、可观测性与对比实验
+## 阶段 8 — 评测、可观测性与对比实验（当前阶段）
 
-记录 trace、耗时、重试、失败、资源消耗和恢复结果；对比串行基线，并评估漏洞去重、标准化和指标计算质量。验收：实验可离线重放，评分记录数据集、窗口、样本数和版本，样本不足不强行排名。
+详细实施计划见 [`PHASE8.md`](F:/personal/tool/muti-agent/docs/PHASE8.md)。本阶段建立统一的 trace、
+实验配置和结果 schema，评估框架调度/恢复/并发能力以及 VulnTell 的数据质量，并在可比条件下
+记录 LangGraph、AutoGen、CrewAI 等参考实现的实验结果。实验必须离线可重放；性能数字只对声明的
+环境、版本、数据集和场景负责，样本不足时不进行排名。
 
 ## 阶段 9 — 发布与展示
 
@@ -78,5 +88,5 @@ exactly-once 不属于单独 checkpoint 能力。
 
 ```text
 init → agent-state → graph → concurrency-events → reliability
-→ checkpoint/recovery → phase5-release-gate → tools/llm/middleware → vulntell-example → benchmarks → release
+→ checkpoint/recovery → phase5-release-gate → tools/llm/middleware → vulntell-example → evaluation-observability → benchmarks → release
 ```

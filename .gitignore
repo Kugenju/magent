@@ -14,3 +14,11 @@ venv/
 # Secrets / local config
 .env
 *.key
+
+# Benchmark / experiment outputs (generated, not committed)
+benchmarks/out/
+*.db
+run.db
+*.jsonl
+*.benchmark.json
+*.benchmark.csv

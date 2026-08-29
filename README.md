@@ -2,21 +2,25 @@
 
 A minimal, reusable, recoverable **multi-agent execution framework**, built in
 phases. This repository currently contains **phase 1 + phase 2 + phase 3 +
-phase 4 + phase 5 + phase 6 + phase 7**: a deterministic kernel (Agent/State/Result/Runtime,
+phase 4 + phase 5 + phase 6 + phase 7 + phase 8**: a deterministic kernel (Agent/State/Result/Runtime,
 sequential executor), a validated conditionally-routed directed graph executor,
 concurrent execution with fan-out/fan-in, branch-isolated state merging, a
 bounded `asyncio` scheduler, an in-process `EventBus`, configurable node
 **timeout / retry / cancellation / error classification**, opt-in
-**checkpointing, crash recovery and idempotent side effects**, and a unified
+**checkpointing, crash recovery and idempotent side effects**, a unified
 **tool protocol**, pluggable **LLM provider** abstraction and composable
-**middleware** extension layer.
+**middleware** extension layer, and (phase 8) an **offline evaluation & observability**
+suite: a read-only `Trace`/`Span`/`RunSummary` observability protocol, an offline
+`benchmarks/` runner (determinism / security / parallel reliability / checkpoint
+recovery), VulnTell source-quality evaluation, and a reference-framework comparison
+recorder that records versions without emitting rankings.
 
 VulnTell (an open vulnerability-intelligence collection & source-quality
 evaluation app) is implemented as a downstream example that exercises this
 framework — it lives under `examples/vulntell` and never pollutes the `magent`
 core.
 
-## Current scope (phases 1–7)
+## Current scope (phases 1–8)
 
 | In scope | Out of scope (later phases) |
 |----------|------------------------------|
@@ -29,7 +33,15 @@ core.
 | Opt-in SQLite checkpoint, recovery and idempotency | VulnTell business |
 | Tools: schema-validated sync/async, allowlist, timeout, size-limit | Distributed execution |
 | LLM: pluggable provider, deterministic `FakeProvider`, optional OpenAI adapter | VulnTell business |
-| Middleware: logging / rate-limit / size-limit / redaction, deterministic compose | VulnTell business |
+| Middleware: logging / rate-limit / size-limit / redaction, deterministic compose | Distributed execution |
+| VulnTell offline vertical example | Production web dashboard |
+| Observability: read-only `Trace`/`Span`/`RunSummary` + redaction | Live tracing backend |
+| Offline benchmarks: determinism / security / parallel reliability / recovery | Distributed benchmark |
+| VulnTell source-quality evaluation + reference comparison recorder | External ranking |
+
+阶段 8 的评测、统一 trace、benchmark 和参考框架对比已实现并随仓库提交；详见
+[`docs/PHASE8.md`](F:/personal/tool/muti-agent/docs/PHASE8.md) 与
+[`benchmarks/README.md`](F:/personal/tool/muti-agent/benchmarks/README.md)。
 
 ## Install
 
@@ -45,6 +57,8 @@ python examples/checkpoint_resume.py      # phase 5: crash → resume → identi
 python examples/phase6_tools_llm_middleware.py   # phase 6: tools + LLM + middleware
 python -m examples.vulntell               # phase 7: VulnTell vertical example (offline)
 python -m examples.vulntell --json        # phase 7: machine-readable report
+python -m examples.vulntell --trace benchmarks/out/vulntell   # phase 8: emit trace + summary
+python -m benchmarks.cli --out benchmarks/out   # phase 8: offline evaluation suite
 ```
 
 `ProducerAgent` writes a value, `ConsumerAgent` reads it — proving that one
@@ -320,10 +334,17 @@ All tests are offline (no network, external services, or production database).
 ## Roadmap
 
 The VulnTell vertical example (phase 7) is implemented and committed under
-`examples/vulntell`. See `docs/DESIGN.md`, `docs/ROADMAP.md`, `docs/PHASE6.md`
-and `docs/PHASE7.md` for the current boundaries and acceptance criteria.
+`examples/vulntell`. Phase 8 (observability + offline evaluation) is implemented
+and committed under `src/magent/observability` and `benchmarks/`. See
+`docs/DESIGN.md`, `docs/ROADMAP.md`, `docs/PHASE6.md`, `docs/PHASE7.md` and
+`docs/PHASE8.md` for the current boundaries and acceptance criteria.
 
-Phase 7 is implemented and committed; the `magent` core remains usable offline
-without any LLM SDK or network access. VulnTell runs fully offline (fixture
-sources, deterministic metrics) and uses the optional `FakeProvider` only for
-non-binding textual explanation.
+Phase 7 and phase 8 are implemented and committed. The `magent` core remains
+usable offline without any LLM SDK or network access. VulnTell runs fully offline
+(fixture sources, deterministic metrics) and uses the optional `FakeProvider`
+only for non-binding textual explanation. Phase 8 adds a read-only observability
+protocol (`Trace`/`Span`/`RunSummary`) integrated with the VulnTell CLI via
+`--trace`, plus an offline `benchmarks/` suite that measures determinism,
+isolation/security (no accidental side effects), parallel reliability (retry /
+timeout) and checkpoint recovery, and a reference-framework comparison recorder
+that records versions without emitting rankings.

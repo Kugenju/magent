@@ -2,7 +2,7 @@
 
 A minimal, reusable, recoverable **multi-agent execution framework**, built in
 phases. This repository currently contains **phase 1 + phase 2 + phase 3 +
-phase 4 + phase 5 + phase 6**: a deterministic kernel (Agent/State/Result/Runtime,
+phase 4 + phase 5 + phase 6 + phase 7**: a deterministic kernel (Agent/State/Result/Runtime,
 sequential executor), a validated conditionally-routed directed graph executor,
 concurrent execution with fan-out/fan-in, branch-isolated state merging, a
 bounded `asyncio` scheduler, an in-process `EventBus`, configurable node
@@ -12,11 +12,11 @@ bounded `asyncio` scheduler, an in-process `EventBus`, configurable node
 **middleware** extension layer.
 
 VulnTell (an open vulnerability-intelligence collection & source-quality
-evaluation app) is planned as a downstream example that exercises this framework
-— it lives under `examples/vulntell` in later phases and never pollutes the
-`magent` core.
+evaluation app) is implemented as a downstream example that exercises this
+framework — it lives under `examples/vulntell` and never pollutes the `magent`
+core.
 
-## Current scope (phases 1–6)
+## Current scope (phases 1–7)
 
 | In scope | Out of scope (later phases) |
 |----------|------------------------------|
@@ -43,6 +43,8 @@ pip install -e ".[dev]"   # dev extras add pytest + pytest-asyncio
 python examples/producer_consumer.py      # phase 1: state visibility across agents
 python examples/checkpoint_resume.py      # phase 5: crash → resume → identical result
 python examples/phase6_tools_llm_middleware.py   # phase 6: tools + LLM + middleware
+python -m examples.vulntell               # phase 7: VulnTell vertical example (offline)
+python -m examples.vulntell --json        # phase 7: machine-readable report
 ```
 
 `ProducerAgent` writes a value, `ConsumerAgent` reads it — proving that one
@@ -317,7 +319,11 @@ All tests are offline (no network, external services, or production database).
 
 ## Roadmap
 
-See `docs/DESIGN.md`, `docs/ROADMAP.md`, `docs/PHASE5.md` and `docs/PHASE6.md`.
+The VulnTell vertical example (phase 7) is implemented and committed under
+`examples/vulntell`. See `docs/DESIGN.md`, `docs/ROADMAP.md`, `docs/PHASE6.md`
+and `docs/PHASE7.md` for the current boundaries and acceptance criteria.
 
-Phase 6 is implemented and committed; the `magent` core remains usable offline
-without any LLM SDK or network access.
+Phase 7 is implemented and committed; the `magent` core remains usable offline
+without any LLM SDK or network access. VulnTell runs fully offline (fixture
+sources, deterministic metrics) and uses the optional `FakeProvider` only for
+non-binding textual explanation.

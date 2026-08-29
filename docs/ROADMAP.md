@@ -13,7 +13,7 @@
 - 阶段 4：超时、显式可重试错误、指数退避、调用方取消、失败传播和结构化尝试报告已完成；
   当前全量离线测试为 103 个且全部通过，阶段 4 文档已在提交
   `f45c672 docs: document phase-4 reliability semantics` 中同步。
-- 阶段 5：Checkpoint / SQLite 快照 / 顺序与并发 DAG 恢复 / 稳定 execution key / 幂等副作用已实现；
+- 阶段 5：Checkpoint / SQLite 快照 / 顺序与并发 DAG 恢复 / 稳定 execution key / 幂等副作用已完成；
   发布门禁（checksum 读后校验、并发序号统一分配、幂等竞态原子 claim、运行状态一致性、
   版本与 frontier 可追溯）已关闭，阶段 5 已提交。当前全量离线测试为 168 个且全部通过，
   pyproject 中 `pythonpath=["src"]`、`asyncio_mode="auto"`；执行器在无 `checkpoint_store` 时保持阶段 1–4 行为不变。
@@ -21,6 +21,9 @@
   限流/脱敏、幂等副作用）、可插拔 `LLMProvider` 与确定性 `FakeProvider`、可选 OpenAI 适配器（懒加载）、
   以及可组合 Middleware（logging/rate-limit/size-limit/redaction、确定性 compose）已完成。
   核心不绑定单一 LLM SDK；无 API Key/网络时确定性 Agent 仍可运行；本阶段新增 38 个测试且全部通过。
+- 阶段 7：VulnTell 纵向示例已完成并提交（代码位于 `examples/vulntell`，文档位于 `docs/PHASE7.md`）。
+  业务包离线跑通：多源采集→标准化→质量告警→去重→持久化→并发可恢复 Graph→聚合指标→报告；
+  部分源失败仍可产出报告；重复运行幂等；核心不绑定业务。当前全量离线测试为 211 个且全部通过。
 
 ## 阶段 0 — 项目初始化与参考分析
 
@@ -44,12 +47,10 @@
 
 详细方案见 [`PHASE4.md`](F:/personal/tool/muti-agent/docs/PHASE4.md)。本阶段为 Agent 调用建立显式可靠性策略：节点超时、可重试错误分类、指数退避、调用方取消、失败传播和结构化尝试记录。阶段 3 已有的兄弟分支取消语义必须与本阶段的调用方取消区分。
 
-## 阶段 5 — Checkpoint、恢复与幂等（功能完成，待发布门禁）
+## 阶段 5 — Checkpoint、恢复与幂等（已完成）
 
 详细实施计划见 [`PHASE5.md`](F:/personal/tool/muti-agent/docs/PHASE5.md)。本阶段实现 `CheckpointStore`、SQLite 快照、运行/图/节点版本、顺序与并发 DAG 恢复、
-稳定 execution key 和幂等记录。当前功能已实现，但发布前仍需验证 checkpoint checksum 读取校验、
-并发序号分配、同一幂等键的并发 claim、运行状态更新和恢复记录完整性。阶段 5 的具体门禁见
-[`PHASE5.md`](F:/personal/tool/muti-agent/docs/PHASE5.md) 第 12 节。
+稳定 execution key 和幂等记录，发布门禁已关闭。
 
 本阶段只保证框架状态提交的原子性，以及接入幂等协议后的安全重试；任意外部 API 或数据库的
 exactly-once 不属于单独 checkpoint 能力。
@@ -61,9 +62,9 @@ exactly-once 不属于单独 checkpoint 能力。
 确定性 Fake Provider 和 Middleware 组合协议。验收重点是：核心不绑定单一 LLM SDK；无 API Key/网络时
 确定性 Agent 仍可运行；工具与 LLM 输出经过 schema 和权限校验；重试、Checkpoint 和幂等语义不被扩展层复制或破坏。
 
-## 阶段 7 — VulnTell 纵向示例
+## 阶段 7 — VulnTell 纵向示例（已完成）
 
-使用自研框架实现 NVD/CNVD 等数据源 Agent、标准化、持久化、聚合、指标计算和报告。论文材料作为业务设计和离线 fixture 参考，不放入框架核心。验收：fixture 离线跑通、部分源失败可生成报告、重复运行幂等、业务不修改 `magent` 执行逻辑。
+详细实施计划见 [`PHASE7.md`](F:/personal/tool/muti-agent/docs/PHASE7.md)。本阶段使用现有框架实现 NVD/CNVD 等数据源 Agent、标准化、持久化、聚合、指标计算和报告。论文材料作为业务设计和离线 fixture 参考，不放入框架核心。验收：fixture 离线跑通、部分源失败可生成报告、重复运行幂等、业务不修改 `magent` 执行逻辑。阶段 7 已提交，新增 43 个离线测试（模型/标准化/去重/指标/持久化/Graph 端到端/恢复/部分失败/LLM 边界/安全），全量 211 个测试通过。
 
 ## 阶段 8 — 评测、可观测性与对比实验
 

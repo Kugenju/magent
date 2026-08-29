@@ -1,9 +1,9 @@
 # magent public API
 
-This document covers the stable public API shipped so far: phases 1–6
+This document covers the stable public API shipped so far: phases 1–7
 (agent/state/result/runtime, graph execution, concurrency/EventBus,
-timeout/retry/cancellation reliability, opt-in checkpoint/recovery, and the
-tool / LLM-provider / middleware extension layer).
+timeout/retry/cancellation reliability, opt-in checkpoint/recovery, the
+tool / LLM-provider / middleware extension layer, and the VulnTell example).
 
 ## Phase 1 — minimal kernel
 
@@ -427,3 +427,40 @@ agent = MiddlewareAgent(inner_agent, [LoggingMiddleware(), RateLimitMiddleware(4
 No vendor SDK bundled in core; only `openai` is shipped as an optional, lazily
 imported adapter. `MiddlewareAgent` only wraps a single agent's `run`; graph-
 level middleware composition is a later concern.
+
+## Phase 7 — VulnTell vertical example (implemented)
+
+Documented in [`PHASE7.md`](F:/personal/tool/muti-agent/docs/PHASE7.md). VulnTell
+consumes the public `magent` API from `examples/vulntell`; its CVE,
+source-observation, normalization, metric and report models are **not** part of
+the framework core.
+
+### Offline run
+```bash
+python -m examples.vulntell            # human-readable report (FakeProvider explanation)
+python -m examples.vulntell --json     # machine-readable Report
+python -m examples.vulntell --no-llm   # deterministic, no LLM
+python -m examples.vulntell --faulty cnvd   # inject a source failure (partial report)
+python -m examples.vulntell --resume --run-id <id> --checkpoint run.db  # recover
+```
+
+### `build_vulntell_graph(meta, store, sink, provider=None, *, fixture_dir=None, faulty_sources=None)`
+Builds the concurrent, recoverable graph: `dispatch → (collect_nvd ‖ collect_cnvd)
+→ (normalize_nvd ‖ normalize_cnvd) → dedupe → persist (side-effect tool through
+SideEffectSink) → evaluate → report → END`. `meta` is a `DatasetMeta` (frozen
+dataset/version/window). `store` is a `VulnTellStore` (SQLite, idempotent upsert).
+`provider` is optional (`FakeProvider` by default in the CLI; `None` disables LLM).
+Source branches write disjoint state keys and merge via `VulnTellState.reducers`.
+
+### `VulnTellState`
+A pydantic `State` carrying `meta`, `raw`, `observations_by_source`, `canonical`,
+`pending`, `quality_issues`, `source_status`, `failed_sources`, `metrics`, `report`.
+Cross-branch fields (`raw`, `observations_by_source`, `source_status`) merge via
+reducers; `failed_sources` extends. All timestamps serialize to ISO strings so the
+state is checkpoint-safe without touching the `magent` core.
+
+### Determinism & safety
+The graph runs fully offline (fixture sources, deterministic metrics). The LLM
+provider only generates a non-binding textual explanation in `report.llm_explanation`;
+it never alters the deterministic metrics or canonical data, and a provider failure
+is captured in `report.llm_failed` while the structured report still succeeds.

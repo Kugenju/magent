@@ -1,8 +1,8 @@
-# 阶段 5：Checkpoint、恢复与幂等（功能完成，待发布门禁）
+# 阶段 5：Checkpoint、恢复与幂等（已完成）
 
 ## 1. 当前基线
 
-阶段 1～5 的功能实现已完成，当前全量回归为 `125 passed`；阶段 5 改动仍在工作区，尚未形成独立发布提交。
+阶段 1～5 的功能实现已完成，阶段 5 发布门禁已关闭并形成提交；当前全量回归为 `168 passed`。
 阶段 5 在 `f45c672`（阶段 4 末）之后实现，已将“一次运行的内存状态”变成“可验证、可恢复的
 本地执行记录”。现有实现已经提供：
 
@@ -15,17 +15,17 @@
 - `CheckpointStore` 抽象、`InMemoryCheckpointStore`、`SqliteCheckpointStore`
 - `SequentialExecutor.resume` / `GraphExecutor.resume` 以及 `SideEffectSink` / `execution_key`
 
-阶段 5 的首要任务已经完成，下一步是关闭本文件第 12 节的发布门禁，而不是继续扩展 LLM、工具或 VulnTell 业务；
+阶段 5 的首要任务已经完成，下一步进入阶段 7 VulnTell 纵向示例，而不是继续扩展框架核心；
 `checkpoint_store=None` 时执行器行为与阶段 1～4 完全一致。
 
-当前结论：阶段 5 可以进入发布收尾，但在以下问题被测试和代码确认前，不能宣称具备生产级恢复保证：
+阶段 5 发布门禁已针对以下风险完成验证；这些边界仍作为后续业务接入时的长期约束：
 
-- 从 SQLite 读取 checkpoint 时必须重新校验 checksum，而不能只信任数据库中的 checksum 字段；
-- 并发 Graph 写入 checkpoint 时必须有进程内序列分配机制，不能让多个任务竞争同一个序号；
-- `SideEffectSink` 的“查询后执行再记录”存在同一 execution key 的并发竞态，需要原子 claim 或明确的处理中状态；
-- 非字典副作用结果的首次返回值与重放返回值必须保持同一结构；
-- `RunRecord.status`、失败/取消/中断边界和 `NODE_STARTED` 的真实 attempt 信息必须与报告和恢复逻辑一致；
-- 失败、损坏、取消和存储异常路径必须保证资源关闭，并明确哪些状态已经持久化。
+- 从 SQLite 读取 checkpoint 时重新校验 checksum，而不只信任数据库中的 checksum 字段；
+- 并发 Graph 写入 checkpoint 时使用统一的进程内序列分配机制；
+- `SideEffectSink` 对同一 execution key 使用原子 claim/处理中状态；
+- 非字典副作用结果的首次返回值与重放返回值保持同一结构；
+- `RunRecord.status`、失败/取消/中断边界和 `NODE_STARTED` 的真实 attempt 信息与报告和恢复逻辑一致；
+- 失败、损坏、取消和存储异常路径关闭资源，并明确已持久化状态。
 
 ## 2. 阶段目标
 
@@ -361,23 +361,22 @@ frontier。验证进程中断后不重新调用已提交节点。
 9. 不宣称任意外部副作用 exactly-once，文档明确 at-least-once 与幂等适配边界；
 10. 形成至少一个独立的阶段 5 实现提交和一个文档/验收提交。
 
-## 12. 当前发布门禁
+## 12. 当前发布门禁（已关闭）
 
-阶段 5 的核心功能和测试已经完成，但当前工作区仍有未提交改动。正式进入阶段 6 前必须完成
+阶段 5 的核心功能和测试已经完成，发布门禁已关闭。进入阶段 7 前已完成
 以下收尾动作：
 
-- [ ] 为 SQLite 读取路径增加 checksum 重算和校验测试；
-- [ ] 为并发 Graph 增加 checkpoint 序号分配、重复序号和恢复测试；
-- [ ] 为 `SideEffectSink` 增加同一 execution key 的并发 claim/处理中测试；
-- [ ] 统一副作用首次返回与重放返回的结果结构；
-- [ ] 更新并持久化 `RunRecord.status`，覆盖 completed/failed/cancelled/abandoned；
-- [ ] 验证所有 checkpoint store、SQLite 连接和取消/异常路径的资源关闭；
-- [ ] 更新 README、API、ROADMAP 和本文件的状态描述；
-- [ ] 在干净环境运行全量测试、类型检查、离线示例和 `import magent`；
-- [ ] 形成阶段 5 实现提交和发布文档提交，并记录测试数量与环境。
+- [x] 为 SQLite 读取路径增加 checksum 重算和校验测试；
+- [x] 为并发 Graph 增加 checkpoint 序号分配、重复序号和恢复测试；
+- [x] 为 `SideEffectSink` 增加同一 execution key 的并发 claim/处理中测试；
+- [x] 统一副作用首次返回与重放返回的结果结构；
+- [x] 更新并持久化 `RunRecord.status`，覆盖 completed/failed/cancelled/abandoned；
+- [x] 验证所有 checkpoint store、SQLite 连接和取消/异常路径的资源关闭；
+- [x] 更新 README、API、ROADMAP 和本文件的状态描述；
+- [x] 在干净环境运行全量测试、类型检查、离线示例和 `import magent`；
+- [x] 形成阶段 5 实现提交和发布文档提交，并记录测试数量与环境。
 
-在以上门禁未全部通过前，阶段 5 的状态为“功能完成，待发布”，阶段 6 不得接入工具副作用或
-LLM 缓存恢复。
+阶段 5 状态为“已完成”，阶段 6 工具副作用和阶段 7 业务接入可以使用其幂等与恢复能力。
 
 ## 13. 完成定义
 

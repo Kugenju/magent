@@ -122,14 +122,19 @@ Checkpoint 单独保证 exactly-once。详细字段、SQLite 表和验收要求�
 工具、LLM Provider 和 Middleware 属于框架扩展层，不改变 Executor 的状态合并、重试、
 Checkpoint 和取消主语义。工具必须经过 Registry、输入/输出 schema 和 allowlist；同步工具不能
 阻塞事件循环；LLM 只通过可替换 Provider 协议接入，核心不绑定厂商 SDK；middleware 只包装
-调用生命周期，不能复制一套 retry 或直接修改 State。阶段 6 的实施边界和验收标准见
-[`PHASE6.md`](F:/personal/tool/muti-agent/docs/PHASE6.md)。
+调用生命周期，不能复制一套 retry 或直接修改 State。阶段 6 已完成，具体协议和验收记录见
+[`PHASE6.md`](F:/personal/tool/muti-agent/docs/PHASE6.md)；阶段 7 业务边界（已实施）见
+[`PHASE7.md`](F:/personal/tool/muti-agent/docs/PHASE7.md)。
 
 ### 4.7 EventBus
 
 EventBus 是可插拔通信组件，不应成为所有状态交换的默认方式。应区分 Command、Event、Result 和 Error。首版需要明确消息顺序、异常处理、重复消费、取消订阅和队列容量；复杂持久化消息队列不属于首版范围。
 
 ## 5. VulnTell 示例应用
+
+阶段 7 的具体实施边界、业务模型、离线 fixture、指标和验收标准见
+[`PHASE7.md`](F:/personal/tool/muti-agent/docs/PHASE7.md)。本阶段已实现业务示例（代码位于
+`examples/vulntell`），不改变 `magent` 框架核心。
 
 ### 5.1 业务流程
 
@@ -218,6 +223,8 @@ muti-agent/
 │   ├── PHASE3.md
 │   ├── PHASE4.md
 │   ├── PHASE5.md
+│   ├── PHASE6.md
+│   ├── PHASE7.md
 │   ├── API.md
 │   ├── COMPARISON.md
 │   └── BENCHMARKS.md
@@ -237,11 +244,19 @@ muti-agent/
 │   ├── middleware/
 │   └── observability/
 ├── examples/vulntell/
-│   ├── models/
-│   ├── sources/
-│   ├── agents/
-│   ├── evaluation/
-│   └── cli.py
+│   ├── models.py        # 领域模型（RawSourceRecord/SourceObservation/CanonicalVulnerability/...）
+│   ├── fixtures/        # 脱敏离线样本与 dataset_meta
+│   ├── loading.py       # 固定数据集/窗口/版本加载
+│   ├── sources.py       # Fixture/Http/Faulty 来源适配器
+│   ├── normalize.py     # 标准化与质量告警
+│   ├── dedupe.py        # 确定性跨源去重
+│   ├── db.py            # SQLite 幂等持久化
+│   ├── metrics.py       # 确定性指标
+│   ├── report.py        # 结构化报告 + 可选 LLM 解释
+│   ├── state.py         # VulnTellState（reducers 合并）
+│   ├── agents.py        # Collect/Normalize/Dedupe/Persist/Evaluate/Report Agent
+│   ├── graph.py         # 并发可恢复 Graph
+│   └── __main__.py      # 离线 CLI
 ├── tests/
 │   ├── unit/
 │   ├── integration/

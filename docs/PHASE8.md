@@ -1,12 +1,13 @@
-# 阶段 8：评测、可观测性与对比实验实施计划
+# 阶段 8：评测、可观测性与对比实验实施计划（已完成）
 
-> **交付对象：** 下游开发 Agent。本文是阶段 8 的实施约束、任务拆分和验收标准。
+> **状态：** 已完成并提交。本文保留实施约束、任务拆分和验收标准，并补充实际交付结果。
 > 阶段 8 只在现有执行语义之上增加观测与实验能力；任何改变调度、状态合并、重试、取消、
 > Checkpoint 或 VulnTell 确定性指标含义的改动，都必须另立设计并暂停本阶段。
 
 ## 1. 当前基线
 
-阶段 1～7 已完成，最近阶段 7 提交为 `80d7156 docs: document phase-7 VulnTell vertical example`。
+阶段 1～7 已完成，阶段 8 已完成并提交。阶段 7 最近相关提交为
+`80d7156 docs: document phase-7 VulnTell vertical example`。
 当前基线如下：
 
 - `magent` 已支持 Agent、类型化 State、顺序/DAG Graph、fan-out/fan-in、reducer 和并发限制；
@@ -14,11 +15,12 @@
 - 已支持 Tool Registry、可插拔 LLM Provider、离线 FakeProvider 和 Middleware；
 - `examples/vulntell` 已完成离线纵向流程：多源 fixture 采集→标准化→质量告警→去重→持久化→
   可恢复并发 Graph→指标→JSON/Markdown 报告；
-- 当前全量测试为 **211 passed**，默认测试不依赖网络、API Key 或真实 LLM；
+- 阶段 8 完成后全量测试为 **250 passed**，默认测试不依赖网络、API Key 或真实 LLM；
 - 阶段 7 已冻结数据集、时间窗口、解析器版本、去重版本和指标版本，本阶段不得私自替换。
 
-当前缺口是统一 trace/span/run metadata、实验配置与结果 schema、串行/并行 benchmark、恢复和
-失败路径的统一观测、VulnTell 质量评测，以及可审计的参考框架对比记录。
+阶段 8 已交付统一 trace/span/run metadata、实验配置与结果 schema、串行/并行 benchmark、
+恢复和失败路径的统一观测、VulnTell 质量评测，以及可审计的参考框架不可比记录。阶段 9 的发布
+工程化收口属于后续工作。
 
 ## 2. 阶段目标
 
@@ -223,11 +225,11 @@ repetitions / seed / sample_threshold
 - 对比：版本、环境、配置缺失时标记 `not_comparable`，不生成排名；
 - 离线：默认 runner 无网络、无真实 LLM、无 API Key，不创建仓库外不可控副作用。
 
-## 9. 量化验收标准
+## 9. 量化验收标准（验收结果）
 
-阶段 8 同时满足以下条件才算完成：
+阶段 8 已满足以下条件并完成发布：
 
-1. 新增离线测试不少于 30 个，且全量测试通过；
+1. 新增离线测试 39 个，且全量测试为 250 passed；
 2. Trace/Span/RunSummary schema、序列化格式和脱敏规则已文档化并有测试；
 3. 顺序、并行、失败/重试、超时/取消、Checkpoint 恢复五类场景均可生成结果；
 4. 至少 3 种并发度、每种配置至少 5 次重复，并保存原始样本与 n/mean/median/p95/min/max；
@@ -259,7 +261,7 @@ VulnTell 质量评测与可比性门槛
 JSON/CSV/Markdown 结果、测试、文档和提交
 ```
 
-## 11. 建议提交节奏
+## 11. 建议提交节奏（已完成）
 
 ```text
 design(phase8): freeze observability and evaluation protocol
@@ -270,3 +272,5 @@ feat(benchmarks): measure parallel reliability and recovery scenarios
 test(benchmarks): verify determinism security and comparability gates
 docs: publish phase-8 evaluation results and limitations
 ```
+
+下一阶段为阶段 9：发布、展示与工程化收口，详见 [`PHASE9.md`](docs/PHASE9.md)。

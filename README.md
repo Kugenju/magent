@@ -20,7 +20,12 @@ evaluation app) is implemented as a downstream example that exercises this
 framework — it lives under `examples/vulntell` and never pollutes the `magent`
 core.
 
-## Current scope (phases 1–8)
+## Current scope (phases 1–8; phase 9 release hardening)
+
+> Phase 9 hardens the project for public release: documentation consistency, a framework
+> comparison (`docs/COMPARISON.md`), license/third-party notices, CI quality gates, clean-install
+> verification and a release checklist. It does **not** change execution semantics. See
+> [`docs/PHASE9.md`](docs/PHASE9.md).
 
 | In scope | Out of scope (later phases) |
 |----------|------------------------------|
@@ -40,18 +45,30 @@ core.
 | VulnTell source-quality evaluation + reference comparison recorder | External ranking |
 
 阶段 8 的评测、统一 trace、benchmark 和参考框架对比已实现并随仓库提交；详见
-[`docs/PHASE8.md`](F:/personal/tool/muti-agent/docs/PHASE8.md) 与
-[`benchmarks/README.md`](F:/personal/tool/muti-agent/benchmarks/README.md)。
+[`docs/PHASE8.md`](docs/PHASE8.md) 与
+[`benchmarks/README.md`](benchmarks/README.md)。
 
 ## Install
 
 ```bash
-pip install -e ".[dev]"   # dev extras add pytest + pytest-asyncio
+pip install -e ".[dev]"   # dev extras add pytest + pytest-asyncio + mypy
 ```
+
+The install is **offline-first**: it needs only `pydantic` at runtime and no API key, network access, or
+external service. `import magent` and the version string (`import importlib.metadata; version("magent")`)
+work after install.
+
+### Packaging scope
+
+- The published package contains only the framework core under `src/magent`.
+- `examples/` and `benchmarks/` are **repository assets** run from a source checkout; they are intentionally
+  **not** bundled into the wheel/sdist (setuptools `packages.find` is scoped to `src`). Install from the
+  cloned repository to run the examples and the benchmark CLI.
 
 ## Quick start (offline example)
 
 ```bash
+python examples/quickstart.py             # shortest: Agent -> State -> Result -> report
 python examples/producer_consumer.py      # phase 1: state visibility across agents
 python examples/checkpoint_resume.py      # phase 5: crash → resume → identical result
 python examples/phase6_tools_llm_middleware.py   # phase 6: tools + LLM + middleware
@@ -337,9 +354,10 @@ The VulnTell vertical example (phase 7) is implemented and committed under
 `examples/vulntell`. Phase 8 (observability + offline evaluation) is implemented
 and committed under `src/magent/observability` and `benchmarks/`. See
 `docs/DESIGN.md`, `docs/ROADMAP.md`, `docs/PHASE6.md`, `docs/PHASE7.md` and
-`docs/PHASE8.md` for the current boundaries and acceptance criteria.
+`docs/PHASE8.md` and `docs/PHASE9.md` for the current boundaries and acceptance criteria.
 
-Phase 7 and phase 8 are implemented and committed. The `magent` core remains
+Phase 7 and phase 8 are implemented and committed. Phase 9 (release,
+documentation, CI and presentation) is the current development stage. The `magent` core remains
 usable offline without any LLM SDK or network access. VulnTell runs fully offline
 (fixture sources, deterministic metrics) and uses the optional `FakeProvider`
 only for non-binding textual explanation. Phase 8 adds a read-only observability
@@ -348,3 +366,14 @@ protocol (`Trace`/`Span`/`RunSummary`) integrated with the VulnTell CLI via
 isolation/security (no accidental side effects), parallel reliability (retry /
 timeout) and checkpoint recovery, and a reference-framework comparison recorder
 that records versions without emitting rankings.
+
+## Release & license
+
+- `CHANGELOG.md` — version history and the `0.x` compatibility policy.
+- `docs/COMPARISON.md` — design comparison with LangGraph / AutoGen / CrewAI (not ranked).
+- `docs/BENCHMARKS.md` — phase-8 evaluation results and reproduction.
+- `RELEASE_CHECKLIST.md` — pre-release verification checklist.
+- `LICENSE` (MIT) and `THIRD_PARTY_NOTICES.md` — license, dependencies, fixture provenance and safe-use.
+
+The project is released as a GitHub source repository. PyPI publishing and a production Web dashboard are
+explicitly out of scope for this release and require separate acceptance.

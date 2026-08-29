@@ -12,7 +12,7 @@
 - 进程内 EventBus
 - 103 个离线测试通过
 
-阶段 4 已完成阶段 3 发布收尾，确认 `StepRecord`/`ExecutionReport` 向后兼容，并将重试、超时、取消和尝试历史接入顺序/并发执行器。Checkpoint、进程恢复和持久化幂等属于下一阶段，详见 [`PHASE5.md`](F:/personal/tool/muti-agent/docs/PHASE5.md)。
+阶段 4 已完成阶段 3 发布收尾，确认 `StepRecord`/`ExecutionReport` 向后兼容，并将重试、超时、取消和尝试历史接入顺序/并发执行器。Checkpoint、进程恢复和持久化幂等属于下一阶段，详见 [`PHASE5.md`](docs/PHASE5.md)。
 
 ## 2. 阶段目标
 

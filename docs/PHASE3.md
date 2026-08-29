@@ -4,7 +4,7 @@
 
 阶段 3 的主要功能已经实现并完成发布：fan-out/fan-in、状态 reducer、最大并发限制、失败时的兄弟分支取消和进程内 EventBus。阶段 4 回归后当前工作区共有 103 个离线测试，全部通过。
 
-阶段 3 的能力已被阶段 4 的可靠性 runner 和结构化尝试报告复用；本文件保留阶段 3 的拓扑和并发语义，后续 checkpoint 语义见 [`PHASE5.md`](F:/personal/tool/muti-agent/docs/PHASE5.md)。
+阶段 3 的能力已被阶段 4 的可靠性 runner 和结构化尝试报告复用；本文件保留阶段 3 的拓扑和并发语义，后续 checkpoint 语义见 [`PHASE5.md`](docs/PHASE5.md)。
 
 ## 2. 阶段目标与范围
 
@@ -136,4 +136,4 @@ event_bus: EventBus | None = None
 - [ ] 保留并记录并发基准结果
 - [ ] 在 `ROADMAP.md` 中将阶段 3 标记为已完成
 
-阶段 4 的详细方案见 [`PHASE4.md`](F:/personal/tool/muti-agent/docs/PHASE4.md)。
+阶段 4 的详细方案见 [`PHASE4.md`](docs/PHASE4.md)。

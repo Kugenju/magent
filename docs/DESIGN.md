@@ -115,7 +115,7 @@ Checkpoint 是执行状态的持久化提交记录，不是 EventBus 的日志�
 外部副作用节点使用不包含 `attempt` 的稳定执行键（例如
 `run_id + node_id + node_version + canonical(input_state)`）。这只能让具备幂等协议或唯一键的
 副作用安全重试；对不受框架控制的 API、消息和文件系统，系统最多提供 at-least-once，不能由
-Checkpoint 单独保证 exactly-once。详细字段、SQLite 表和验收要求见 [`PHASE5.md`](F:/personal/tool/muti-agent/docs/PHASE5.md)。
+Checkpoint 单独保证 exactly-once。详细字段、SQLite 表和验收要求见 [`PHASE5.md`](docs/PHASE5.md)。
 
 ### 4.6 Tools、LLM 与 Middleware 扩展
 
@@ -123,8 +123,8 @@ Checkpoint 单独保证 exactly-once。详细字段、SQLite 表和验收要求�
 Checkpoint 和取消主语义。工具必须经过 Registry、输入/输出 schema 和 allowlist；同步工具不能
 阻塞事件循环；LLM 只通过可替换 Provider 协议接入，核心不绑定厂商 SDK；middleware 只包装
 调用生命周期，不能复制一套 retry 或直接修改 State。阶段 6 已完成，具体协议和验收记录见
-[`PHASE6.md`](F:/personal/tool/muti-agent/docs/PHASE6.md)；阶段 7 业务边界（已实施）见
-[`PHASE7.md`](F:/personal/tool/muti-agent/docs/PHASE7.md)。
+[`PHASE6.md`](docs/PHASE6.md)；阶段 7 业务边界（已实施）见
+[`PHASE7.md`](docs/PHASE7.md)。
 
 ### 4.7 EventBus
 
@@ -133,7 +133,7 @@ EventBus 是可插拔通信组件，不应成为所有状态交换的默认方�
 ## 5. VulnTell 示例应用
 
 阶段 7 的具体实施边界、业务模型、离线 fixture、指标和验收标准见
-[`PHASE7.md`](F:/personal/tool/muti-agent/docs/PHASE7.md)。本阶段已实现业务示例（代码位于
+[`PHASE7.md`](docs/PHASE7.md)。本阶段已实现业务示例（代码位于
 `examples/vulntell`），不改变 `magent` 框架核心。
 
 ### 5.1 业务流程
@@ -184,10 +184,10 @@ CISA KEV 属于已利用漏洞目录，不与 NVD 按相同覆盖率直接排名
 
 ## 6. 评测、可观测性与对比实验
 
-阶段 8 的详细任务、验收标准和发布门禁见 [`PHASE8.md`](F:/personal/tool/muti-agent/docs/PHASE8.md)。
+阶段 8 的详细任务、验收标准和发布门禁见 [`PHASE8.md`](docs/PHASE8.md)。
 本节定义架构约束：观测记录服务于诊断和实验复现，不能反向改变调度、状态合并、重试或业务指标
 语义。（阶段 8 已实现并随仓库提交：可观测性代码位于 `src/magent/observability`，实验代码位于
-`benchmarks/`，VulnTell CLI 通过 `--trace` 启用；见 [`benchmarks/README.md`](F:/personal/tool/muti-agent/benchmarks/README.md)。）
+`benchmarks/`，VulnTell CLI 通过 `--trace` 启用；见 [`benchmarks/README.md`](benchmarks/README.md)。）
 
 ### 6.1 观测分层
 
@@ -297,3 +297,5 @@ muti-agent/
 ## 9. GitHub 策略
 
 个人仓库以自研框架为主体，在 README 和 `docs/COMPARISON.md` 中说明 LangGraph、AutoGen 等参考项目。研究 LangGraph 源码时可单独 Fork 或保留上游远程仓库，但不要复制上游源码到本项目；应记录参考 commit，遵守许可证要求，并将自己的实现、测试和实验结果放在个人仓库中。
+
+阶段 9 的发布、CI、许可证、参考项目对比和展示收口计划见 [`PHASE9.md`](docs/PHASE9.md)。

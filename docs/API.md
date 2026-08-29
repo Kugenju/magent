@@ -1,9 +1,10 @@
 # magent public API
 
-This document covers the stable public API shipped so far: phases 1–7
+This document covers the stable public API shipped so far: phases 1–8
 (agent/state/result/runtime, graph execution, concurrency/EventBus,
 timeout/retry/cancellation reliability, opt-in checkpoint/recovery, the
-tool / LLM-provider / middleware extension layer, and the VulnTell example).
+tool / LLM-provider / middleware extension layer, the VulnTell example, and
+the read-only observability/evaluation layer).
 
 ## Phase 1 — minimal kernel
 
@@ -495,7 +496,7 @@ Run the suite with `python -m benchmarks.cli --out benchmarks/out` (writes
 
 ## Phase 7 — VulnTell vertical example (implemented)
 
-Documented in [`PHASE7.md`](F:/personal/tool/muti-agent/docs/PHASE7.md). VulnTell
+Documented in [`PHASE7.md`](docs/PHASE7.md). VulnTell
 consumes the public `magent` API from `examples/vulntell`; its CVE,
 source-observation, normalization, metric and report models are **not** part of
 the framework core.

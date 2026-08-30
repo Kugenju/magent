@@ -1,7 +1,7 @@
-"""VulnTell 数据源包（阶段 3/4）。
+"""VulnTell 数据源包（阶段 3/4/5）。
 
 阶段 3 仅暴露 legacy 兼容层；阶段 4 引入正式的协议、分页适配器和错误分类。
-阶段 5 将引入真实 HTTP 适配器（live adapter）。
+阶段 5 引入真实 HTTP 适配器（NVD adapter）。
 """
 
 from __future__ import annotations
@@ -23,6 +23,7 @@ from apps.vulntell.sources.legacy import (
     HttpSourceAdapter,
     SourceAdapter,
 )
+from apps.vulntell.sources.nvd import NVDAdapter, NVDConfig
 from apps.vulntell.sources.protocol import (
     SourcePage,
     SourceRecord,
@@ -48,4 +49,7 @@ __all__ = [
     "SourceErrorKind",
     "classify_http_status",
     "classify_exception",
+    # 阶段 5 NVD adapter
+    "NVDAdapter",
+    "NVDConfig",
 ]

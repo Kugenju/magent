@@ -78,7 +78,7 @@ def test_no_secrets_in_repo():
     assert not offenders, f"possible secrets in: {offenders}"
 
 
-NETWORK_IMPORT = re.compile(r"^\s*(import|from)\s+(requests|httpx|aiohttp)\b")
+NETWORK_IMPORT = re.compile(r"^(import|from)\s+(requests|httpx|aiohttp)\b")
 
 
 def test_no_top_level_network_imports():

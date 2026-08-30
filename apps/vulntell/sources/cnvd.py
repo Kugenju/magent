@@ -1,13 +1,14 @@
-"""VulnTell NVD 适配器（阶段 5，Task 5.1）。
+"""VulnTell CNVD 适配器（阶段 5，Task 5.3）。
 
-将 NVD API (https://services.nvd.nist.gov/rest/json/cves/2.0) 响应映射为 SourceRecord。
-支持分页、游标、429 限流、超时和错误分类。
+将 CNVD（国家信息安全漏洞共享平台）API 映射为 SourceRecord。
+支持中文字段、CVE 关联、分页和错误分类。
 
 约束：
 - 默认不联网，需要显式传入 transport
 - fixture/录制响应仅保存最小脱敏样本
 - 不把完整 raw payload 写入 State/Trace/日志
 - 由 runner 统一执行重试、退避、取消和 checkpoint，adapter 不自行循环重试
+- 保留中文与跨源冲突，不在 adapter 内做领域去重或指标计算
 """
 
 from __future__ import annotations
@@ -22,34 +23,34 @@ from apps.vulntell.sources.protocol import SourcePage, SourceRecord, SourceReque
 
 
 @dataclass
-class NVDConfig:
-    """NVD API 配置。"""
-    endpoint: str = "https://services.nvd.nist.gov/rest/json/cves/2.0"
-    page_size: int = 2000  # NVD 最大 page size
+class CNVDConfig:
+    """CNVD 配置。"""
+    endpoint: str = "https://www.cnvd.org.cn/flaw/list"
+    page_size: int = 20  # CNVD 默认 page size
     timeout_seconds: float = 30.0
-    api_key: Optional[str] = None  # 可选 API key 提高速率限制
+    api_key: Optional[str] = None  # 可选 API key
 
 
-class NVDAdapter:
-    """NVD 适配器：将 NVD CVE API 映射为 SourceRecord 协议。
+class CNVDAdapter:
+    """CNVD 适配器：将 CNVD API 映射为 SourceRecord 协议。
 
     支持：
-    - 分页：使用 startIndex 和 resultsPerPage
-    - 游标：格式 "{startIndex}"，整数偏移
-    - 窗口：lastModStartDate/lastModEndDate（半开区间 [start, end)）
+    - 分页：使用 page 和 rows 参数
+    - 游标：格式 "{page}"，整数页码
     - 错误分类：429/408/5xx/401/403/404
 
     约束：
     - 默认不联网，需要传入 transport 函数
     - 由 runner 统一执行重试，adapter 不自行循环重试
+    - 保留中文字段编码，不修改原始中文内容
     """
 
     def __init__(
         self,
-        config: Optional[NVDConfig] = None,
+        config: Optional[CNVDConfig] = None,
         transport: Optional[Callable] = None,
     ) -> None:
-        self._config = config or NVDConfig()
+        self._config = config or CNVDConfig()
         self._transport = transport or self._default_transport
 
     async def fetch_page(
@@ -59,33 +60,33 @@ class NVDAdapter:
 
         Args:
             request: 同步请求
-            cursor: 分页游标（格式 "{startIndex}"）
+            cursor: 分页游标（格式 "{page}"）
 
         Returns:
             SourcePage 或 SourceError
         """
         # 解析游标
-        start_index = 0
+        page_number = 1
         if cursor:
             try:
-                start_index = int(cursor)
+                page_number = int(cursor)
             except ValueError:
                 return SourceError(
-                    source="nvd",
+                    source="cnvd",
                     kind=SourceErrorKind.INVALID_RESPONSE,
                     message="Invalid cursor format",
                     retryable=False,
                 )
 
-        # 构建 NVD API 参数
+        # 构建 CNVD API 参数
         params = {
-            "startIndex": start_index,
-            "resultsPerPage": min(request.page_size, self._config.page_size),
-            "lastModStartDate": request.window_start.isoformat(),
-            "lastModEndDate": request.window_end.isoformat(),
+            "page": page_number,
+            "rows": min(request.page_size, self._config.page_size),
         }
 
         # 添加过滤条件
+        if request.filters.get("cnvd_id"):
+            params["cnvdId"] = request.filters["cnvd_id"]
         if request.filters.get("cve_id"):
             params["cveId"] = request.filters["cve_id"]
 
@@ -98,69 +99,68 @@ class NVDAdapter:
                 timeout=self._config.timeout_seconds,
             )
         except Exception as exc:
-            return SourceError.from_exception("nvd", exc)
+            return SourceError.from_exception("cnvd", exc)
 
         # 检查 HTTP 状态码
         if response.get("status_code", 200) != 200:
             status_code = response.get("status_code", 500)
-            error = SourceError.from_http_status(
-                "nvd",
+            return SourceError.from_http_status(
+                "cnvd",
                 status_code,
                 response.get("error", ""),
             )
-            return error
 
         # 解析响应
         try:
             data = response.get("data", {})
-            vulnerabilities = data.get("vulnerabilities", [])
-            total_results = data.get("totalResults", 0)
+            records_data = data.get("records", [])
+            total = data.get("total", 0)
 
             # 转换为 SourceRecord
             records = []
-            for vuln in vulnerabilities:
-                cve = vuln.get("cve", {})
-                record_id = cve.get("id", "")
-                if not record_id:
+            for item in records_data:
+                cnvd_id = item.get("cnvdId", "")
+                if not cnvd_id:
                     continue
 
                 # 提取关键字段（不保存完整 payload）
                 record = SourceRecord(
-                    source_record_id=record_id,
+                    source_record_id=cnvd_id,
                     payload={
-                        "id": record_id,
-                        "published": cve.get("published"),
-                        "lastModified": cve.get("lastModified"),
-                        "descriptions": [
-                            d for d in cve.get("descriptions", [])
-                            if d.get("lang") == "en"
-                        ][:1],  # 只保留英文描述
+                        "cnvdId": cnvd_id,
+                        "cveId": item.get("cveId"),
+                        "title": item.get("title"),
+                        "level": item.get("level"),
+                        "type": item.get("type"),
+                        "publishedDate": item.get("publishedDate"),
+                        "dueDate": item.get("dueDate"),
+                        "source": item.get("source"),
                     },
                     metadata={
-                        "source": "nvd",
-                        "published_at": cve.get("published"),
-                        "modified_at": cve.get("lastModified"),
+                        "source": "cnvd",
+                        "published_at": item.get("publishedDate"),
+                        "modified_at": item.get("publishedDate"),
                     },
                 )
                 records.append(record)
 
             # 计算是否有更多页
-            next_index = start_index + len(records)
-            has_more = next_index < total_results
-            next_cursor = str(next_index) if has_more else None
+            total_pages = (total + self._config.page_size - 1) // self._config.page_size
+            has_more = page_number < total_pages
+            next_cursor = str(page_number + 1) if has_more else None
 
             return SourcePage(
                 records=tuple(records),
                 next_cursor=next_cursor,
                 has_more=has_more,
-                page_index=start_index // request.page_size,
-                source="nvd",
+                page_index=page_number - 1,
+                source="cnvd",
                 observed_at=datetime.now(timezone.utc),
                 request_fingerprint=request.request_fingerprint,
             )
 
         except Exception as exc:
-            return SourceError.from_exception("nvd", exc)
+            return SourceError.from_exception("cnvd", exc)
 
     async def _default_transport(
         self,
@@ -171,16 +171,13 @@ class NVDAdapter:
     ) -> dict:
         """默认 transport：抛出 NotImplementedError。"""
         raise NotImplementedError(
-            "NVD adapter requires a transport function. "
+            "CNVD adapter requires a transport function. "
             "Use httpx or aiohttp transport for live mode."
         )
 
 
-class NVDTransport:
-    """NVD HTTP transport（使用 httpx）。"""
-
-    def __init__(self, client: Any = None) -> None:
-        self._client = client
+class CNVDTransport:
+    """CNVD HTTP transport（使用 httpx）。"""
 
     async def __call__(
         self,
@@ -189,16 +186,12 @@ class NVDTransport:
         api_key: Optional[str],
         timeout: float,
     ) -> dict:
-        """调用 NVD API。"""
-        # httpx 在函数内导入，避免顶层导入网络库
-        try:
-            import httpx
-        except ImportError:
-            return {"status_code": 500, "error": "httpx not installed"}
+        """调用 CNVD API。"""
+        import httpx
 
         headers = {}
         if api_key:
-            headers["apiKey"] = api_key
+            headers["Authorization"] = f"Bearer {api_key}"
 
         async with httpx.AsyncClient() as client:
             try:

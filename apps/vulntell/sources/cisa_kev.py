@@ -1,7 +1,7 @@
-"""VulnTell NVD 适配器（阶段 5，Task 5.1）。
+"""VulnTell CISA KEV 适配器（阶段 5，Task 5.2）。
 
-将 NVD API (https://services.nvd.nist.gov/rest/json/cves/2.0) 响应映射为 SourceRecord。
-支持分页、游标、429 限流、超时和错误分类。
+将 CISA Known Exploited Vulnerabilities Catalog 映射为 SourceRecord。
+支持版本变化检测、合成游标和增量同步。
 
 约束：
 - 默认不联网，需要显式传入 transport
@@ -12,6 +12,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
@@ -22,22 +23,20 @@ from apps.vulntell.sources.protocol import SourcePage, SourceRecord, SourceReque
 
 
 @dataclass
-class NVDConfig:
-    """NVD API 配置。"""
-    endpoint: str = "https://services.nvd.nist.gov/rest/json/cves/2.0"
-    page_size: int = 2000  # NVD 最大 page size
-    timeout_seconds: float = 30.0
-    api_key: Optional[str] = None  # 可选 API key 提高速率限制
+class CISAKEVConfig:
+    """CISA KEV 配置。"""
+    endpoint: str = "https://www.cisa.gov/sites/default/files/feeds/known_exploited_vulnerabilities.json"
+    timeout_seconds: float = 60.0
+    catalog_version: Optional[str] = None  # 当前 catalog 版本
 
 
-class NVDAdapter:
-    """NVD 适配器：将 NVD CVE API 映射为 SourceRecord 协议。
+class CISAKEVAdapter:
+    """CISA KEV 适配器：将 CISA KEV Catalog 映射为 SourceRecord 协议。
 
     支持：
-    - 分页：使用 startIndex 和 resultsPerPage
-    - 游标：格式 "{startIndex}"，整数偏移
-    - 窗口：lastModStartDate/lastModEndDate（半开区间 [start, end)）
-    - 错误分类：429/408/5xx/401/403/404
+    - 版本变化检测：使用 catalog version 作为游标
+    - 增量同步：只返回版本变化后的新记录
+    - 合成游标：格式 "version:{catalog_version}"
 
     约束：
     - 默认不联网，需要传入 transport 函数
@@ -46,10 +45,10 @@ class NVDAdapter:
 
     def __init__(
         self,
-        config: Optional[NVDConfig] = None,
+        config: Optional[CISAKEVConfig] = None,
         transport: Optional[Callable] = None,
     ) -> None:
-        self._config = config or NVDConfig()
+        self._config = config or CISAKEVConfig()
         self._transport = transport or self._default_transport
 
     async def fetch_page(
@@ -59,155 +58,138 @@ class NVDAdapter:
 
         Args:
             request: 同步请求
-            cursor: 分页游标（格式 "{startIndex}"）
+            cursor: 分页游标（格式 "version:{catalog_version}"）
 
         Returns:
             SourcePage 或 SourceError
         """
         # 解析游标
-        start_index = 0
+        current_version = None
         if cursor:
-            try:
-                start_index = int(cursor)
-            except ValueError:
+            if cursor.startswith("version:"):
+                current_version = cursor[8:]
+            else:
                 return SourceError(
-                    source="nvd",
+                    source="cisa_kev",
                     kind=SourceErrorKind.INVALID_RESPONSE,
                     message="Invalid cursor format",
                     retryable=False,
                 )
 
-        # 构建 NVD API 参数
-        params = {
-            "startIndex": start_index,
-            "resultsPerPage": min(request.page_size, self._config.page_size),
-            "lastModStartDate": request.window_start.isoformat(),
-            "lastModEndDate": request.window_end.isoformat(),
-        }
-
-        # 添加过滤条件
-        if request.filters.get("cve_id"):
-            params["cveId"] = request.filters["cve_id"]
-
         # 调用 API
         try:
             response = await self._transport(
                 endpoint=self._config.endpoint,
-                params=params,
-                api_key=self._config.api_key,
                 timeout=self._config.timeout_seconds,
             )
         except Exception as exc:
-            return SourceError.from_exception("nvd", exc)
+            return SourceError.from_exception("cisa_kev", exc)
 
         # 检查 HTTP 状态码
         if response.get("status_code", 200) != 200:
             status_code = response.get("status_code", 500)
-            error = SourceError.from_http_status(
-                "nvd",
+            return SourceError.from_http_status(
+                "cisa_kev",
                 status_code,
                 response.get("error", ""),
             )
-            return error
 
         # 解析响应
         try:
             data = response.get("data", {})
+            catalog_version = data.get("catalogVersion", "")
             vulnerabilities = data.get("vulnerabilities", [])
-            total_results = data.get("totalResults", 0)
+
+            # 版本变化检测
+            if current_version and catalog_version == current_version:
+                # 版本未变化，返回空页
+                return SourcePage(
+                    records=(),
+                    next_cursor=None,
+                    has_more=False,
+                    page_index=0,
+                    source="cisa_kev",
+                    observed_at=datetime.now(timezone.utc),
+                    request_fingerprint=request.request_fingerprint,
+                )
 
             # 转换为 SourceRecord
             records = []
             for vuln in vulnerabilities:
-                cve = vuln.get("cve", {})
-                record_id = cve.get("id", "")
-                if not record_id:
+                cve_id = vuln.get("cveID", "")
+                if not cve_id:
                     continue
 
                 # 提取关键字段（不保存完整 payload）
                 record = SourceRecord(
-                    source_record_id=record_id,
+                    source_record_id=cve_id,
                     payload={
-                        "id": record_id,
-                        "published": cve.get("published"),
-                        "lastModified": cve.get("lastModified"),
-                        "descriptions": [
-                            d for d in cve.get("descriptions", [])
-                            if d.get("lang") == "en"
-                        ][:1],  # 只保留英文描述
+                        "cveID": cve_id,
+                        "vendorProject": vuln.get("vendorProject"),
+                        "product": vuln.get("product"),
+                        "vulnerabilityName": vuln.get("vulnerabilityName"),
+                        "dateAdded": vuln.get("dateAdded"),
+                        "shortDescription": vuln.get("shortDescription"),
+                        "requiredAction": vuln.get("requiredAction"),
+                        "dueDate": vuln.get("dueDate"),
+                        "knownRansomwareCampaignUse": vuln.get("knownRansomwareCampaignUse"),
+                        "notes": vuln.get("notes"),
                     },
                     metadata={
-                        "source": "nvd",
-                        "published_at": cve.get("published"),
-                        "modified_at": cve.get("lastModified"),
+                        "source": "cisa_kev",
+                        "published_at": vuln.get("dateAdded"),
+                        "modified_at": vuln.get("dateAdded"),
+                        "catalog_version": catalog_version,
                     },
                 )
                 records.append(record)
 
-            # 计算是否有更多页
-            next_index = start_index + len(records)
-            has_more = next_index < total_results
-            next_cursor = str(next_index) if has_more else None
-
+            # CISA KEV 通常不分页（单个文件包含所有记录）
+            # 使用版本作为游标（用于版本变化检测）
+            # 由于 has_more=False，next_cursor 必须为 None
             return SourcePage(
                 records=tuple(records),
-                next_cursor=next_cursor,
-                has_more=has_more,
-                page_index=start_index // request.page_size,
-                source="nvd",
+                next_cursor=None,
+                has_more=False,
+                page_index=0,
+                source="cisa_kev",
                 observed_at=datetime.now(timezone.utc),
                 request_fingerprint=request.request_fingerprint,
             )
 
         except Exception as exc:
-            return SourceError.from_exception("nvd", exc)
+            return SourceError.from_exception("cisa_kev", exc)
 
     async def _default_transport(
         self,
         endpoint: str,
-        params: dict,
-        api_key: Optional[str],
         timeout: float,
     ) -> dict:
         """默认 transport：抛出 NotImplementedError。"""
         raise NotImplementedError(
-            "NVD adapter requires a transport function. "
+            "CISA KEV adapter requires a transport function. "
             "Use httpx or aiohttp transport for live mode."
         )
 
 
-class NVDTransport:
-    """NVD HTTP transport（使用 httpx）。"""
-
-    def __init__(self, client: Any = None) -> None:
-        self._client = client
+class CISAKEVTransport:
+    """CISA KEV HTTP transport（使用 httpx）。"""
 
     async def __call__(
         self,
         endpoint: str,
-        params: dict,
-        api_key: Optional[str],
         timeout: float,
     ) -> dict:
-        """调用 NVD API。"""
+        """调用 CISA KEV API。"""
         # httpx 在函数内导入，避免顶层导入网络库
         try:
             import httpx
         except ImportError:
             return {"status_code": 500, "error": "httpx not installed"}
 
-        headers = {}
-        if api_key:
-            headers["apiKey"] = api_key
-
         async with httpx.AsyncClient() as client:
             try:
-                response = await client.get(
-                    endpoint,
-                    params=params,
-                    headers=headers,
-                    timeout=timeout,
-                )
+                response = await client.get(endpoint, timeout=timeout)
                 return {
                     "status_code": response.status_code,
                     "data": response.json() if response.status_code == 200 else None,

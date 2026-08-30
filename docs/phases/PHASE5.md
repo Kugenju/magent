@@ -296,7 +296,7 @@ frontier。验证进程中断后不重新调用已提交节点。
 ### Task 7：报告、文档与示例
 
 让 `ExecutionReport` 能说明是否恢复、恢复自哪个 checkpoint、跳过了哪些已提交节点、发生了
-多少 abandoned/replayed attempts；更新 `docs/API.md`、`docs/DESIGN.md` 和 README，并提供
+多少 abandoned/replayed attempts；更新 `../architecture/API.md`、`../architecture/DESIGN.md` 和 README，并提供
 离线中断恢复示例。
 
 ### Task 8：回归与阶段发布

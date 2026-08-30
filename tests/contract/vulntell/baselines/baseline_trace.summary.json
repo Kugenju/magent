@@ -1,0 +1,17 @@
+{
+  "run_id": "vulntell-demo-run",
+  "node_count": 9,
+  "success_count": 9,
+  "failure_count": 0,
+  "cancelled_count": 0,
+  "skipped_count": 0,
+  "not_executed_count": 0,
+  "retry_count": 0,
+  "timeout_count": 0,
+  "peak_concurrency": 1,
+  "checkpoint_writes": 0,
+  "recovery_count": 0,
+  "replayed_nodes": [],
+  "duration_ms": 51.85365676879883,
+  "resource_samples": null
+}

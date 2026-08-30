@@ -1,34 +1,11 @@
-"""VulnTell 业务执行 State（阶段 7，Task 5）。
+"""[兼容转发] VulnTellState 已迁移至 apps.vulntell.pipeline.state（阶段 3）。
 
-State 字段使用可序列化的 dict / list[dict] 形态，跨分支的并发写入（raw、
-observations_by_source、source_status）通过 reducer 合并，避免字段冲突。
+业务 State 的唯一实现位于 apps.vulntell.pipeline.state，本课程模块仅作转发，
+避免重复定义。请勿在此新增业务逻辑。
 """
 
 from __future__ import annotations
 
-from typing import ClassVar, Optional
+from apps.vulntell.pipeline.state import VulnTellState
 
-from pydantic import BaseModel
-
-from .models import DatasetMeta
-
-
-class VulnTellState(BaseModel):
-    meta: DatasetMeta
-    raw: dict[str, list[dict]] = {}
-    observations_by_source: dict[str, list[dict]] = {}
-    canonical: list[dict] = []
-    pending: list[dict] = []
-    quality_issues: list[dict] = []
-    source_status: dict[str, str] = {}
-    failed_sources: list[str] = []
-    metrics: Optional[dict] = None
-    report: Optional[dict] = None
-
-    # 跨源分支写不同 key，用 reducer 合并而非覆盖
-    reducers: ClassVar[dict] = {
-        "raw": lambda cur, new: {**cur, **new},
-        "observations_by_source": lambda cur, new: {**cur, **new},
-        "source_status": lambda cur, new: {**cur, **new},
-        "failed_sources": lambda cur, new: cur + new,
-    }
+__all__ = ["VulnTellState"]

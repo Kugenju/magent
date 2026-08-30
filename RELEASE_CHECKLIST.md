@@ -20,7 +20,7 @@ any blocking item is open.
 
 ## Docs & links
 - [x] README / API / DESIGN / ROADMAP / PHASE1–9 status consistent.
-- [x] `docs/COMPARISON.md`, `docs/BENCHMARKS.md` present and linked.
+- [x] `docs/architecture/COMPARISON.md`, `docs/evaluation/BENCHMARKS.md` present and linked.
 - [x] All README commands run successfully in the local checkout.
 
 ## License & compliance

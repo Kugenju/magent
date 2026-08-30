@@ -18,7 +18,7 @@ licenses, reference-project attribution, dataset/fixture provenance, and safe-us
 
 ## Reference frameworks (comparison only)
 
-The following projects are referenced **only** for design comparison in `docs/COMPARISON.md` and recorded
+The following projects are referenced **only** for design comparison in `docs/architecture/COMPARISON.md` and recorded
 as `not_comparable` in `benchmarks/reference_comparison.py`. No source code, binaries, or assets from these
 projects are copied or distributed:
 

@@ -1,7 +1,7 @@
 # 阶段 8 评测结果与复现说明
 
 本文件汇总 `benchmarks/` 离线评测的设计、复现入口与结果解释边界。实验代码与运行方式见
-[`benchmarks/README.md`](../benchmarks/README.md)。
+[`benchmarks/README.md`](../../benchmarks/README.md)。
 
 ## 复现入口
 

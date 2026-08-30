@@ -12,7 +12,7 @@
 - 进程内 EventBus
 - 103 个离线测试通过
 
-阶段 4 已完成阶段 3 发布收尾，确认 `StepRecord`/`ExecutionReport` 向后兼容，并将重试、超时、取消和尝试历史接入顺序/并发执行器。Checkpoint、进程恢复和持久化幂等属于下一阶段，详见 [`PHASE5.md`](docs/PHASE5.md)。
+阶段 4 已完成阶段 3 发布收尾，确认 `StepRecord`/`ExecutionReport` 向后兼容，并将重试、超时、取消和尝试历史接入顺序/并发执行器。Checkpoint、进程恢复和持久化幂等属于下一阶段，详见 [`PHASE5.md`](PHASE5.md)。
 
 ## 2. 阶段目标
 
@@ -280,7 +280,7 @@ tests/unit/
 
 ### Task 6：报告、EventBus 和文档
 
-发布尝试开始、尝试失败、超时、重试和最终状态事件；更新 `docs/API.md`、README 和 `COMPARISON.md`。
+发布尝试开始、尝试失败、超时、重试和最终状态事件；更新 `../architecture/API.md`、README 和 `COMPARISON.md`。
 
 ### Task 7：基准与提交
 

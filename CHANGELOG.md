@@ -8,7 +8,7 @@ bumps the minor version. The offline-first, no-API-key, no-network default is a 
 
 ### Release hardening (phase 9)
 - Documentation consistency across README / API / DESIGN / ROADMAP / PHASE docs.
-- `docs/COMPARISON.md`: design comparison with LangGraph / AutoGen / CrewAI (not ranked).
+- `docs/architecture/COMPARISON.md`: design comparison with LangGraph / AutoGen / CrewAI (not ranked).
 - `LICENSE` (MIT) and `THIRD_PARTY_NOTICES.md` (dependencies, fixtures, safe-use boundaries).
 - GitHub Actions CI: Python 3.11/3.12/3.13, full pytest, `mypy src/magent`, offline smoke tests,
   generated-artifact guard.

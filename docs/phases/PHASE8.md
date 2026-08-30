@@ -192,8 +192,8 @@ repetitions / seed / sample_threshold
 
 - 生成机器可读 JSON/JSONL/CSV 和人工可读 Markdown；
 - 报告原始样本、聚合统计、失败配置、环境、版本、样本量和限制说明；
-- 更新 `README.md`、`docs/DESIGN.md`、`docs/API.md`、`docs/ROADMAP.md`，必要时补充
-  `docs/BENCHMARKS.md`；
+- 更新 `README.md`、`../architecture/DESIGN.md`、`../architecture/API.md`、`ROADMAP.md`，必要时补充
+  `../evaluation/BENCHMARKS.md`；
 - 不把一次本地小样本结果写成项目固定性能承诺。
 
 ## 7. 主要风险与控制措施
@@ -274,4 +274,4 @@ test(benchmarks): verify determinism security and comparability gates
 docs: publish phase-8 evaluation results and limitations
 ```
 
-下一阶段为阶段 9：发布、展示与工程化收口，详见 [`PHASE9.md`](docs/PHASE9.md)。
+下一阶段为阶段 9：发布、展示与工程化收口，详见 [`PHASE9.md`](PHASE9.md)。

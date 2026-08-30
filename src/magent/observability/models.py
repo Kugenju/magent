@@ -4,7 +4,7 @@
 ``Trace``；一次节点 attempt 对应一个 ``Span``；重试产生独立 attempt Span，通过相同
 node 标识与明确 attempt 序号关联。
 
-约束（见 docs/PHASE8.md §4）：
+约束（见 docs/phases/PHASE8.md §4）：
 - ``run_id`` / ``trace_id`` / workflow、node 版本在同一次执行中保持一致；
 - 恢复运行必须保留原 run 关联（``resumed`` / ``resumed_from_seq`` / ``replayed_nodes``）；
 - metadata 经过脱敏并限制大小、层级与集合长度；禁止写入 API Key、完整原始漏洞描述、

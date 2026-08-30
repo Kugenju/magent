@@ -20,12 +20,15 @@ evaluation app) is implemented as a downstream example that exercises this
 framework — it lives under `examples/vulntell` and never pollutes the `magent`
 core.
 
+下一阶段是否继续在本仓库推进 VulnTell、何时拆分业务仓库，以及阶段 10+ 的产品化路线，见
+[`docs/NEXT_STAGE.md`](docs/NEXT_STAGE.md)。
+
 ## Current scope (phases 1–8; phase 9 release hardening)
 
 > Phase 9 hardens the project for public release: documentation consistency, a framework
-> comparison (`docs/COMPARISON.md`), license/third-party notices, CI quality gates, clean-install
+> comparison (`docs/architecture/COMPARISON.md`), license/third-party notices, CI quality gates, clean-install
 > verification and a release checklist. It does **not** change execution semantics. See
-> [`docs/PHASE9.md`](docs/PHASE9.md).
+> [`docs/phases/PHASE9.md`](docs/phases/PHASE9.md).
 
 | In scope | Out of scope (later phases) |
 |----------|------------------------------|
@@ -45,7 +48,7 @@ core.
 | VulnTell source-quality evaluation + reference comparison recorder | External ranking |
 
 阶段 8 的评测、统一 trace、benchmark 和参考框架对比已实现并随仓库提交；详见
-[`docs/PHASE8.md`](docs/PHASE8.md) 与
+[`docs/phases/PHASE8.md`](docs/phases/PHASE8.md) 与
 [`benchmarks/README.md`](benchmarks/README.md)。
 
 ## Install
@@ -157,7 +160,7 @@ asyncio.run(main())
 
 `compile()` validates the topology first (invalid graphs raise
 `GraphValidationError`); the executor walks one path to `END`. See
-`docs/API.md` for the full phase-2 API and current limits.
+`docs/architecture/API.md` for the full phase-2 API and current limits.
 
 ## Concurrent execution (phase 3)
 
@@ -353,8 +356,8 @@ All tests are offline (no network, external services, or production database).
 The VulnTell vertical example (phase 7) is implemented and committed under
 `examples/vulntell`. Phase 8 (observability + offline evaluation) is implemented
 and committed under `src/magent/observability` and `benchmarks/`. See
-`docs/DESIGN.md`, `docs/ROADMAP.md`, `docs/PHASE6.md`, `docs/PHASE7.md` and
-`docs/PHASE8.md` and `docs/PHASE9.md` for the current boundaries and acceptance criteria.
+`docs/architecture/DESIGN.md`, `docs/phases/ROADMAP.md`, `docs/phases/PHASE6.md`, `docs/phases/PHASE7.md` and
+`docs/phases/PHASE8.md` and `docs/phases/PHASE9.md` for the current boundaries and acceptance criteria.
 
 Phase 7 and phase 8 are implemented and committed. Phase 9 (release,
 documentation, CI and presentation) is the current development stage. The `magent` core remains
@@ -370,8 +373,8 @@ that records versions without emitting rankings.
 ## Release & license
 
 - `CHANGELOG.md` — version history and the `0.x` compatibility policy.
-- `docs/COMPARISON.md` — design comparison with LangGraph / AutoGen / CrewAI (not ranked).
-- `docs/BENCHMARKS.md` — phase-8 evaluation results and reproduction.
+- `docs/architecture/COMPARISON.md` — design comparison with LangGraph / AutoGen / CrewAI (not ranked).
+- `docs/evaluation/BENCHMARKS.md` — phase-8 evaluation results and reproduction.
 - `RELEASE_CHECKLIST.md` — pre-release verification checklist.
 - `LICENSE` (MIT) and `THIRD_PARTY_NOTICES.md` — license, dependencies, fixture provenance and safe-use.
 

@@ -496,7 +496,7 @@ Run the suite with `python -m benchmarks.cli --out benchmarks/out` (writes
 
 ## Phase 7 — VulnTell vertical example (implemented)
 
-Documented in [`PHASE7.md`](docs/PHASE7.md). VulnTell
+Documented in [`PHASE7.md`](../phases/PHASE7.md). VulnTell
 consumes the public `magent` API from `examples/vulntell`; its CVE,
 source-observation, normalization, metric and report models are **not** part of
 the framework core.

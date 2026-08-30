@@ -1,0 +1,47 @@
+{
+  "canonical_count": 4,
+  "dataset_id": "vulntell-demo",
+  "dataset_version": "2024Q1",
+  "deduplication_version": "1",
+  "framework_version": "0.1.0",
+  "insufficient_data": false,
+  "llm_explanation": null,
+  "llm_failed": false,
+  "metric_version": "1",
+  "metrics": {
+    "completeness": {
+      "efficiency_rate": 0.25,
+      "presence_rate": {
+        "cvss": 0.75,
+        "cwe": 0.75,
+        "description": 0.75,
+        "references": 0.75,
+        "title": 1.0
+      }
+    },
+    "independence_rate": 1.0,
+    "maintainability_rate": 0.75,
+    "relevance_rate": 0.5,
+    "timeliness": {
+      "avg_delay_days": 27.0,
+      "max_delay_days": 27.0
+    },
+    "traceable_rate": 1.0,
+    "verifiability_rate": 0.6666666666666666,
+    "volume": {
+      "pending_observations": 0,
+      "total_observations": 4,
+      "unique_vulnerabilities": 4,
+      "updated_records": 3
+    }
+  },
+  "parser_version": "1",
+  "pending_count": 0,
+  "quality_issue_count": 7,
+  "source_status": {
+    "cnvd": "failed",
+    "nvd": "ok"
+  },
+  "window_end": "2023-12-31T23:59:59+00:00",
+  "window_start": "2023-01-01T00:00:00+00:00"
+}

@@ -35,7 +35,7 @@
 - [x] Runtime 的耗时计算使用与 Executor 一致的可注入 clock
 - [x] 补充成功、跳过、显式失败和非法更新的断言
 - [x] 确认阶段 1 公共 API 不依赖 VulnTell、网络、数据库或 LLM
-- [x] 补充 `docs/API.md` 中对阶段 1 公共 API 的说明
+- [x] 补充 `../architecture/API.md` 中对阶段 1 公共 API 的说明
 - [ ] 修复 `CompiledGraph` 对外暴露可变字典的问题
 - [ ] 修复条件分支和 router 失败时的重复 `StepRecord`
 - [ ] 导出并测试阶段 2 的顶层公共 API
@@ -68,7 +68,7 @@
 
 ## 5. 推荐的公共 API
 
-以下 API 是实现建议。下游 Agent 可以调整命名，但必须保持相同语义，并在 `docs/API.md` 记录最终版本。
+以下 API 是实现建议。下游 Agent 可以调整命名，但必须保持相同语义，并在 `../architecture/API.md` 记录最终版本。
 
 ```python
 END = "__end__"
@@ -216,7 +216,7 @@ tests/unit/
 
 ### Task 6：兼容性与文档
 
-确保旧的 `SequentialExecutor` 测试继续通过；更新 `README.md` 或 `docs/API.md`，添加最小 Graph 示例和当前限制。
+确保旧的 `SequentialExecutor` 测试继续通过；更新 `README.md` 或 `../architecture/API.md`，添加最小 Graph 示例和当前限制。
 
 ## 11. 测试要求
 

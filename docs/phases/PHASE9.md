@@ -35,7 +35,7 @@
 ### 3.1 本阶段包含
 
 - README、API、DESIGN、路线图和阶段文档的事实一致性修订；
-- `docs/COMPARISON.md`：LangGraph、AutoGen、CrewAI 的设计对比和本项目取舍；
+- `../architecture/COMPARISON.md`：LangGraph、AutoGen、CrewAI 的设计对比和本项目取舍；
 - 许可证、第三方归属、数据集/fixture 来源说明和安全使用说明；
 - GitHub Actions CI、干净环境安装验证和离线 smoke test；
 - 打包元数据、版本策略、变更日志和发布检查清单；
@@ -89,15 +89,15 @@ GitHub repository
 ### Task 1：文档事实统一
 
 - 更新 README 的阶段状态、安装方式、示例命令、目录结构和当前限制；
-- 更新 `docs/API.md` 的版本范围、稳定 API、阶段 8 实际字段和已知限制；
-- 更新 `docs/DESIGN.md` 的架构、目录、观测与业务边界；
-- 将 `docs/PHASE8.md` 标为已完成，补充实际实现、测试数和结果入口；
-- 将本文件和 `docs/ROADMAP.md` 标为阶段 9 当前计划，阶段完成后再切换为已完成；
+- 更新 `../architecture/API.md` 的版本范围、稳定 API、阶段 8 实际字段和已知限制；
+- 更新 `../architecture/DESIGN.md` 的架构、目录、观测与业务边界；
+- 将 `docs/phases/PHASE8.md` 标为已完成，补充实际实现、测试数和结果入口；
+- 将本文件和 `ROADMAP.md` 标为阶段 9 当前计划，阶段完成后再切换为已完成；
 - 检查所有相对链接、绝对本地链接和命令在干净 checkout 中是否可用。
 
 ### Task 2：参考项目与许可证材料
 
-- 创建 `docs/COMPARISON.md`，至少比较 Agent、State、Graph/Workflow、并发、Checkpoint、重试、
+- 创建 `../architecture/COMPARISON.md`，至少比较 Agent、State、Graph/Workflow、并发、Checkpoint、重试、
   工具/LLM 扩展、可观测性和生态定位；
 - 每项参考结论记录来源 URL、项目版本或 commit、查看日期和“借鉴/未采用”的原因；
 - 不复制 LangGraph、AutoGen、CrewAI 源码和实现细节；
@@ -186,7 +186,7 @@ GitHub repository
 1. `README.md` 能指导新用户在干净环境完成安装、核心示例、VulnTell 和 benchmark 运行；
 2. 全量测试、类型检查和 CI 在所有声明支持的 Python 版本上通过；
 3. 项目元数据、版本号、README、API、DESIGN、ROADMAP 和阶段文档状态一致；
-4. `docs/COMPARISON.md` 完成，至少覆盖 LangGraph、AutoGen、CrewAI，并记录版本/来源/取舍；
+4. `../architecture/COMPARISON.md` 完成，至少覆盖 LangGraph、AutoGen、CrewAI，并记录版本/来源/取舍；
 5. LICENSE、第三方归属、fixture 来源/许可和安全边界文件齐全；
 6. 默认流程保持离线，不要求 API Key、真实 LLM、参考框架依赖或生产数据库；
 7. VulnTell 和阶段 8 benchmark 结果可按固定入口重放，结果限制和样本规模明确；

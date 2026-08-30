@@ -1,0 +1,54 @@
+{
+  "source": "cnvd",
+  "dataset_id": "vulntell-demo",
+  "dataset_version": "2024Q1",
+  "records": [
+    {
+      "record_id": "CNVD-1",
+      "cve_id": "CVE-2023-1004",
+      "title": "共享 CVE 的中文描述",
+      "description": "与 NVD 同一漏洞的中文观察。",
+      "published_at": "2023-05-01T00:00:00Z",
+      "modified_at": "2023-05-04T00:00:00Z",
+      "source_added_at": "2023-05-05T00:00:00Z",
+      "cvss_version": "3.1",
+      "cvss_vector": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:H/I:H/A:H",
+      "cvss_score": 8.1,
+      "severity": "HIGH",
+      "cwe": ["CWE-120"],
+      "affected": ["vendor:core:3.0"],
+      "references": [
+        {"url": "https://cnvd.example.org/advisories/1004", "type": "patch", "verified": true}
+      ]
+    },
+    {
+      "record_id": "CNVD-NO-CVE",
+      "title": "无 CVE 编号的本地漏洞观察",
+      "description": "缺少 CVE 编号，应进入待匹配集合，不强行合并。",
+      "published_at": "2023-06-01T00:00:00Z",
+      "cvss_version": "3.1",
+      "cvss_score": 5.0,
+      "severity": "MEDIUM",
+      "cwe": ["CWE-89"],
+      "affected": ["vendor:db:4.0"],
+      "references": []
+    },
+    {
+      "record_id": "CNVD-2",
+      "cve_id": "CVE-2023-1005",
+      "title": "SQL injection in exporter",
+      "description": "An SQL injection in the export module.",
+      "published_at": "2023-07-01T00:00:00Z",
+      "modified_at": "2023-07-02T00:00:00Z",
+      "cvss_version": "3.1",
+      "cvss_vector": "CVSS:3.1/AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:N",
+      "cvss_score": 8.8,
+      "severity": "HIGH",
+      "cwe": ["CWE-89"],
+      "affected": ["vendor:exporter:2.2"],
+      "references": [
+        {"url": "https://cnvd.example.org/advisories/1005", "type": "patch", "verified": true}
+      ]
+    }
+  ]
+}

@@ -197,3 +197,146 @@ class Report(_VTBase):
     llm_explanation: Optional[str] = None
     llm_failed: bool = False
     generated_at: dt.datetime
+
+
+# ---- 阶段 4：同步运行与批次状态 ----
+
+
+class SyncRunStatus(str):
+    """同步运行状态（不可变字符串常量）。"""
+    PENDING = "pending"
+    RUNNING = "running"
+    PARTIAL = "partial"
+    SUCCEEDED = "succeeded"
+    FAILED = "failed"
+    CANCELLED = "cancelled"
+
+
+class SyncRunStatusEnum(str):
+    """同步运行状态枚举（用于类型检查）。"""
+    PENDING = "pending"
+    RUNNING = "running"
+    PARTIAL = "partial"
+    SUCCEEDED = "succeeded"
+    FAILED = "failed"
+    CANCELLED = "cancelled"
+
+
+class SyncErrorSummary(_VTBase):
+    """同步错误摘要（用于审计，不保留敏感信息）。"""
+
+    source: str
+    kind: str  # SourceErrorKind.value
+    count: int = 0
+    last_message: str = ""
+    retryable: bool = False
+
+
+class SyncPageCheckpoint(_VTBase):
+    """同步页检查点（用于 resume 和幂等）。"""
+
+    page_index: int
+    page_fingerprint: str
+    record_count: int
+    persisted: bool = False
+    persisted_at: Optional[dt.datetime] = None
+    error: Optional[SyncErrorSummary] = None
+
+
+class SyncRun(_VTBase):
+    """同步运行（不可变值对象，适合 checkpoint）。
+
+    状态转换：
+    - pending -> running
+    - running -> partial (有成功页但未完成)
+    - running -> succeeded (所有页成功)
+    - running -> failed (不可恢复错误)
+    - pending/running/partial -> cancelled (用户取消)
+
+    约束：
+    - 不保存连接、响应正文或凭据
+    - state_hash 由 (run_id, source, page_size, request_fingerprint) 确定性生成
+    """
+
+    run_id: str
+    source: str
+    dataset_id: str
+    dataset_version: str
+    window_start: dt.datetime
+    window_end: dt.datetime
+    page_size: int
+    request_fingerprint: str
+    state_hash: str
+
+    # 时间戳
+    started_at: Optional[dt.datetime] = None
+    finished_at: Optional[dt.datetime] = None
+
+    # 状态
+    status: str = SyncRunStatus.PENDING
+
+    # 进度
+    last_success_cursor: Optional[str] = None
+    total_pages: int = 0
+    completed_pages: int = 0
+    total_records: int = 0
+
+    # 错误摘要
+    error_summaries: list[SyncErrorSummary] = Field(default_factory=list)
+    last_error: Optional[SyncErrorSummary] = None
+
+    # 元数据
+    source_version: str = ""
+
+    def __post_init__(self):
+        # 状态验证
+        valid_statuses = [
+            SyncRunStatus.PENDING,
+            SyncRunStatus.RUNNING,
+            SyncRunStatus.PARTIAL,
+            SyncRunStatus.SUCCEEDED,
+            SyncRunStatus.FAILED,
+            SyncRunStatus.CANCELLED,
+        ]
+        if self.status not in valid_statuses:
+            raise ValueError(f"Invalid status: {self.status}")
+
+        # 时间验证
+        if self.started_at and self.finished_at:
+            if self.started_at > self.finished_at:
+                raise ValueError("started_at must be before finished_at")
+
+        # 进度验证
+        if self.completed_pages > self.total_pages:
+            raise ValueError("completed_pages must be <= total_pages")
+        if self.total_pages > 0 and self.completed_pages == self.total_pages:
+            if self.status == SyncRunStatus.RUNNING:
+                raise ValueError("Status should be succeeded when all pages completed")
+
+    def execution_key(self, page_index: int) -> str:
+        """生成批次执行 key（用于幂等）。"""
+        return f"sync:{self.run_id}:{self.source}:{page_index}:{self.request_fingerprint}"
+
+    def can_transition_to(self, new_status: str) -> bool:
+        """检查状态转换是否合法。"""
+        transitions = {
+            SyncRunStatus.PENDING: [SyncRunStatus.RUNNING, SyncRunStatus.CANCELLED],
+            SyncRunStatus.RUNNING: [
+                SyncRunStatus.PARTIAL,
+                SyncRunStatus.SUCCEEDED,
+                SyncRunStatus.FAILED,
+                SyncRunStatus.CANCELLED,
+            ],
+            SyncRunStatus.PARTIAL: [SyncRunStatus.RUNNING, SyncRunStatus.CANCELLED],
+            SyncRunStatus.SUCCEEDED: [],
+            SyncRunStatus.FAILED: [],
+            SyncRunStatus.CANCELLED: [],
+        }
+        return new_status in transitions.get(self.status, [])
+
+    def transition_to(self, new_status: str) -> "SyncRun":
+        """返回新状态的 SyncRun（不可变模式）。"""
+        if not self.can_transition_to(new_status):
+            raise ValueError(f"Cannot transition from {self.status} to {new_status}")
+        return self.model_copy(update={"status": new_status})
+

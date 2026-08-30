@@ -1,8 +1,20 @@
-"""VulnTell 数据源适配层（阶段 3 过渡区）。
+"""VulnTell 数据源适配层（阶段 3/4 过渡区）。
 
-阶段 3 不复制 examples.vulntell.sources 的实现，仅将其作为兼容入口集中 re-export，
-供 apps.vulntell.pipeline 引用。真实数据源（含 HTTP adapter）将在阶段 4 迁移到
-apps.vulntell.sources 下，届时本文件将被替换为正式实现。
+阶段 3 将 examples.vulntell.sources 作为兼容入口集中 re-export。
+阶段 4 引入了正式的 protocol.py、fixtures.py 和 errors.py。
+阶段 5 将引入真实 HTTP 适配器（live adapter），届时本文件将被替换。
+
+替换条件：
+- apps.vulntell.sources.protocol.SourceRequest/SourcePage 已稳定
+- apps.vulntell.sources.fixtures.PagedFixtureSource 已验证所有分页场景
+- apps.vulntell.sources.errors.SourceError 已覆盖所有错误类型
+
+删除版本：v2.0.0 (预计阶段 5 完成后)
+
+迁移路径：
+- 新代码使用 apps.vulntell.sources.PagedFixtureSource（阶段 4+）
+- 旧代码继续使用 apps.vulntell.sources.FixtureSourceAdapter（兼容期）
+- 阶段 6 删除本文件和 examples.vulntell.sources
 """
 
 from __future__ import annotations

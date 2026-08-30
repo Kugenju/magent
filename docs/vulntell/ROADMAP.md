@@ -114,7 +114,7 @@
 - 重复执行不新增 observation/entity/metric；
 - Trace 不包含 raw payload 和凭据。
 
-## 7. 阶段 4：数据源契约与增量模型（下一阶段）
+## 7. 阶段 4：数据源契约与增量模型（已完成）
 
 ### 目标
 
@@ -124,18 +124,18 @@
 
 ### 工作项
 
-- 定义 SourceRequest、SourcePage、SyncRun、SyncCursor；
-- fixture adapter 支持分页、空页、重复页和中断注入；
-- 定义 429、超时、非法响应、权限错误和永久错误分类；
-- 设计批次 checkpoint 和重新请求的稳定 execution key。
+- 已定义 SourceRequest、SourcePage、SourceRecord、SyncRun、SyncPageCheckpoint（见 `protocol.py`、`domain/models.py`）；
+- 已实现 PagedFixtureSource 支持分页、空页、重复页、乱序、坏记录和中断注入（见 `fixtures.py`）；
+- 已定义 SourceErrorKind（rate_limited/timeout/transient/invalid_response/auth/forbidden/not_found/permanent/cancelled）和 classify_http_status/classify_exception（见 `errors.py`）；
+- 已实现 SyncRunner/SyncRunnerService，支持 run/resume/cancel、checkpoint 和幂等（见 `sync.py`）。
 
 ### 验收标准
 
-- fixture 可模拟所有声明的错误场景；
-- 分页中断后可从游标恢复；
-- 重复页不会导致重复写入；
+- fixture 可模拟所有声明的错误场景（见 `tests/unit/test_sources.py`）；
+- 分页中断后可从游标恢复（见 `tests/unit/test_sync.py`）；
+- 重复页不会导致重复写入（page fingerprint 去重）；
 - adapter import 和默认 CLI 完全离线；
-- 错误分类可被 magent retry policy 正确消费。
+- 错误分类可被 magent retry policy 正确消费（retryable 字段）。
 
 ## 8. 阶段 5：真实数据源接入
 

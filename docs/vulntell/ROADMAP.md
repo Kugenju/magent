@@ -137,9 +137,9 @@
 - adapter import 和默认 CLI 完全离线；
 - 错误分类可被 magent retry policy 正确消费（retryable 字段）。
 
-## 8. 阶段 5：真实数据源接入（下一阶段）
+## 8. 阶段 5：真实数据源接入（已完成）
 
-实施计划见 [PHASE5_PLAN.md](PHASE5_PLAN.md)。阶段 4 收尾门禁通过后，先做 NVD 纵向切片，再接入 CISA KEV 与 CNVD。
+阶段 5 实施计划见 [PHASE5_PLAN.md](PHASE5_PLAN.md)，完成记录见 [PHASE5_RESULT.md](PHASE5_RESULT.md)。
 
 ### 目标
 

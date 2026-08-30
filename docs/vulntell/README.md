@@ -9,6 +9,8 @@
 - [阶段 3：Graph 与任务层迁移实施计划](PHASE3_PLAN.md)
 - [阶段 3 审查记录](PHASE3_REVIEW.md)
 - [阶段 4：数据源契约与增量模型实施计划](PHASE4_PLAN.md)
+- [阶段 4 审查记录](PHASE4_REVIEW.md)
+- [阶段 5：真实数据源接入实施计划](PHASE5_PLAN.md)
 - [阶段 7 纵向示例](../phases/PHASE7.md)
 - [评测与复现](../evaluation/BENCHMARKS.md)
 

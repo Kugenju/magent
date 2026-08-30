@@ -13,8 +13,8 @@
 | 0 | 基线冻结与决策 | 2–3 天 | 基线报告、兼容策略、数据许可清单 |
 | 1 | apps/vulntell 外壳 | 2–3 天 | 新入口、配置对象、兼容启动器 |
 | 2 | 领域层迁移（已完成） | 1 周 | domain/reporting 模块、结果等价测试 |
-| 3 | Graph 与任务层迁移（下一阶段） | 1 周 | pipeline、Application、业务 Graph、恢复入口 |
-| 4 | 数据源契约与增量模型 | 3–5 天 | SourceAdapter、分页/游标、SyncRun |
+| 3 | Graph 与任务层迁移（已完成） | 1 周 | pipeline、Application、业务 Graph、恢复入口 |
+| 4 | 数据源契约与增量模型（收尾中） | 3–5 天 | SourceAdapter、分页/游标、SyncRun、离线同步骨架 |
 | 5 | 真实数据源接入 | 3–5 周 | NVD/CNVD/CISA KEV live adapter |
 | 6 | 存储与查询 | 2–4 周 | schema v2、repository、SQLite/PostgreSQL、查询 |
 | 7 | 指标与报告产品化 | 2–3 周 | 版本化指标、质量回归、导出 |
@@ -114,11 +114,11 @@
 - 重复执行不新增 observation/entity/metric；
 - Trace 不包含 raw payload 和凭据。
 
-## 7. 阶段 4：数据源契约与增量模型（已完成）
+## 7. 阶段 4：数据源契约与增量模型（收尾中）
 
 ### 目标
 
-详细实施方案见 [PHASE4_PLAN.md](PHASE4_PLAN.md)，阶段 3 审查见 [PHASE3_REVIEW.md](PHASE3_REVIEW.md)。
+详细实施方案见 [PHASE4_PLAN.md](PHASE4_PLAN.md)，当前审查见 [PHASE4_REVIEW.md](PHASE4_REVIEW.md)。阶段 4 尚未通过全部完成门禁。
 
 在接入真实网络前冻结 SourceAdapter、分页/游标、同步运行和错误语义。
 
@@ -127,17 +127,19 @@
 - 已定义 SourceRequest、SourcePage、SourceRecord、SyncRun、SyncPageCheckpoint（见 `protocol.py`、`domain/models.py`）；
 - 已实现 PagedFixtureSource 支持分页、空页、重复页、乱序、坏记录和中断注入（见 `fixtures.py`）；
 - 已定义 SourceErrorKind（rate_limited/timeout/transient/invalid_response/auth/forbidden/not_found/permanent/cancelled）和 classify_http_status/classify_exception（见 `errors.py`）；
-- 已实现 SyncRunner/SyncRunnerService，支持 run/resume/cancel、checkpoint 和幂等（见 `sync.py`）。
+- 已实现 SyncRunner/SyncRunnerService 骨架，支持 run/resume/cancel API；状态完成、持久化 checkpoint 和重试游标仍需按 [PHASE4_REVIEW.md](PHASE4_REVIEW.md) 收尾。
 
 ### 验收标准
 
-- fixture 可模拟所有声明的错误场景（见 `tests/unit/test_sources.py`）；
-- 分页中断后可从游标恢复（见 `tests/unit/test_sync.py`）；
+- fixture 已具备故障注入能力，但专门的 `tests/unit/test_sources.py`、`tests/unit/test_sync.py` 尚未补齐；
+- 分页中断恢复和跨进程 checkpoint 尚未通过验收；
 - 重复页不会导致重复写入（page fingerprint 去重）；
 - adapter import 和默认 CLI 完全离线；
 - 错误分类可被 magent retry policy 正确消费（retryable 字段）。
 
-## 8. 阶段 5：真实数据源接入
+## 8. 阶段 5：真实数据源接入（下一阶段）
+
+实施计划见 [PHASE5_PLAN.md](PHASE5_PLAN.md)。阶段 4 收尾门禁通过后，先做 NVD 纵向切片，再接入 CISA KEV 与 CNVD。
 
 ### 目标
 

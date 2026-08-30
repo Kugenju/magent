@@ -327,7 +327,7 @@ class SyncRun(_VTBase):
                 SyncRunStatus.FAILED,
                 SyncRunStatus.CANCELLED,
             ],
-            SyncRunStatus.PARTIAL: [SyncRunStatus.RUNNING, SyncRunStatus.CANCELLED],
+            SyncRunStatus.PARTIAL: [SyncRunStatus.RUNNING, SyncRunStatus.FAILED, SyncRunStatus.CANCELLED],
             SyncRunStatus.SUCCEEDED: [],
             SyncRunStatus.FAILED: [],
             SyncRunStatus.CANCELLED: [],

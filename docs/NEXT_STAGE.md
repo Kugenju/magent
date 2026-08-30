@@ -56,13 +56,15 @@
 - [阶段 3：Graph 与任务层迁移实施计划](vulntell/PHASE3_PLAN.md)
 - [阶段 3 审查记录](vulntell/PHASE3_REVIEW.md)
 - [阶段 4：数据源契约与增量模型实施计划](vulntell/PHASE4_PLAN.md)
+- [阶段 4 审查记录](vulntell/PHASE4_REVIEW.md)
+- [阶段 5：真实数据源接入实施计划](vulntell/PHASE5_PLAN.md)
 - [最终框架实现设计](vulntell/FINAL_DESIGN.md)
 - [产品化实施路线图](vulntell/ROADMAP.md)
 - [MVP 范围与验收](vulntell/PRODUCT_SCOPE.md)
 
-## 下一步（阶段 4）
+## 下一步（阶段 4 收尾 → 阶段 5）
 
-阶段 3 已完成并通过迁移契约测试。下一步先冻结 `SourceRequest`、`SourcePage`、游标、`SyncRun` 和错误分类，补齐可分页、可中断恢复的离线 fixture adapter 与同步编排；在阶段 4 门禁通过前，不接入真实 HTTP 数据源。
+阶段 4 的协议和 fixture 已提交，但同步 runner 的完成状态、重试游标和持久化 checkpoint 仍需修复并补齐专门测试。完成这些门禁后，按 [PHASE5_PLAN.md](vulntell/PHASE5_PLAN.md) 以 NVD 为首个真实数据源，保持默认离线和显式 live 开关。
 
 ## 退出/暂停条件
 

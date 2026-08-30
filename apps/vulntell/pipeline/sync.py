@@ -1,4 +1,4 @@
-"""VulnTell 同步编排（阶段 4，Task 4.5）。
+"""VulnTell 同步编排（阶段 4 收尾）。
 
 SyncRunner 负责创建/恢复 SyncRun、循环 fetch_page、在"页面验证→规范化→持久化成功"
 后提交游标 checkpoint，并在失败/取消时保存最后安全边界。
@@ -11,6 +11,8 @@ SyncRunner 负责创建/恢复 SyncRun、循环 fetch_page、在"页面验证→
 
 from __future__ import annotations
 
+import hashlib
+import json
 import uuid
 from datetime import datetime, timezone
 from typing import Any, Callable, Optional
@@ -53,6 +55,7 @@ class SyncRunner:
         request: SourceRequest,
         run_id: Optional[str] = None,
         source_version: str = "",
+        total_pages: int = 0,
     ) -> SyncRun:
         """创建新的同步运行。"""
         run_id = run_id or str(uuid.uuid4())
@@ -64,8 +67,6 @@ class SyncRunner:
             "page_size": request.page_size,
             "request_fingerprint": request.request_fingerprint,
         }
-        import hashlib
-        import json
         raw = json.dumps(state_hash_data, sort_keys=True)
         state_hash = hashlib.sha256(raw.encode()).hexdigest()[:16]
 
@@ -82,6 +83,7 @@ class SyncRunner:
             started_at=datetime.now(timezone.utc),
             status=SyncRunStatus.PENDING,
             source_version=source_version,
+            total_pages=total_pages,
         )
 
     async def run(self, run: SyncRun, request: SourceRequest) -> SyncRun:
@@ -117,6 +119,9 @@ class SyncRunner:
         """执行分页循环。"""
         cursor = start_cursor
         page_index = 0
+        retry_count = 0
+        max_retries = 3
+
         if start_cursor:
             # 从游标解析页码
             try:
@@ -136,17 +141,38 @@ class SyncRunner:
                 # 错误处理
                 run = await self._handle_error(run, result, page_index)
                 if not result.retryable:
+                    # 不可重试错误：根据当前状态决定最终状态
+                    if run.status in (SyncRunStatus.RUNNING, SyncRunStatus.PARTIAL):
+                        run = run.transition_to(SyncRunStatus.FAILED)
                     return run
-                # 可重试错误：跳过当前页，继续下一页
-                page_index += 1
-                cursor = None
+                # 可重试错误：检查重试次数
+                retry_count += 1
+                if retry_count >= max_retries:
+                    # 超过重试次数：根据当前状态决定最终状态
+                    if run.status in (SyncRunStatus.RUNNING, SyncRunStatus.PARTIAL):
+                        run = run.transition_to(SyncRunStatus.FAILED)
+                    return run
+                # 重试同一页
                 continue
+
+            # 重置重试计数
+            retry_count = 0
 
             # 成功获取一页
             page = result
 
-            # 验证页面指纹
-            if not self._validate_page(page, run):
+            # 首页：更新 total_pages（从页面流推断）
+            if run.completed_pages == 0 and run.total_pages == 0:
+                # 如果 page_index == 0 且 has_more，total_pages 需要后续计算
+                # 这里先设为 -1 表示未知
+                run = run.model_copy(update={"total_pages": -1})
+
+            # 验证页面指纹（重复页检测）
+            exec_key = run.execution_key(page.page_index)
+            if not self._validate_page(exec_key, page):
+                # 跳过重复页
+                page_index += 1
+                cursor = page.next_cursor
                 continue
 
             # 持久化
@@ -156,14 +182,17 @@ class SyncRunner:
                 continue
 
             # 更新状态
-            run = self._update_run_after_success(run, page)
-
-            # 保存 checkpoint
-            await self._save_checkpoint(run, page)
+            run = self._update_run_after_success(run, page, exec_key)
 
             # 检查是否完成
             if not page.has_more:
-                if run.completed_pages == run.total_pages:
+                # 计算 total_pages
+                if run.total_pages == -1:
+                    # 从 page_index 推断 total_pages
+                    run = run.model_copy(update={"total_pages": page.page_index + 1})
+
+                # 检查是否所有页都完成
+                if run.completed_pages >= run.total_pages:
                     run = run.transition_to(SyncRunStatus.SUCCEEDED)
                 else:
                     run = run.transition_to(SyncRunStatus.PARTIAL)
@@ -173,10 +202,10 @@ class SyncRunner:
             cursor = page.next_cursor
             page_index += 1
 
-    def _validate_page(self, page: SourcePage, run: SyncRun) -> bool:
+    def _validate_page(self, exec_key: str, page: SourcePage) -> bool:
         """验证页面（重复页检测）。"""
-        fp = page.page_fingerprint
-        if fp in self._checkpoints:
+        # 使用 execution_key 检查是否已处理过
+        if exec_key in self._checkpoints:
             return False
         return True
 
@@ -203,7 +232,7 @@ class SyncRunner:
             await self._save_checkpoint_entry(exec_key, checkpoint)
 
             return True
-        except Exception as e:
+        except Exception:
             return False
 
     async def _handle_error(self, run: SyncRun, error: SourceError, page_index: int) -> SyncRun:
@@ -249,7 +278,7 @@ class SyncRunner:
             retryable=False,
         ), page.page_index)
 
-    def _update_run_after_success(self, run: SyncRun, page: SourcePage) -> SyncRun:
+    def _update_run_after_success(self, run: SyncRun, page: SourcePage, exec_key: str) -> SyncRun:
         """更新运行状态（成功页）。"""
         updates = {
             "last_success_cursor": page.next_cursor or run.last_success_cursor,
@@ -257,17 +286,7 @@ class SyncRunner:
             "total_records": run.total_records + page.record_count,
         }
 
-        # 更新错误摘要（如果之前有错误）
-        if run.error_summaries:
-            # 清除同类型的错误（假设错误已恢复）
-            pass
-
-        return run.model_copy(update=updates)
-
-    async def _save_checkpoint(self, run: SyncRun, page: SourcePage) -> None:
-        """保存 checkpoint（用于恢复）。"""
-        # 保存到内存（阶段 5 可扩展到持久化）
-        exec_key = run.execution_key(page.page_index)
+        # 保存 checkpoint
         checkpoint = SyncPageCheckpoint(
             page_index=page.page_index,
             page_fingerprint=page.page_fingerprint,
@@ -276,6 +295,8 @@ class SyncRunner:
             persisted_at=datetime.now(timezone.utc),
         )
         self._checkpoints[exec_key] = checkpoint
+
+        return run.model_copy(update=updates)
 
     async def _load_checkpoint(self, exec_key: str) -> Optional[SyncPageCheckpoint]:
         """加载 checkpoint。"""
@@ -306,9 +327,10 @@ class SyncRunnerService:
         self,
         request: SourceRequest,
         run_id: Optional[str] = None,
+        total_pages: int = 0,
     ) -> SyncRun:
         """启动新的同步运行。"""
-        run = await self._runner.create_run(request, run_id)
+        run = await self._runner.create_run(request, run_id, total_pages=total_pages)
         self._runs[run.run_id] = run
         run = await self._runner.run(run, request)
         self._runs[run.run_id] = run

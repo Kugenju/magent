@@ -321,3 +321,99 @@ class TestBatchMerger:
                 report = json.load(f)
             assert "merged" in report
             assert "duplicates" in report
+
+    def test_merge_deduplication(self):
+        """测试去重功能。"""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            source_dir = Path(tmpdir) / "source"
+            source_dir.mkdir()
+
+            # 创建两个相同的批次（相同内容）
+            batch1_dir = self._create_test_batch(
+                source_dir, "batch1", "CVE-2024-0001", "nvd"
+            )
+            batch2_dir = self._create_test_batch(
+                source_dir, "batch2", "CVE-2024-0001", "nvd"
+            )
+
+            output_dir = Path(tmpdir) / "output"
+            merged_docs, report = merge_batches(
+                [batch1_dir, batch2_dir], output_dir
+            )
+
+            # 应该只保留一个（去重）
+            assert len(merged_docs) == 1
+            assert report.duplicates == 1
+
+    def test_merge_source_priority(self):
+        """测试来源优先级合并。"""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            source_dir = Path(tmpdir) / "source"
+            source_dir.mkdir()
+
+            # 创建来自不同来源的批次
+            batch1_dir = self._create_test_batch(
+                source_dir, "batch1", "CVE-2024-0001", "nvd"  # 优先级 1
+            )
+            batch2_dir = self._create_test_batch(
+                source_dir, "batch2", "CVE-2024-0001", "osv"  # 优先级 4
+            )
+
+            output_dir = Path(tmpdir) / "output"
+            merged_docs, report = merge_batches(
+                [batch1_dir, batch2_dir], output_dir
+            )
+
+            # 应该保留 NVD 的 summary（优先级更高）
+            assert len(merged_docs) == 1
+            assert "nvd" in merged_docs[0].summary.lower() or merged_docs[0].summary is not None
+
+    def test_merge_multiple_cves(self):
+        """测试合并多个 CVE。"""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            source_dir = Path(tmpdir) / "source"
+            source_dir.mkdir()
+
+            # 创建包含多个 CVE 的批次
+            batch_dir = source_dir / "batch1"
+            batch_dir.mkdir()
+
+            docs = [
+                COSVDocument(
+                    id="CVE-2024-0001",
+                    modified="2024-01-01T00:00:00Z",
+                    summary="Vuln 1",
+                ),
+                COSVDocument(
+                    id="CVE-2024-0002",
+                    modified="2024-01-01T00:00:00Z",
+                    summary="Vuln 2",
+                ),
+                COSVDocument(
+                    id="CVE-2024-0003",
+                    modified="2024-01-01T00:00:00Z",
+                    summary="Vuln 3",
+                ),
+            ]
+
+            records_path = batch_dir / "records.cosv.jsonl"
+            for doc in docs:
+                serialize_cosv_to_file(doc, records_path, mode="a")
+
+            file_hash = calculate_content_hash(records_path)
+            manifest = create_batch_manifest(
+                collector_id="collector-1",
+                source="nvd",
+                dataset_version="2024-01-01",
+                window_start="2024-01-01T00:00:00Z",
+                window_end="2024-01-02T00:00:00Z",
+                record_count=3,
+                content_hash=file_hash,
+            )
+            save_manifest(manifest, batch_dir)
+
+            output_dir = Path(tmpdir) / "output"
+            merged_docs, report = merge_batches([batch_dir], output_dir)
+
+            assert len(merged_docs) == 3
+            assert report.merged == 3

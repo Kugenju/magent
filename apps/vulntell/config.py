@@ -19,7 +19,7 @@ from pathlib import Path
 from typing import AbstractSet, FrozenSet, Optional, Sequence
 from urllib.parse import urlparse
 
-_KNOWN_SOURCES: FrozenSet[str] = frozenset({"nvd", "cisa_kev", "cnvd", "osv", "github_advisory", "euvd", "msrc", "redhat", "ubuntu", "debian", "jvn"})
+_KNOWN_SOURCES: FrozenSet[str] = frozenset({"nvd", "cisa_kev", "cnvd", "osv", "github_advisory", "euvd", "msrc", "redhat", "ubuntu", "debian", "jvn", "certcc", "cisco", "fortinet", "paloalto", "exploitdb"})
 # CNVD 官方 API 暂不可用，仅支持人工 fixture 模式
 _KNOWN_SOURCES_FIXTURE_ONLY: FrozenSet[str] = frozenset()
 _LIVE_ENDPOINTS: dict[str, str] = {
@@ -33,6 +33,11 @@ _LIVE_ENDPOINTS: dict[str, str] = {
     "ubuntu": "https://ubuntu.com/security/notices",
     "debian": "https://security-tracker.debian.org/tracker/data/json",
     "jvn": "https://jvn.jp/api/v3",
+    "certcc": "https://www.kb.cert.org/vuls/api/vulnnotes",
+    "cisco": "https://tools.cisco.com/security/center/servicesxml",
+    "fortinet": "https://www.fortinet.com/fortiguard/psirt",
+    "paloalto": "https://security.paloaltonetworks.com/api/v1/advisories",
+    "exploitdb": "https://www.exploit-db.com/api",
 }
 
 

@@ -1,7 +1,7 @@
-"""VulnTell Live 适配器工厂（阶段 5，Task 5C.1，阶段 6/7 扩展）。
+"""VulnTell Live 适配器工厂（阶段 5，Task 5C.1，阶段 6/7/8 扩展）。
 
 根据配置创建对应的 live adapter，支持 NVD、CISA KEV、OSV、GitHub Advisory、EUVD、
-Microsoft MSRC、Red Hat、Ubuntu、Debian、JVN。
+Microsoft MSRC、Red Hat、Ubuntu、Debian、JVN、CERT/CC、Cisco、Fortinet、Palo Alto、Exploit-DB。
 CNVD 暂不支持 live 模式（官方 API 不可用）。
 
 约束：
@@ -15,14 +15,19 @@ from __future__ import annotations
 from typing import Optional
 
 from apps.vulntell.config import VulnTellConfig
+from apps.vulntell.sources.certcc import CERTCCAdapter, CERTCCConfig
+from apps.vulntell.sources.cisco import CiscoAdapter, CiscoConfig
 from apps.vulntell.sources.cisa_kev import CISAKEVAdapter, CISAKEVConfig
 from apps.vulntell.sources.debian import DebianAdapter, DebianConfig
 from apps.vulntell.sources.euvd import EUVDAdapter, EUVDConfig
+from apps.vulntell.sources.exploitdb import ExploitDBAdapter, ExploitDBConfig
+from apps.vulntell.sources.fortinet import FortinetAdapter, FortinetConfig
 from apps.vulntell.sources.github_advisory import GitHubAdvisoryAdapter, GitHubAdvisoryConfig
 from apps.vulntell.sources.jvn import JVNAdapter, JVNConfig
 from apps.vulntell.sources.msrc import MSRCAdapter, MSRCConfig
 from apps.vulntell.sources.nvd import NVDAdapter, NVDConfig
 from apps.vulntell.sources.osv import OSVAdapter, OSVConfig
+from apps.vulntell.sources.paloalto import PaloAltoAdapter, PaloAltoConfig
 from apps.vulntell.sources.protocol import SourcePage, SourceRecord, SourceRequest
 from apps.vulntell.sources.redhat import RedHatAdapter, RedHatConfig
 from apps.vulntell.sources.ubuntu import UbuntuAdapter, UbuntuConfig
@@ -170,6 +175,51 @@ def create_live_adapter(
         adapter.source = "jvn"
         return adapter
 
+    elif config.source == "certcc":
+        certcc_config = CERTCCConfig(
+            endpoint=config.get_live_endpoint() or CERTCCConfig.endpoint,
+            timeout_seconds=config.timeout_seconds,
+        )
+        adapter = CERTCCAdapter(config=certcc_config, transport=transport)
+        adapter.source = "certcc"
+        return adapter
+
+    elif config.source == "cisco":
+        cisco_config = CiscoConfig(
+            endpoint=config.get_live_endpoint() or CiscoConfig.endpoint,
+            timeout_seconds=config.timeout_seconds,
+        )
+        adapter = CiscoAdapter(config=cisco_config, transport=transport)
+        adapter.source = "cisco"
+        return adapter
+
+    elif config.source == "fortinet":
+        fortinet_config = FortinetConfig(
+            endpoint=config.get_live_endpoint() or FortinetConfig.endpoint,
+            timeout_seconds=config.timeout_seconds,
+        )
+        adapter = FortinetAdapter(config=fortinet_config, transport=transport)
+        adapter.source = "fortinet"
+        return adapter
+
+    elif config.source == "paloalto":
+        paloalto_config = PaloAltoConfig(
+            endpoint=config.get_live_endpoint() or PaloAltoConfig.endpoint,
+            timeout_seconds=config.timeout_seconds,
+        )
+        adapter = PaloAltoAdapter(config=paloalto_config, transport=transport)
+        adapter.source = "paloalto"
+        return adapter
+
+    elif config.source == "exploitdb":
+        exploitdb_config = ExploitDBConfig(
+            endpoint=config.get_live_endpoint() or ExploitDBConfig.endpoint,
+            timeout_seconds=config.timeout_seconds,
+        )
+        adapter = ExploitDBAdapter(config=exploitdb_config, transport=transport)
+        adapter.source = "exploitdb"
+        return adapter
+
     elif config.source == "cnvd":
         # CNVD 暂不支持 live 模式
         raise ValueError(
@@ -193,5 +243,10 @@ def get_source_display_name(source: str) -> str:
         "ubuntu": "Ubuntu CVE Tracker",
         "debian": "Debian Security Tracker",
         "jvn": "Japan Vulnerability Notes",
+        "certcc": "CERT/CC Vulnerability Notes",
+        "cisco": "Cisco PSIRT",
+        "fortinet": "Fortinet PSIRT",
+        "paloalto": "Palo Alto Networks PSIRT",
+        "exploitdb": "Exploit-DB",
     }
     return names.get(source, source)

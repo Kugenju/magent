@@ -50,7 +50,7 @@ def main() -> int:
     parser.add_argument("--trace", default=None, help="可选：写出 Trace/Span 观测 JSONL 与此路径前缀")
     # Live 模式参数
     parser.add_argument("--live", action="store_true", help="启用 live 模式（需要网络）")
-    parser.add_argument("--source", choices=["nvd", "cisa_kev", "cnvd", "osv", "github_advisory", "euvd", "msrc", "redhat", "ubuntu", "debian", "jvn"], help="live 模式数据源")
+    parser.add_argument("--source", choices=["nvd", "cisa_kev", "cnvd", "osv", "github_advisory", "euvd", "msrc", "redhat", "ubuntu", "debian", "jvn", "certcc", "cisco", "fortinet", "paloalto", "exploitdb"], help="live 模式数据源")
     parser.add_argument("--window-days", type=int, default=30, help="回溯天数（默认 30）")
     args = parser.parse_args()
 

@@ -16,14 +16,23 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
-from typing import AbstractSet, FrozenSet, Optional
+from typing import AbstractSet, FrozenSet, Optional, Sequence
+from urllib.parse import urlparse
 
-_KNOWN_SOURCES: FrozenSet[str] = frozenset({"nvd", "cisa_kev", "cnvd"})
+_KNOWN_SOURCES: FrozenSet[str] = frozenset({"nvd", "cisa_kev", "cnvd", "osv", "github_advisory", "euvd", "msrc", "redhat", "ubuntu", "debian", "jvn"})
 # CNVD 官方 API 暂不可用，仅支持人工 fixture 模式
 _KNOWN_SOURCES_FIXTURE_ONLY: FrozenSet[str] = frozenset()
 _LIVE_ENDPOINTS: dict[str, str] = {
     "nvd": "https://services.nvd.nist.gov/rest/json/cves/2.0",
     "cisa_kev": "https://www.cisa.gov/sites/default/files/feeds/known_exploited_vulnerabilities.json",
+    "osv": "https://osv.dev/list",
+    "github_advisory": "https://api.github.com/advisories",
+    "euvd": "https://europeanswift.org/api",
+    "msrc": "https://api.msrc.microsoft.com/cvrf/v3.0/updates",
+    "redhat": "https://access.redhat.com/security/securitydata",
+    "ubuntu": "https://ubuntu.com/security/notices",
+    "debian": "https://security-tracker.debian.org/tracker/data/json",
+    "jvn": "https://jvn.jp/api/v3",
 }
 
 
@@ -41,11 +50,26 @@ class VulnTellConfig:
     resume: bool = False
     # Live 模式配置
     live: bool = False
+    mode: Optional[str] = None  # fixture/live；未指定时由 live 推导
     source: Optional[str] = None  # nvd, cisa_kev, cnvd
     window_days: int = 30  # 默认回溯天数
+    endpoint: Optional[str] = None
+    endpoint_allowlist: tuple[str, ...] = tuple(_LIVE_ENDPOINTS.values())
+    timeout_seconds: float = 30.0
     api_key: Optional[str] = None  # 从环境变量注入，不序列化
+    endpoint: Optional[str] = None
+    timeout_seconds: float = 30.0
 
     def __post_init__(self) -> None:
+        object.__setattr__(self, "mode", self.mode or ("live" if self.live else "fixture"))
+        if self.mode not in {"fixture", "live"}:
+            raise ValueError("mode 必须是 fixture 或 live")
+        if self.mode == "live" and not self.live:
+            object.__setattr__(self, "live", True)
+        if self.window_days <= 0:
+            raise ValueError("window_days 必须为正数")
+        if self.timeout_seconds <= 0:
+            raise ValueError("timeout_seconds 必须为正数")
         if not self.run_id:
             raise ValueError("run_id 不能为空")
         unknown = {s for s in self.faulty_sources if s not in _KNOWN_SOURCES}
@@ -62,6 +86,15 @@ class VulnTellConfig:
                 raise ValueError(f"未知来源：{self.source}，可选：{sorted(all_sources)}")
             if self.source in _KNOWN_SOURCES_FIXTURE_ONLY and self.source != "cnvd":
                 raise ValueError(f"来源 {self.source} 仅支持 fixture 模式")
+            if self.endpoint is not None:
+                allowed = _LIVE_ENDPOINTS.get(self.source)
+                if allowed is None or urlparse(self.endpoint).netloc != urlparse(allowed).netloc:
+                    raise ValueError("live endpoint 不在 allowlist 中")
+            ep = self.endpoint or _LIVE_ENDPOINTS.get(self.source)
+            if not ep:
+                raise ValueError(f"来源 {self.source} 未配置 endpoint")
+            if not any(ep == allowed or ep.startswith(allowed.rstrip("/") + "/") for allowed in self.endpoint_allowlist):
+                raise ValueError("endpoint 不在 allowlist 中")
 
     @property
     def fixture_dir(self) -> Path:
@@ -89,7 +122,7 @@ class VulnTellConfig:
         """获取 live 模式的 API endpoint。"""
         if not self.is_live_mode:
             return None
-        return _LIVE_ENDPOINTS.get(self.source)
+        return self.endpoint or _LIVE_ENDPOINTS.get(self.source)
 
     def get_api_key(self) -> Optional[str]:
         """获取 API key（仅从环境变量）。"""
@@ -99,11 +132,19 @@ class VulnTellConfig:
         env_key_map = {
             "nvd": "NVD_API_KEY",
             "cisa_kev": None,  # CISA KEV 不需要 API key
+            "osv": None,  # OSV 不需要 API key
+            "github_advisory": "GITHUB_TOKEN",
+            "euvd": None,  # EUVD 不需要 API key
         }
         env_var = env_key_map.get(self.source)
         if env_var:
             return os.environ.get(env_var)
         return None
+
+    def get_github_token(self) -> Optional[str]:
+        """获取 GitHub token（仅从环境变量）。"""
+        import os
+        return os.environ.get("GITHUB_TOKEN")
 
     @classmethod
     def from_cli_args(
@@ -120,6 +161,10 @@ class VulnTellConfig:
         live: bool = False,
         source: Optional[str] = None,
         window_days: int = 30,
+        mode: Optional[str] = None,
+        endpoint: Optional[str] = None,
+        endpoint_allowlist: Optional[Sequence[str]] = None,
+        timeout_seconds: float = 30.0,
     ) -> "VulnTellConfig":
         """从 CLI 参数构建配置（仅解析与校验，无副作用）。"""
         import os
@@ -141,5 +186,9 @@ class VulnTellConfig:
             live=live,
             source=source,
             window_days=window_days,
+            mode=mode,
+            endpoint=endpoint,
+            endpoint_allowlist=tuple(endpoint_allowlist or _LIVE_ENDPOINTS.values()),
+            timeout_seconds=timeout_seconds,
             api_key=api_key,
         )

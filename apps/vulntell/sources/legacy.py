@@ -2,7 +2,8 @@
 
 阶段 3 将 examples.vulntell.sources 作为兼容入口集中 re-export。
 阶段 4 引入了正式的 protocol.py、fixtures.py 和 errors.py。
-阶段 5 将引入真实 HTTP 适配器（live adapter），届时本文件将被替换。
+阶段 5 已引入独立真实 HTTP adapter（`nvd.py`、`cisa_kev.py`、`cnvd.py`）；本文件仍为旧
+`SourceAdapter` 兼容层，待 live pipeline 与阶段 6 存储迁移完成后替换。
 
 替换条件：
 - apps.vulntell.sources.protocol.SourceRequest/SourcePage 已稳定

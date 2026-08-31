@@ -34,6 +34,8 @@ class NVDConfig:
     timeout_seconds: float = 30.0
     api_key: Optional[str] = None  # 可选 API key 提高速率限制
     max_window_days: int = NVD_MAX_WINDOW_DAYS  # 最大窗口天数
+    max_response_bytes: int = 5 * 1024 * 1024
+    max_records_per_page: int = 2000
 
 
 @dataclass
@@ -79,6 +81,8 @@ def slice_time_window(
     NVD API 限制查询窗口不超过 120 天。
     返回 [(start, end), ...] 列表，每个区间不超过 max_days 天。
     """
+    if max_days <= 0:
+        raise ValueError("max_days must be positive")
     slices = []
     current_start = window_start
 
@@ -157,6 +161,9 @@ class NVDAdapter:
                     message="Invalid cursor format",
                     retryable=False,
                 )
+            if nvd_cursor.start_index < 0 or nvd_cursor.slice_index < 0:
+                return SourceError(source="nvd", kind=SourceErrorKind.INVALID_RESPONSE,
+                                    message="Invalid cursor values", retryable=False)
 
         # 获取窗口分片
         slices = self._get_window_slices(request, nvd_cursor)
@@ -208,8 +215,27 @@ class NVDAdapter:
         # 解析响应
         try:
             data = response.get("data", {})
+            # 限制响应大小，避免误将巨大 payload 写入内存/状态
+            try:
+                if len(json.dumps(data, ensure_ascii=False).encode("utf-8")) > self._config.max_response_bytes:
+                    return SourceError(source="nvd", kind=SourceErrorKind.INVALID_RESPONSE,
+                                        message="Response exceeds size limit", retryable=False)
+            except (TypeError, ValueError):
+                return SourceError(source="nvd", kind=SourceErrorKind.INVALID_RESPONSE,
+                                   message="Invalid response payload", retryable=False)
             vulnerabilities = data.get("vulnerabilities", [])
             total_results = data.get("totalResults", 0)
+
+            if not isinstance(vulnerabilities, list) or len(vulnerabilities) > self._config.max_records_per_page:
+                return SourceError(source="nvd", kind=SourceErrorKind.INVALID_RESPONSE,
+                                   message="Response record count exceeds limit", retryable=False)
+
+            # NVD 返回通常已排序，但显式以 modified time + id 稳定排序，确保分片间可重现
+            vulnerabilities = sorted(
+                vulnerabilities,
+                key=lambda v: ((v.get("cve", {}).get("lastModified") or ""),
+                               (v.get("cve", {}).get("id") or "")),
+            )
 
             # 转换为 SourceRecord
             records = []
@@ -241,7 +267,14 @@ class NVDAdapter:
                 records.append(record)
 
             # 计算是否有更多页
-            next_index = start_index + len(records)
+            # 游标必须使用服务端偏移，而非过滤后的有效记录数；否则坏记录会导致重复/跳过 CVE
+            server_count = data.get("resultsPerPage", len(vulnerabilities))
+            try:
+                server_count = int(server_count)
+            except (TypeError, ValueError):
+                server_count = len(vulnerabilities)
+            server_count = max(0, server_count)
+            next_index = start_index + server_count
             has_more_in_slice = next_index < total_results
             has_more_slices = len(slices) > 1
 

@@ -1,4 +1,4 @@
-"""VulnTell 新入口（阶段 1，Task 1.3）。
+"""VulnTell 新入口（阶段 1，Task 1.3，阶段 5 扩展）。
 
 ``python -m apps.vulntell`` 可运行。参数语义与旧入口一致；输出格式（Markdown +
 ``--json`` 报告块 + 可选 trace 写出）沿用当前实现，避免在迁移阶段改变报告 schema。
@@ -48,6 +48,10 @@ def main() -> int:
     parser.add_argument("--json", dest="json_output", action="store_true")
     parser.add_argument("--faulty", nargs="*", default=[], help="注入故障的来源名，如 nvd cnvd")
     parser.add_argument("--trace", default=None, help="可选：写出 Trace/Span 观测 JSONL 与此路径前缀")
+    # Live 模式参数
+    parser.add_argument("--live", action="store_true", help="启用 live 模式（需要网络）")
+    parser.add_argument("--source", choices=["nvd", "cisa_kev", "cnvd"], help="live 模式数据源")
+    parser.add_argument("--window-days", type=int, default=30, help="回溯天数（默认 30）")
     args = parser.parse_args()
 
     config = VulnTellConfig.from_cli_args(
@@ -59,6 +63,9 @@ def main() -> int:
         json_output=args.json_output,
         faulty=args.faulty,
         trace=args.trace,
+        live=args.live,
+        source=args.source,
+        window_days=args.window_days,
     )
 
     app = VulnTellApplication(config)

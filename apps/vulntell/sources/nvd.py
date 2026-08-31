@@ -1,24 +1,29 @@
-"""VulnTell NVD 适配器（阶段 5，Task 5.1）。
+"""VulnTell NVD 适配器（阶段 5，Task 5.1，5C.2 扩展）。
 
 将 NVD API (https://services.nvd.nist.gov/rest/json/cves/2.0) 响应映射为 SourceRecord。
-支持分页、游标、429 限流、超时和错误分类。
+支持分页、游标、时间窗口分片、429 限流、超时和错误分类。
 
 约束：
 - 默认不联网，需要显式传入 transport
 - fixture/录制响应仅保存最小脱敏样本
 - 不把完整 raw payload 写入 State/Trace/日志
 - 由 runner 统一执行重试、退避、取消和 checkpoint，adapter 不自行循环重试
+- 时间窗口超过 120 天自动分片（NVD 限制）
 """
 
 from __future__ import annotations
 
 import json
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from typing import Any, Callable, Optional
 
 from apps.vulntell.sources.errors import SourceError, SourceErrorKind, classify_http_status
 from apps.vulntell.sources.protocol import SourcePage, SourceRecord, SourceRequest
+
+
+# NVD 时间窗口限制（天）
+NVD_MAX_WINDOW_DAYS = 120
 
 
 @dataclass
@@ -28,6 +33,61 @@ class NVDConfig:
     page_size: int = 2000  # NVD 最大 page size
     timeout_seconds: float = 30.0
     api_key: Optional[str] = None  # 可选 API key 提高速率限制
+    max_window_days: int = NVD_MAX_WINDOW_DAYS  # 最大窗口天数
+
+
+@dataclass
+class NVDCursor:
+    """NVD 游标：包含窗口分片和分页偏移。"""
+    window_start: datetime
+    window_end: datetime
+    start_index: int
+    slice_index: int = 0  # 当前窗口分片索引
+
+    def to_string(self) -> str:
+        """序列化为字符串。"""
+        data = {
+            "ws": self.window_start.isoformat(),
+            "we": self.window_end.isoformat(),
+            "si": self.start_index,
+            "sl": self.slice_index,
+        }
+        return json.dumps(data, separators=(",", ":"))
+
+    @classmethod
+    def from_string(cls, cursor_str: str) -> "NVDCursor":
+        """从字符串反序列化。"""
+        try:
+            data = json.loads(cursor_str)
+            return cls(
+                window_start=datetime.fromisoformat(data["ws"]),
+                window_end=datetime.fromisoformat(data["we"]),
+                start_index=data["si"],
+                slice_index=data.get("sl", 0),
+            )
+        except (json.JSONDecodeError, KeyError, ValueError):
+            raise ValueError(f"Invalid NVD cursor: {cursor_str}")
+
+
+def slice_time_window(
+    window_start: datetime,
+    window_end: datetime,
+    max_days: int = NVD_MAX_WINDOW_DAYS,
+) -> list[tuple[datetime, datetime]]:
+    """将时间窗口切分为 NVD 允许的最大区间。
+
+    NVD API 限制查询窗口不超过 120 天。
+    返回 [(start, end), ...] 列表，每个区间不超过 max_days 天。
+    """
+    slices = []
+    current_start = window_start
+
+    while current_start < window_end:
+        current_end = min(current_start + timedelta(days=max_days), window_end)
+        slices.append((current_start, current_end))
+        current_start = current_end
+
+    return slices
 
 
 class NVDAdapter:
@@ -37,6 +97,7 @@ class NVDAdapter:
     - 分页：使用 startIndex 和 resultsPerPage
     - 游标：格式 "{startIndex}"，整数偏移
     - 窗口：lastModStartDate/lastModEndDate（半开区间 [start, end)）
+    - 时间窗口分片：自动将大窗口切分为 120 天区间
     - 错误分类：429/408/5xx/401/403/404
 
     约束：
@@ -52,6 +113,26 @@ class NVDAdapter:
         self._config = config or NVDConfig()
         self._transport = transport or self._default_transport
 
+    def _get_window_slices(
+        self, request: SourceRequest, cursor: Optional[NVDCursor] = None
+    ) -> list[tuple[datetime, datetime]]:
+        """获取当前请求的窗口分片列表。"""
+        if cursor:
+            # 从游标恢复：返回剩余分片
+            slices = slice_time_window(
+                cursor.window_start,
+                cursor.window_end,
+                self._config.max_window_days,
+            )
+            return slices[cursor.slice_index:]
+        else:
+            # 新请求：切分整个窗口
+            return slice_time_window(
+                request.window_start,
+                request.window_end,
+                self._config.max_window_days,
+            )
+
     async def fetch_page(
         self, request: SourceRequest, cursor: Optional[str] = None
     ) -> SourcePage | SourceError:
@@ -59,16 +140,16 @@ class NVDAdapter:
 
         Args:
             request: 同步请求
-            cursor: 分页游标（格式 "{startIndex}"）
+            cursor: 分页游标（JSON 格式，包含窗口分片和偏移）
 
         Returns:
             SourcePage 或 SourceError
         """
         # 解析游标
-        start_index = 0
+        nvd_cursor = None
         if cursor:
             try:
-                start_index = int(cursor)
+                nvd_cursor = NVDCursor.from_string(cursor)
             except ValueError:
                 return SourceError(
                     source="nvd",
@@ -77,12 +158,26 @@ class NVDAdapter:
                     retryable=False,
                 )
 
+        # 获取窗口分片
+        slices = self._get_window_slices(request, nvd_cursor)
+        if not slices:
+            return SourceError(
+                source="nvd",
+                kind=SourceErrorKind.INVALID_RESPONSE,
+                message="No window slices available",
+                retryable=False,
+            )
+
+        # 使用第一个分片
+        slice_start, slice_end = slices[0]
+        start_index = nvd_cursor.start_index if nvd_cursor else 0
+
         # 构建 NVD API 参数
         params = {
             "startIndex": start_index,
             "resultsPerPage": min(request.page_size, self._config.page_size),
-            "lastModStartDate": request.window_start.isoformat(),
-            "lastModEndDate": request.window_end.isoformat(),
+            "lastModStartDate": slice_start.isoformat(),
+            "lastModEndDate": slice_end.isoformat(),
         }
 
         # 添加过滤条件
@@ -140,19 +235,40 @@ class NVDAdapter:
                         "source": "nvd",
                         "published_at": cve.get("published"),
                         "modified_at": cve.get("lastModified"),
+                        "window_slice": f"{slice_start.isoformat()}/{slice_end.isoformat()}",
                     },
                 )
                 records.append(record)
 
             # 计算是否有更多页
             next_index = start_index + len(records)
-            has_more = next_index < total_results
-            next_cursor = str(next_index) if has_more else None
+            has_more_in_slice = next_index < total_results
+            has_more_slices = len(slices) > 1
+
+            # 构建下一页游标
+            if has_more_in_slice:
+                # 当前分片还有更多页
+                next_cursor = NVDCursor(
+                    window_start=cursor.window_start if cursor else request.window_start,
+                    window_end=cursor.window_end if cursor else request.window_end,
+                    start_index=next_index,
+                    slice_index=cursor.slice_index if cursor else 0,
+                ).to_string()
+            elif has_more_slices:
+                # 还有更多分片
+                next_cursor = NVDCursor(
+                    window_start=cursor.window_start if cursor else request.window_start,
+                    window_end=cursor.window_end if cursor else request.window_end,
+                    start_index=0,
+                    slice_index=(cursor.slice_index if cursor else 0) + 1,
+                ).to_string()
+            else:
+                next_cursor = None
 
             return SourcePage(
                 records=tuple(records),
                 next_cursor=next_cursor,
-                has_more=has_more,
+                has_more=next_cursor is not None,
                 page_index=start_index // request.page_size,
                 source="nvd",
                 observed_at=datetime.now(timezone.utc),

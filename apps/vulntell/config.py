@@ -1,4 +1,4 @@
-"""VulnTell 应用配置（阶段 1，Task 1.1）。
+"""VulnTell 应用配置（阶段 1，Task 1.1，阶段 5 扩展）。
 
 不可变（frozen）配置对象，统一 CLI 与未来 API 的输入。CLI 参数转换为配置只做
 解析与校验，不执行任何副作用；fixture 路径不依赖当前工作目录。
@@ -6,16 +6,25 @@
 约束：
 - 不保存 API key 明文或原始漏洞文本；
 - 未知来源、空 run id、非法 checkpoint 组合应尽早报错；
-- 所有路径使用 ``pathlib.Path``。
+- 所有路径使用 ``pathlib.Path``；
+- live 模式需要显式开启，且只能使用已注册的来源；
+- API key 只从环境变量注入，禁止进入序列化/trace/异常消息。
 """
 
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import AbstractSet, FrozenSet, Optional
 
-_KNOWN_SOURCES: FrozenSet[str] = frozenset({"nvd", "cnvd"})
+_KNOWN_SOURCES: FrozenSet[str] = frozenset({"nvd", "cisa_kev", "cnvd"})
+# CNVD 官方 API 暂不可用，仅支持人工 fixture 模式
+_KNOWN_SOURCES_FIXTURE_ONLY: FrozenSet[str] = frozenset()
+_LIVE_ENDPOINTS: dict[str, str] = {
+    "nvd": "https://services.nvd.nist.gov/rest/json/cves/2.0",
+    "cisa_kev": "https://www.cisa.gov/sites/default/files/feeds/known_exploited_vulnerabilities.json",
+}
 
 
 @dataclass(frozen=True)
@@ -30,6 +39,11 @@ class VulnTellConfig:
     faulty_sources: FrozenSet[str] = field(default_factory=frozenset)
     trace_prefix: Optional[str] = None
     resume: bool = False
+    # Live 模式配置
+    live: bool = False
+    source: Optional[str] = None  # nvd, cisa_kev, cnvd
+    window_days: int = 30  # 默认回溯天数
+    api_key: Optional[str] = None  # 从环境变量注入，不序列化
 
     def __post_init__(self) -> None:
         if not self.run_id:
@@ -39,6 +53,15 @@ class VulnTellConfig:
             raise ValueError(f"未知来源（不在 {sorted(_KNOWN_SOURCES)}）：{sorted(unknown)}")
         if self.checkpoint == ":memory:" and self.resume:
             raise ValueError("resume 不能与 :memory: checkpoint 同时使用（无持久化可恢复）")
+        # Live 模式校验
+        if self.live:
+            if not self.source:
+                raise ValueError("live 模式需要指定 --source")
+            all_sources = _KNOWN_SOURCES | _KNOWN_SOURCES_FIXTURE_ONLY
+            if self.source not in all_sources:
+                raise ValueError(f"未知来源：{self.source}，可选：{sorted(all_sources)}")
+            if self.source in _KNOWN_SOURCES_FIXTURE_ONLY and self.source != "cnvd":
+                raise ValueError(f"来源 {self.source} 仅支持 fixture 模式")
 
     @property
     def fixture_dir(self) -> Path:
@@ -46,6 +69,41 @@ class VulnTellConfig:
         from apps.vulntell import FIXTURE_DIR
 
         return FIXTURE_DIR
+
+    @property
+    def is_live_mode(self) -> bool:
+        """是否为 live 模式。"""
+        return self.live and self.source is not None
+
+    @property
+    def window_start(self) -> datetime:
+        """同步窗口起始时间（含）。"""
+        return datetime.now(timezone.utc) - timedelta(days=self.window_days)
+
+    @property
+    def window_end(self) -> datetime:
+        """同步窗口结束时间（不含）。"""
+        return datetime.now(timezone.utc)
+
+    def get_live_endpoint(self) -> Optional[str]:
+        """获取 live 模式的 API endpoint。"""
+        if not self.is_live_mode:
+            return None
+        return _LIVE_ENDPOINTS.get(self.source)
+
+    def get_api_key(self) -> Optional[str]:
+        """获取 API key（仅从环境变量）。"""
+        if not self.is_live_mode:
+            return None
+        import os
+        env_key_map = {
+            "nvd": "NVD_API_KEY",
+            "cisa_kev": None,  # CISA KEV 不需要 API key
+        }
+        env_var = env_key_map.get(self.source)
+        if env_var:
+            return os.environ.get(env_var)
+        return None
 
     @classmethod
     def from_cli_args(
@@ -59,8 +117,18 @@ class VulnTellConfig:
         json_output: bool = False,
         faulty: Optional[list[str]] = None,
         trace: Optional[str] = None,
+        live: bool = False,
+        source: Optional[str] = None,
+        window_days: int = 30,
     ) -> "VulnTellConfig":
         """从 CLI 参数构建配置（仅解析与校验，无副作用）。"""
+        import os
+        api_key = None
+        if live and source:
+            env_key_map = {"nvd": "NVD_API_KEY"}
+            env_var = env_key_map.get(source)
+            if env_var:
+                api_key = os.environ.get(env_var)
         return cls(
             db=db,
             checkpoint=checkpoint,
@@ -70,4 +138,8 @@ class VulnTellConfig:
             faulty_sources=frozenset(faulty or ()),
             trace_prefix=trace,
             resume=resume,
+            live=live,
+            source=source,
+            window_days=window_days,
+            api_key=api_key,
         )

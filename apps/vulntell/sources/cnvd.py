@@ -1,4 +1,4 @@
-"""VulnTell CNVD 适配器（阶段 5，Task 5.3）。
+"""VulnTell CNVD 适配器（阶段 5，Task 5.3，5C.4 合规文档）。
 
 将 CNVD（国家信息安全漏洞共享平台）API 映射为 SourceRecord。
 支持中文字段、CVE 关联、分页和错误分类。
@@ -9,6 +9,33 @@
 - 不把完整 raw payload 写入 State/Trace/日志
 - 由 runner 统一执行重试、退避、取消和 checkpoint，adapter 不自行循环重试
 - 保留中文与跨源冲突，不在 adapter 内做领域去重或指标计算
+
+## 合规说明（5C.4）
+
+根据审查结果，CNVD 官方 endpoint (https://www.cnvd.org.cn/flaw/list) 返回 HTTP 521 和
+JavaScript 反爬挑战，无法通过程序化方式获取结构化漏洞记录。
+
+### 合规路径
+
+1. **官方 API**：CNVD 未提供公开 REST API，仅支持 Web 界面查询
+2. **人工下载**：允许用户从 CNVD 网站手动下载漏洞数据，格式为 CSV/Excel
+3. **Fixture 模式**：使用脱敏的 fixture 数据进行测试和开发
+
+### 使用方式
+
+```bash
+# 默认使用 fixture 模式
+python -m apps.vulntell --no-llm --json
+
+# 如有官方授权 API，可启用 live 模式（当前不支持）
+# python -m apps.vulntell --live --source cnvd
+```
+
+### 法律合规
+
+- 不绕过 JavaScript/WAF 或抓取引用页面
+- 不把反爬页面写入漏洞记录
+- 许可和保留策略见 THIRD_PARTY_NOTICES.md
 """
 
 from __future__ import annotations
@@ -43,6 +70,7 @@ class CNVDAdapter:
     - 默认不联网，需要传入 transport 函数
     - 由 runner 统一执行重试，adapter 不自行循环重试
     - 保留中文字段编码，不修改原始中文内容
+    - 官方 API 暂不可用，仅支持 fixture 模式
     """
 
     def __init__(
@@ -187,7 +215,11 @@ class CNVDTransport:
         timeout: float,
     ) -> dict:
         """调用 CNVD API。"""
-        import httpx
+        # httpx 在函数内导入，避免顶层导入网络库
+        try:
+            import httpx
+        except ImportError:
+            return {"status_code": 500, "error": "httpx not installed"}
 
         headers = {}
         if api_key:

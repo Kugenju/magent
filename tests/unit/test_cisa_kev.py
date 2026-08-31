@@ -1,4 +1,4 @@
-"""VulnTell CISA KEV 适配器测试（阶段 5，Task 5.2）。"""
+"""VulnTell CISA KEV 适配器测试（阶段 5，Task 5.2，5C.3 扩展）。"""
 
 from __future__ import annotations
 
@@ -51,7 +51,7 @@ def test_cisa_kev_adapter_basic():
         ],
     }
     transport = MockTransport(response)
-    adapter = CISAKEVAdapter(transport=transport)
+    adapter = CISAKEVAdapter(transport=transport, config=CISAKEVConfig(batch_size=100))
     req = _make_request()
 
     result = asyncio.run(adapter.fetch_page(req))
@@ -70,7 +70,7 @@ def test_cisa_kev_adapter_version_change():
         ],
     }
     transport = MockTransport(response)
-    adapter = CISAKEVAdapter(transport=transport)
+    adapter = CISAKEVAdapter(transport=transport, config=CISAKEVConfig(batch_size=100))
     req = _make_request()
 
     # 首次同步
@@ -79,7 +79,7 @@ def test_cisa_kev_adapter_version_change():
     assert result1.record_count == 1
 
     # 同版本再次同步（使用版本游标）
-    result2 = asyncio.run(adapter.fetch_page(req, cursor="version:2024.02.01"))
+    result2 = asyncio.run(adapter.fetch_page(req, cursor="version:2024.02.01:0"))
     assert isinstance(result2, SourcePage)
     assert result2.record_count == 0  # 版本未变化
 
@@ -88,7 +88,7 @@ def test_cisa_kev_adapter_empty_catalog():
     """空 catalog：返回空页。"""
     response = {"catalogVersion": "2024.01.01", "vulnerabilities": []}
     transport = MockTransport(response)
-    adapter = CISAKEVAdapter(transport=transport)
+    adapter = CISAKEVAdapter(transport=transport, config=CISAKEVConfig(batch_size=100))
     req = _make_request()
 
     result = asyncio.run(adapter.fetch_page(req))
@@ -136,3 +136,62 @@ def test_cisa_kev_config_defaults():
     config = CISAKEVConfig()
     assert "cisa.gov" in config.endpoint
     assert config.timeout_seconds == 60.0
+    assert config.batch_size == 500
+
+
+def test_cisa_kev_adapter_batch_processing():
+    """批次处理：大 catalog 分批返回。"""
+    # 创建 1500 条记录的 catalog
+    vulnerabilities = [
+        {"cveID": f"CVE-2024-{i:04d}", "vendorProject": "Test", "product": "Test"}
+        for i in range(1500)
+    ]
+    response = {
+        "catalogVersion": "2024.01.01",
+        "vulnerabilities": vulnerabilities,
+    }
+    transport = MockTransport(response)
+    adapter = CISAKEVAdapter(transport=transport, config=CISAKEVConfig(batch_size=500))
+    req = _make_request()
+
+    # 第一批
+    result1 = asyncio.run(adapter.fetch_page(req))
+    assert isinstance(result1, SourcePage)
+    assert result1.record_count == 500
+    assert result1.has_more
+    assert "version:2024.01.01:1" in result1.next_cursor
+
+    # 第二批
+    result2 = asyncio.run(adapter.fetch_page(req, cursor=result1.next_cursor))
+    assert isinstance(result2, SourcePage)
+    assert result2.record_count == 500
+    assert result2.has_more
+    assert "version:2024.01.01:2" in result2.next_cursor
+
+    # 第三批
+    result3 = asyncio.run(adapter.fetch_page(req, cursor=result2.next_cursor))
+    assert isinstance(result3, SourcePage)
+    assert result3.record_count == 500
+    assert not result3.has_more
+
+
+def test_cisa_kev_adapter_max_records():
+    """最大记录数限制（用于测试）。"""
+    vulnerabilities = [
+        {"cveID": f"CVE-2024-{i:04d}", "vendorProject": "Test", "product": "Test"}
+        for i in range(100)
+    ]
+    response = {
+        "catalogVersion": "2024.01.01",
+        "vulnerabilities": vulnerabilities,
+    }
+    transport = MockTransport(response)
+    adapter = CISAKEVAdapter(
+        transport=transport,
+        config=CISAKEVConfig(batch_size=50, max_records=10)
+    )
+    req = _make_request()
+
+    result = asyncio.run(adapter.fetch_page(req))
+    assert isinstance(result, SourcePage)
+    assert result.record_count == 10  # 受 max_records 限制

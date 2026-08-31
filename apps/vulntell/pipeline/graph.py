@@ -1,11 +1,13 @@
-"""VulnTell 业务 Graph 组装（阶段 3 从 examples.vulntell.graph 迁移，语义不变）。
+"""VulnTell 业务 Graph 组装（阶段 3 从 examples.vulntell.graph 迁移，阶段 5 扩展）。
 
-拓扑：dispatch → 并行采集 NVD/CNVD → 各自标准化 → join 去重 → 持久化 →
+拓扑：dispatch → 并行采集 NVD/CNVD/CISA KEV → 各自标准化 → join 去重 → 持久化 →
 评估 → 报告。持久化节点通过阶段 6 的 side-effect 工具 + SideEffectSink 保证重放
 幂等。采集分支失败降级为部分失败，不触发框架 fail_fast。
 
 Graph 自身不含业务库连接或 provider 细节；store 通过依赖注入传入，仅在 persist
 工具的闭包中使用。与阶段 0 baseline 的 Graph 拓扑/节点名完全一致。
+
+阶段 5 扩展：支持 live 模式，可选择性启用 NVD/CISA KEV 真实 adapter。
 """
 
 from __future__ import annotations
@@ -27,7 +29,8 @@ from apps.vulntell.pipeline.agents import (
     PersistAgent,
     ReportAgent,
 )
-from apps.vulntell.sources.legacy import FaultySourceAdapter, FixtureSourceAdapter
+from apps.vulntell.sources.legacy import FaultySourceAdapter, FixtureSourceAdapter, SourceAdapter
+from apps.vulntell.sources.protocol import SourcePage, SourceRecord, SourceRequest
 from apps.vulntell.storage.legacy import VulnTellStore
 
 _FIXTURE_DIR = pathlib.Path(__file__).resolve().parent.parent / "fixtures"
@@ -63,6 +66,24 @@ def _make_persist_tool(store: VulnTellStore):
     return persist_batch
 
 
+def _create_adapter(
+    source: str,
+    *,
+    faulty_sources: set[str],
+    fixture_dir: pathlib.Path,
+    live_adapter: Optional[SourceAdapter] = None,
+) -> SourceAdapter:
+    """创建数据源 adapter。
+
+    优先级：faulty > live_adapter > fixture
+    """
+    if source in faulty_sources:
+        return FaultySourceAdapter(source)
+    if live_adapter is not None:
+        return live_adapter
+    return FixtureSourceAdapter(str(fixture_dir / f"{source}_sample.json"), source)
+
+
 def build_vulntell_graph(
     meta,
     store: VulnTellStore,
@@ -71,17 +92,34 @@ def build_vulntell_graph(
     *,
     fixture_dir: pathlib.Path = _FIXTURE_DIR,
     faulty_sources: Optional[set[str]] = None,
+    live_adapters: Optional[dict[str, SourceAdapter]] = None,
 ) -> "CompiledGraph":
+    """构建 VulnTell 业务 Graph。
+
+    Args:
+        meta: 数据集元数据
+        store: 持久化存储
+        sink: SideEffectSink
+        provider: LLM provider
+        fixture_dir: fixture 目录
+        faulty_sources: 故障注入来源集合
+        live_adapters: live 模式 adapter 字典（key: source, value: adapter）
+    """
     faulty_sources = faulty_sources or set()
-    nvd_adapter = (
-        FaultySourceAdapter("nvd")
-        if "nvd" in faulty_sources
-        else FixtureSourceAdapter(str(fixture_dir / "nvd_sample.json"), "nvd")
+    live_adapters = live_adapters or {}
+
+    # 创建 adapter
+    nvd_adapter = _create_adapter(
+        "nvd",
+        faulty_sources=faulty_sources,
+        fixture_dir=fixture_dir,
+        live_adapter=live_adapters.get("nvd"),
     )
-    cnvd_adapter = (
-        FaultySourceAdapter("cnvd")
-        if "cnvd" in faulty_sources
-        else FixtureSourceAdapter(str(fixture_dir / "cnvd_sample.json"), "cnvd")
+    cnvd_adapter = _create_adapter(
+        "cnvd",
+        faulty_sources=faulty_sources,
+        fixture_dir=fixture_dir,
+        live_adapter=live_adapters.get("cnvd"),
     )
 
     registry = ToolRegistry(allowlist=["persist_batch"])

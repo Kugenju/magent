@@ -27,17 +27,37 @@ _LIVE_ENDPOINTS: dict[str, str] = {
     "cisa_kev": "https://www.cisa.gov/sites/default/files/feeds/known_exploited_vulnerabilities.json",
     "osv": "https://osv.dev/list",
     "github_advisory": "https://api.github.com/advisories",
-    "euvd": "https://europeanswift.org/api",
+    "euvd": "https://euvd.enisa.europa.eu/api",
     "msrc": "https://api.msrc.microsoft.com/cvrf/v3.0/updates",
-    "redhat": "https://access.redhat.com/security/securitydata",
+    "redhat": "https://access.redhat.com/labs/securitydataapi/",
     "ubuntu": "https://ubuntu.com/security/notices",
     "debian": "https://security-tracker.debian.org/tracker/data/json",
-    "jvn": "https://jvn.jp/api/v3",
+    "jvn": "https://jvndb.jvn.jp/myjvnxmlfeed",
     "certcc": "https://www.kb.cert.org/vuls/api/vulnnotes",
     "cisco": "https://tools.cisco.com/security/center/servicesxml",
     "fortinet": "https://www.fortinet.com/fortiguard/psirt",
     "paloalto": "https://security.paloaltonetworks.com/api/v1/advisories",
     "exploitdb": "https://www.exploit-db.com/api",
+}
+
+# 来源可用性状态
+SOURCE_AVAILABILITY: dict[str, str] = {
+    "nvd": "available",
+    "cisa_kev": "available",
+    "cnvd": "manual_required",  # 官方 API 不可用
+    "osv": "available",
+    "github_advisory": "available",
+    "euvd": "available",
+    "msrc": "available",
+    "redhat": "available",
+    "ubuntu": "available",
+    "debian": "available",
+    "jvn": "available",
+    "certcc": "manual_required",  # 需要 API 密钥
+    "cisco": "manual_required",  # 需要特殊认证
+    "fortinet": "manual_required",  # 需要特殊认证
+    "paloalto": "manual_required",  # 需要特殊认证
+    "exploitdb": "manual_required",  # 需要特殊认证
 }
 
 

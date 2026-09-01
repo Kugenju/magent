@@ -1,4 +1,10 @@
-# NEXT_PHASE_IMPLEMENTATION 完成报告
+# NEXT_PHASE_IMPLEMENTATION 实现清单（历史稿，验收未通过）
+
+> 本文仅盘点已写入的模块和离线测试，不能作为阶段 A–E 全部完成的证明。当前状态以
+> [PHASE_COMPLETION_SUMMARY.md](PHASE_COMPLETION_SUMMARY.md)、
+> [PHASE5_CLOSEOUT_REVIEW.md](PHASE5_CLOSEOUT_REVIEW.md) 和
+> [PHASEB_REAL_SMOKE_REPORT.md](PHASEB_REAL_SMOKE_REPORT.md) 为准；阶段 B 未通过，
+> 阶段 E 尚未替换 legacy 存储链路。
 
 ## 执行摘要
 

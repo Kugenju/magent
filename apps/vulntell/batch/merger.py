@@ -262,6 +262,9 @@ def merge_batches(
 
     # 保存合并后的文档
     output_file = output_dir / "merged.cosv.jsonl"
+    # 合并是可重复操作：覆盖旧输出，避免重复运行不断追加相同记录。
+    if output_file.exists():
+        output_file.unlink()
     for doc in merged_docs:
         serialize_cosv_to_file(doc, output_file, mode="a")
 

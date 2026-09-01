@@ -27,7 +27,8 @@ from apps.vulntell.sources.protocol import SourcePage, SourceRecord, SourceReque
 class OSVConfig:
     """OSV.dev 配置。"""
     endpoint: str = "https://osv.dev"
-    batch_endpoint: str = "https://osv.dev/list"
+    # Public API endpoint; requires POST querybatch payload.
+    batch_endpoint: str = "https://api.osv.dev/v1/querybatch"
     timeout_seconds: float = 30.0
     page_size: int = 100  # OSV 每页记录数
 
@@ -120,8 +121,15 @@ class OSVAdapter:
 
         # 解析响应
         try:
-            data = response.get("data", {})
+            data = response.get("data", {}) or {}
+            # OSV querybatch responses wrap results per package; flatten them
+            # so callers always consume a uniform ``vulns`` list.  This also
+            # supports live transports that query /v1/querybatch directly.
             vulns = data.get("vulns", [])
+            if not vulns and data.get("results"):
+                vulns = []
+                for result in data.get("results", []):
+                    vulns.extend(result.get("vulns", []) or [])
             next_page_token = data.get("next_page_token")
 
             # 转换为 SourceRecord
@@ -245,11 +253,17 @@ class OSVTransport:
 
         async with httpx.AsyncClient() as client:
             try:
-                response = await client.get(
-                    endpoint,
-                    params=params,
-                    timeout=timeout,
-                )
+                # The public OSV API exposes querybatch as POST.  For
+                # compatibility with the adapter's paging contract, callers
+                # may provide ``queries`` in params; otherwise retain GET for
+                # list-style mirrors/fixtures.
+                if endpoint.rstrip('/').endswith(('querybatch', 'querybatch/')):
+                    queries = params.pop("queries", [])
+                    if not queries and params.get("package"):
+                        queries = [{"package": {"ecosystem": params.get("ecosystem", "PyPI"), "name": params["package"]}}]
+                    response = await client.post(endpoint, json={"queries": queries}, timeout=timeout)
+                else:
+                    response = await client.get(endpoint, params=params, timeout=timeout)
                 return {
                     "status_code": response.status_code,
                     "data": response.json() if response.status_code == 200 else None,

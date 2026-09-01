@@ -10,7 +10,12 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 
-import requests
+import importlib
+
+
+def _requests():
+    """Load the optional HTTP client only when a smoke test is invoked."""
+    return importlib.import_module("requests")
 
 # 输出目录
 OUTPUT_DIR = Path("F:/personal/tool/muti-agent/test_data")
@@ -63,7 +68,7 @@ def test_nvd() -> dict[str, Any]:
                 "User-Agent": "VulnTell/1.0 (Security Research Tool)",
             }
             
-            response = requests.get(base_url, params=params, headers=headers, timeout=30)
+            response = _requests().get(base_url, params=params, headers=headers, timeout=30)
             
             if response.status_code == 200:
                 data = response.json()
@@ -122,7 +127,7 @@ def test_cisa_kev() -> dict[str, Any]:
                 "User-Agent": "VulnTell/1.0 (Security Research Tool)",
             }
             
-            response = requests.get(url, headers=headers, timeout=30)
+            response = _requests().get(url, headers=headers, timeout=30)
             
             if response.status_code == 200:
                 data = response.json()
@@ -191,7 +196,7 @@ def test_osv() -> dict[str, Any]:
                 "Content-Type": "application/json",
             }
             
-            response = requests.post(url, json=query, headers=headers, timeout=30)
+            response = _requests().post(url, json=query, headers=headers, timeout=30)
             
             if response.status_code == 200:
                 data = response.json()
@@ -255,7 +260,7 @@ def test_github_advisory() -> dict[str, Any]:
                 "X-GitHub-Api-Version": "2022-11-28",
             }
             
-            response = requests.get(url, params=params, headers=headers, timeout=30)
+            response = _requests().get(url, params=params, headers=headers, timeout=30)
             
             if response.status_code == 200:
                 advisories = response.json()
@@ -326,7 +331,7 @@ def test_euvd() -> dict[str, Any]:
                 "User-Agent": "VulnTell/1.0 (Security Research Tool)",
             }
             
-            response = requests.get(url, params=params, headers=headers, timeout=30)
+            response = _requests().get(url, params=params, headers=headers, timeout=30)
             
             if response.status_code == 200:
                 data = response.json()
@@ -384,7 +389,7 @@ def test_msrc() -> dict[str, Any]:
                 "User-Agent": "VulnTell/1.0 (Security Research Tool)",
             }
             
-            response = requests.get(url, headers=headers, timeout=30)
+            response = _requests().get(url, headers=headers, timeout=30)
             
             if response.status_code == 200:
                 data = response.json()
@@ -446,7 +451,7 @@ def test_redhat() -> dict[str, Any]:
                 "User-Agent": "VulnTell/1.0 (Security Research Tool)",
             }
             
-            response = requests.get(f"{url}/cve.json", params=params, headers=headers, timeout=30)
+            response = _requests().get(f"{url}/cve.json", params=params, headers=headers, timeout=30)
             
             if response.status_code == 200:
                 data = response.json()
@@ -508,7 +513,7 @@ def test_ubuntu() -> dict[str, Any]:
                 "User-Agent": "VulnTell/1.0 (Security Research Tool)",
             }
             
-            response = requests.get(url, params=params, headers=headers, timeout=30)
+            response = _requests().get(url, params=params, headers=headers, timeout=30)
             
             if response.status_code == 200:
                 data = response.json()
@@ -565,7 +570,7 @@ def test_debian() -> dict[str, Any]:
                 "User-Agent": "VulnTell/1.0 (Security Research Tool)",
             }
             
-            response = requests.get(url, headers=headers, timeout=60)  # Debian JSON 可能很大
+            response = _requests().get(url, headers=headers, timeout=60)  # Debian JSON 可能很大
             
             if response.status_code == 200:
                 data = response.json()
@@ -629,7 +634,7 @@ def test_jvn() -> dict[str, Any]:
                 "User-Agent": "VulnTell/1.0 (Security Research Tool)",
             }
             
-            response = requests.get(url, params=params, headers=headers, timeout=30)
+            response = _requests().get(url, params=params, headers=headers, timeout=30)
             
             if response.status_code == 200:
                 # JVN 返回 XML，需要解析

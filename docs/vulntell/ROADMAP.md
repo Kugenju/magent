@@ -137,9 +137,9 @@
 - adapter import 和默认 CLI 完全离线；
 - 错误分类可被 magent retry policy 正确消费（retryable 字段）。
 
-## 8. 阶段 5：真实数据源接入（已完成）
+## 8. 阶段 5：真实数据源接入（收尾中）
 
-阶段 5 实施计划见 [PHASE5_PLAN.md](PHASE5_PLAN.md)，完成记录见 [PHASE5_RESULT.md](PHASE5_RESULT.md)，审查记录见 [PHASE5_REVIEW.md](PHASE5_REVIEW.md)，收尾记录见 [PHASE5_CLOSEOUT_RESULT.md](PHASE5_CLOSEOUT_RESULT.md)。
+阶段 5 实施计划见 [PHASE5_PLAN.md](PHASE5_PLAN.md)，实现记录见 [PHASE5_RESULT.md](PHASE5_RESULT.md)，收尾记录见 [PHASE5_CLOSEOUT_RESULT.md](PHASE5_CLOSEOUT_RESULT.md)，最新复核见 [PHASE5_CLOSEOUT_REVIEW.md](PHASE5_CLOSEOUT_REVIEW.md)。adapter 代码已完成，但 live CLI/Application 和端到端门禁尚未完成。
 
 ### 目标
 

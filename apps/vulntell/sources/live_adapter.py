@@ -22,6 +22,14 @@ from apps.vulntell.sources.github_advisory import GitHubAdvisoryAdapter, GitHubA
 from apps.vulntell.sources.jvn import JVNAdapter, JVNConfig
 from apps.vulntell.sources.msrc import MSRCAdapter, MSRCConfig
 from apps.vulntell.sources.nvd import NVDAdapter, NVDConfig
+from apps.vulntell.sources.osv import OSVAdapter, OSVConfig, OSVTransport
+from apps.vulntell.sources.github_advisory import GitHubAdvisoryAdapter, GitHubAdvisoryConfig, GitHubAdvisoryTransport
+from apps.vulntell.sources.euvd import EUVDAdapter, EUVDConfig, EUVDTransport
+from apps.vulntell.sources.msrc import MSRCAdapter, MSRCConfig, MSRCTransport
+from apps.vulntell.sources.redhat import RedHatAdapter, RedHatConfig, RedHatTransport
+from apps.vulntell.sources.ubuntu import UbuntuAdapter, UbuntuConfig, UbuntuTransport
+from apps.vulntell.sources.debian import DebianAdapter, DebianConfig, DebianTransport
+from apps.vulntell.sources.jvn import JVNAdapter, JVNConfig, JVNTransport
 from apps.vulntell.sources.osv import OSVAdapter, OSVConfig
 from apps.vulntell.sources.protocol import SourcePage, SourceRecord, SourceRequest
 from apps.vulntell.sources.redhat import RedHatAdapter, RedHatConfig
@@ -40,11 +48,14 @@ class LiveSourceAdapter:
         """兼容旧 CollectAgent 的批量接口，拉取所有分页并转换为 RawSourceRecord。"""
         from apps.vulntell.domain.models import RawSourceRecord
         from magent.checkpoint.models import canonical_json, checksum_of
-        from datetime import timedelta
+        from datetime import timedelta, timezone, datetime
         from apps.vulntell.sources.protocol import SourceRequest
+        # 旧批量接口没有显式窗口：使用最近 30 天的稳定窗口，避免仅查询
+        # observed_at 的一个微秒导致真实 API 永远返回空页。
+        end = observed_at if observed_at.tzinfo else observed_at.replace(tzinfo=timezone.utc)
         req = SourceRequest(source=getattr(self, "source", "nvd"), dataset_id=dataset_id,
-                            dataset_version=dataset_version, window_start=observed_at,
-                            window_end=observed_at + timedelta(microseconds=1))
+                            dataset_version=dataset_version, window_start=end - timedelta(days=30),
+                            window_end=end)
         out=[]; cursor=None
         while True:
             page = await self.fetch_page(req, cursor)
@@ -90,6 +101,19 @@ def create_live_adapter(
         )
         adapter = NVDAdapter(config=nvd_config, transport=transport)
         adapter.source = "nvd"
+        return adapter
+
+    extra = {
+        "osv": (OSVAdapter, OSVConfig, OSVTransport),
+        "github_advisory": (GitHubAdvisoryAdapter, GitHubAdvisoryConfig, GitHubAdvisoryTransport),
+        "euvd": (EUVDAdapter, EUVDConfig, EUVDTransport), "msrc": (MSRCAdapter, MSRCConfig, MSRCTransport),
+        "redhat": (RedHatAdapter, RedHatConfig, RedHatTransport), "ubuntu": (UbuntuAdapter, UbuntuConfig, UbuntuTransport),
+        "debian": (DebianAdapter, DebianConfig, DebianTransport), "jvn": (JVNAdapter, JVNConfig, JVNTransport),
+    }
+    if config.source in extra:
+        cls, cfg, tr = extra[config.source]
+        adapter = cls(config=cfg(), transport=transport or tr())
+        adapter.source = config.source
         return adapter
 
     elif config.source == "cisa_kev":
@@ -206,4 +230,3 @@ def get_source_display_name(source: str) -> str:
 def get_source_availability(source: str) -> str:
     """获取来源可用性状态。"""
     return SOURCE_AVAILABILITY.get(source, "manual_required")
-

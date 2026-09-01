@@ -20,8 +20,10 @@ evaluation app) is implemented as a downstream example that exercises this
 framework — it lives under `examples/vulntell` and never pollutes the `magent`
 core.
 
-下一阶段是否继续在本仓库推进 VulnTell、何时拆分业务仓库，以及阶段 10+ 的产品化路线，见
-[`docs/NEXT_STAGE.md`](docs/NEXT_STAGE.md)。
+VulnTell 当前产品化状态、阶段完成汇总以及情报源采集/批次交付方法，见
+[`docs/vulntell/PHASE_COMPLETION_SUMMARY.md`](docs/vulntell/PHASE_COMPLETION_SUMMARY.md)、
+[`docs/vulntell/INTELLIGENCE_COLLECTION_GUIDE.md`](docs/vulntell/INTELLIGENCE_COLLECTION_GUIDE.md)
+和 [`docs/NEXT_STAGE.md`](docs/NEXT_STAGE.md)。
 
 ## Current scope (phases 1–8; phase 9 release hardening)
 

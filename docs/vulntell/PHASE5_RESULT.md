@@ -1,4 +1,4 @@
-# 阶段 5 完成记录：真实数据源接入
+# 阶段 5 实现记录：真实数据源接入（集成验收未闭环）
 
 ## 完成时间
 
@@ -83,6 +83,10 @@ ef0802c phase4: add sources protocol, fixtures, errors, sync runner
 ...
 ```
 
+## 当前状态
+
+本文件记录 adapter 代码和离线测试的完成情况，不等同于真实数据 MVP 完成。公网 smoke、正式 CLI/Application 集成和 CNVD 可用性审查见 [PHASE5_REVIEW.md](PHASE5_REVIEW.md)；收尾任务见 [PHASE5_CLOSEOUT_PLAN.md](PHASE5_CLOSEOUT_PLAN.md)。
+
 ## 下一步
 
-阶段 6：schema v2 + repository + 数据库抽象
+完成阶段 5 收尾门禁后，再进入阶段 6：schema v2 + repository + 数据库抽象。

@@ -11,6 +11,13 @@
 - [阶段 4：数据源契约与增量模型实施计划](PHASE4_PLAN.md)
 - [阶段 4 审查记录](PHASE4_REVIEW.md)
 - [阶段 5：真实数据源接入实施计划](PHASE5_PLAN.md)
+- [阶段 5 审查记录](PHASE5_REVIEW.md)
+- [阶段 5 收尾实施计划](PHASE5_CLOSEOUT_PLAN.md)
+- [阶段 5 收尾复核](PHASE5_CLOSEOUT_REVIEW.md)
+- [阶段完成汇总](PHASE_COMPLETION_SUMMARY.md)
+- [情报源采集与批次交付指南](INTELLIGENCE_COLLECTION_GUIDE.md)
+- [漏洞情报源扩展候选清单](INTELLIGENCE_SOURCES.md)
+- [下一阶段真实采集与分布式合并实施规范](NEXT_PHASE_IMPLEMENTATION.md)
 - [阶段 7 纵向示例](../phases/PHASE7.md)
 - [评测与复现](../evaluation/BENCHMARKS.md)
 

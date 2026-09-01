@@ -1,4 +1,7 @@
-# 阶段 5 收尾完成记录：Live 入口与端到端采集
+# 阶段 5 收尾实施记录：Live 入口与端到端采集（复核未通过）
+
+> 本文是实现项清单，不代表验收通过；当前结论以
+> [PHASE5_CLOSEOUT_REVIEW.md](PHASE5_CLOSEOUT_REVIEW.md) 为准。
 
 ## 完成时间
 
@@ -40,7 +43,7 @@
 - 521/HTML challenge 归类为不可用来源
 - 添加合规说明文档
 
-### 5C.5 依赖、测试和观测（进行中）
+### 5C.5 依赖、测试和观测（未完成）
 
 - `httpx` 放入 live extra（或运行时依赖）
 - 为每个 adapter 增加 fake transport、mock HTTP、脱敏、超时、429、取消和响应过大测试
@@ -63,12 +66,12 @@
 | 验收项 | 状态 |
 |--------|------|
 | 三个 adapter 单元/离线 contract | ✅ |
-| NVD、CISA 公网最小 smoke | ✅ |
-| CNVD 公网结构化采集 | ✅（合规 fixture） |
-| CLI/Application live 入口 | ✅ |
-| 三来源进入同一 pipeline 并生成报告 | ✅ |
+| NVD、CISA 公网最小 smoke | ✅（仅独立 adapter） |
+| CNVD 公网结构化采集 | ❌（521/WAF；仅合规 fixture 方案） |
+| CLI/Application live 入口 | ❌（NVD fetch 接口不匹配） |
+| 三来源进入同一 pipeline 并生成报告 | ❌（CISA 分支未接入） |
 | 默认离线、无凭据运行 | ✅ |
-| NVD 窗口分片、CISA 增量/分页 | ✅ |
+| NVD 窗口分片、CISA 增量/分页 | 部分通过，未完成端到端验证 |
 
 ## 测试覆盖
 
@@ -97,6 +100,6 @@ ef0802c phase4: add sources protocol, fixtures, errors, sync runner
 ...
 ```
 
-## 下一步
+## 复核结论
 
-阶段 6：schema v2 + repository + 数据库抽象
+阶段 5 尚未闭环。正式复核和真实网络证据见 [PHASE5_CLOSEOUT_REVIEW.md](PHASE5_CLOSEOUT_REVIEW.md)。在 live 端到端门禁通过前，不进入阶段 6。

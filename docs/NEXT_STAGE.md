@@ -58,13 +58,18 @@
 - [阶段 4：数据源契约与增量模型实施计划](vulntell/PHASE4_PLAN.md)
 - [阶段 4 审查记录](vulntell/PHASE4_REVIEW.md)
 - [阶段 5：真实数据源接入实施计划](vulntell/PHASE5_PLAN.md)
+- [阶段 5 审查记录](vulntell/PHASE5_REVIEW.md)
+- [阶段 5 收尾实施计划](vulntell/PHASE5_CLOSEOUT_PLAN.md)
+- [阶段 5 收尾复核](vulntell/PHASE5_CLOSEOUT_REVIEW.md)
 - [最终框架实现设计](vulntell/FINAL_DESIGN.md)
 - [产品化实施路线图](vulntell/ROADMAP.md)
 - [MVP 范围与验收](vulntell/PRODUCT_SCOPE.md)
+- [阶段完成汇总](vulntell/PHASE_COMPLETION_SUMMARY.md)
+- [情报源采集与批次交付指南](vulntell/INTELLIGENCE_COLLECTION_GUIDE.md)
 
-## 下一步（阶段 4 收尾 → 阶段 5）
+## 下一步（阶段 5 收尾）
 
-阶段 4 的协议和 fixture 已提交，但同步 runner 的完成状态、重试游标和持久化 checkpoint 仍需修复并补齐专门测试。完成这些门禁后，按 [PHASE5_PLAN.md](vulntell/PHASE5_PLAN.md) 以 NVD 为首个真实数据源，保持默认离线和显式 live 开关。
+阶段 4 已完成。阶段 5 adapter 已提交，但收尾复核发现 NVD/CISA 尚未真正进入正式 CLI/Application pipeline，CNVD 也无法获得结构化 live 数据。下一步按 [PHASE5_CLOSEOUT_REVIEW.md](vulntell/PHASE5_CLOSEOUT_REVIEW.md) 和 [PHASE5_CLOSEOUT_PLAN.md](vulntell/PHASE5_CLOSEOUT_PLAN.md) 修复端到端集成；通过门禁后再进入阶段 6 存储与查询。
 
 ## 退出/暂停条件
 

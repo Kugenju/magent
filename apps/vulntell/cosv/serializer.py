@@ -46,7 +46,7 @@ def serialize_cosv(doc: COSVDocument) -> str:
     约束：
     - UTF-8 编码
     - 稳定字段顺序（按字母排序）
-    - 移除 None 值
+    - 移除 None 值（但保留 schema_version）
     - 数组去重并稳定排序
 
     Args:
@@ -57,6 +57,10 @@ def serialize_cosv(doc: COSVDocument) -> str:
     """
     # 使用 model_dump_stable 获取稳定序列化
     data = doc.model_dump_stable()
+
+    # 确保 schema_version 始终存在
+    if "schema_version" not in data:
+        data["schema_version"] = doc.schema_version
 
     return json.dumps(
         data,

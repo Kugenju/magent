@@ -1,12 +1,17 @@
 """VulnTell 真实数据采集测试脚本（简化版）。"""
 
 import json
-import requests
+import importlib
 from datetime import datetime, timezone
 from pathlib import Path
 
 OUTPUT_DIR = Path("F:/personal/tool/muti-agent/test_data")
 OUTPUT_DIR.mkdir(exist_ok=True)
+
+
+def _requests():
+    """Load requests lazily; network access is opt-in for this smoke script."""
+    return importlib.import_module("requests")
 
 def test_source(name, test_func):
     """测试单个来源。"""
@@ -25,7 +30,7 @@ def test_nvd():
     url = "https://services.nvd.nist.gov/rest/json/cves/2.0"
     params = {"resultsPerPage": 100, "startIndex": 0}
     headers = {"User-Agent": "VulnTell/1.0"}
-    response = requests.get(url, params=params, headers=headers, timeout=30)
+    response = _requests().get(url, params=params, headers=headers, timeout=30)
     
     if response.status_code == 200:
         data = response.json()
@@ -41,7 +46,7 @@ def test_cisa_kev():
     """测试 CISA KEV API。"""
     url = "https://www.cisa.gov/sites/default/files/feeds/known_exploited_vulnerabilities.json"
     headers = {"User-Agent": "VulnTell/1.0"}
-    response = requests.get(url, headers=headers, timeout=30)
+    response = _requests().get(url, headers=headers, timeout=30)
     
     if response.status_code == 200:
         data = response.json()
@@ -58,7 +63,7 @@ def test_osv():
     url = "https://api.osv.dev/v1/query"
     query = {"package": {"name": "lodash", "ecosystem": "npm"}}
     headers = {"User-Agent": "VulnTell/1.0", "Content-Type": "application/json"}
-    response = requests.post(url, json=query, headers=headers, timeout=30)
+    response = _requests().post(url, json=query, headers=headers, timeout=30)
     
     if response.status_code == 200:
         data = response.json()
@@ -78,7 +83,7 @@ def test_github_advisory():
         "User-Agent": "VulnTell/1.0",
         "X-GitHub-Api-Version": "2022-11-28"
     }
-    response = requests.get(url, params=params, headers=headers, timeout=30)
+    response = _requests().get(url, params=params, headers=headers, timeout=30)
     
     if response.status_code == 200:
         advisories = response.json()
@@ -104,7 +109,7 @@ def test_euvd():
         try:
             params = {"limit": 10}
             headers = {"User-Agent": "VulnTell/1.0"}
-            response = requests.get(url, params=params, headers=headers, timeout=15)
+            response = _requests().get(url, params=params, headers=headers, timeout=15)
             if response.status_code == 200:
                 data = response.json()
                 count = len(data) if isinstance(data, list) else len(data.get("advisories", []))
@@ -120,7 +125,7 @@ def test_msrc():
     """测试 Microsoft MSRC API。"""
     url = "https://api.msrc.microsoft.com/cvrf/v3.0/updates"
     headers = {"Accept": "application/json", "User-Agent": "VulnTell/1.0"}
-    response = requests.get(url, headers=headers, timeout=30)
+    response = _requests().get(url, headers=headers, timeout=30)
     
     if response.status_code == 200:
         data = response.json()
@@ -142,7 +147,7 @@ def test_redhat():
     for url, name in endpoints:
         try:
             headers = {"User-Agent": "VulnTell/1.0"}
-            response = requests.get(url, headers=headers, timeout=15)
+            response = _requests().get(url, headers=headers, timeout=15)
             if response.status_code == 200:
                 print(f"Endpoint {name}: OK")
                 return {"source": "redhat", "success": True, "count": 0, "endpoint": name}
@@ -157,7 +162,7 @@ def test_ubuntu():
     url = "https://ubuntu.com/security/notices.json"
     params = {"limit": 100}
     headers = {"User-Agent": "VulnTell/1.0"}
-    response = requests.get(url, params=params, headers=headers, timeout=30)
+    response = _requests().get(url, params=params, headers=headers, timeout=30)
     
     if response.status_code == 200:
         data = response.json()
@@ -172,7 +177,7 @@ def test_debian():
     """测试 Debian Security Tracker。"""
     url = "https://security-tracker.debian.org/tracker/data/json"
     headers = {"User-Agent": "VulnTell/1.0"}
-    response = requests.get(url, headers=headers, timeout=60)
+    response = _requests().get(url, headers=headers, timeout=60)
     
     if response.status_code == 200:
         data = response.json()
@@ -194,7 +199,7 @@ def test_jvn():
     for url, params in endpoints:
         try:
             headers = {"User-Agent": "VulnTell/1.0"}
-            response = requests.get(url, params=params, headers=headers, timeout=30)
+            response = _requests().get(url, params=params, headers=headers, timeout=30)
             if response.status_code == 200:
                 content = response.text
                 item_count = content.count("<item>") + content.count("<entry")

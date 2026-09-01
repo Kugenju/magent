@@ -20,5 +20,6 @@ benchmarks/out/
 *.db
 run.db
 *.jsonl
+test_data/
 *.benchmark.json
 *.benchmark.csv

@@ -1,4 +1,8 @@
-# VulnTell 数据源采集测试报告
+# VulnTell 数据源采集测试报告（历史 smoke 记录）
+
+> 本文记录 2026-08-31 的独立公网尝试，不是当前产品完成证明。以
+> [PHASE5_CLOSEOUT_REVIEW.md](PHASE5_CLOSEOUT_REVIEW.md) 和
+> [PHASEB_REAL_SMOKE_REPORT.md](PHASEB_REAL_SMOKE_REPORT.md) 的复核结论为准；原始响应不作为仓库交付物。
 
 ## 执行摘要
 

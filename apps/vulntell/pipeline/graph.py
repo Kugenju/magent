@@ -115,11 +115,12 @@ def build_vulntell_graph(
         fixture_dir=fixture_dir,
         live_adapter=live_adapters.get("nvd"),
     )
+    secondary_source = "cisa_kev" if "cisa_kev" in live_adapters else "cnvd"
     cnvd_adapter = _create_adapter(
-        "cnvd",
+        secondary_source,
         faulty_sources=faulty_sources,
         fixture_dir=fixture_dir,
-        live_adapter=live_adapters.get("cnvd"),
+        live_adapter=live_adapters.get(secondary_source),
     )
 
     registry = ToolRegistry(allowlist=["persist_batch"])
@@ -128,9 +129,9 @@ def build_vulntell_graph(
     builder = GraphBuilder()
     builder.add_node("dispatch", _Dispatch("dispatch"))
     builder.add_node("collect_nvd", CollectAgent("nvd", nvd_adapter))
-    builder.add_node("collect_cnvd", CollectAgent("cnvd", cnvd_adapter))
+    builder.add_node("collect_cnvd", CollectAgent(secondary_source, cnvd_adapter))
     builder.add_node("normalize_nvd", NormalizeAgent("nvd"))
-    builder.add_node("normalize_cnvd", NormalizeAgent("cnvd"))
+    builder.add_node("normalize_cnvd", NormalizeAgent(secondary_source))
     builder.add_node("dedupe", DedupeAgent("dedupe"))
     builder.add_node("persist", PersistAgent(registry, sink))
     builder.add_node("evaluate", EvaluateAgent("evaluate"))

@@ -6,7 +6,12 @@ import tempfile
 from datetime import datetime, timezone
 from pathlib import Path
 
-import requests
+import importlib
+
+
+def _requests():
+    """Load requests lazily; this script is an explicit opt-in smoke test."""
+    return importlib.import_module("requests")
 
 from apps.vulntell.batch.manifest import (
     calculate_content_hash,
@@ -28,7 +33,7 @@ def collect_from_nvd(limit: int = 50) -> list[dict]:
     headers = {"User-Agent": "VulnTell/1.0"}
 
     try:
-        response = requests.get(url, params=params, headers=headers, timeout=30)
+        response = _requests().get(url, params=params, headers=headers, timeout=30)
         if response.status_code == 200:
             data = response.json()
             vulns = data.get("vulnerabilities", [])
@@ -49,7 +54,7 @@ def collect_from_cisa_kev() -> list[dict]:
     headers = {"User-Agent": "VulnTell/1.0"}
 
     try:
-        response = requests.get(url, headers=headers, timeout=30)
+        response = _requests().get(url, headers=headers, timeout=30)
         if response.status_code == 200:
             data = response.json()
             vulns = data.get("vulnerabilities", [])
@@ -75,7 +80,7 @@ def collect_from_github_advisory(limit: int = 50) -> list[dict]:
     }
 
     try:
-        response = requests.get(url, params=params, headers=headers, timeout=30)
+        response = _requests().get(url, params=params, headers=headers, timeout=30)
         if response.status_code == 200:
             advisories = response.json()
             print(f"[GitHub Advisory] 采集到 {len(advisories)} 条记录")

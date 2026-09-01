@@ -24,6 +24,7 @@ from apps.vulntell.batch.importer import (
     validate_batch_directory,
 )
 from apps.vulntell.batch.merger import merge_batches
+from apps.vulntell.batch.collector import collect_adapter
 
 __all__ = [
     "BatchManifest",
@@ -33,4 +34,5 @@ __all__ = [
     "import_batch",
     "validate_batch_directory",
     "merge_batches",
+    "collect_adapter",
 ]

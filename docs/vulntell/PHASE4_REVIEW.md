@@ -2,7 +2,7 @@
 
 ## 结论
 
-阶段 4 的协议层已经提交，但尚未满足“可进入真实数据源”的完成门禁。`SourceRequest`、`SourcePage`、`SourceError`、`SyncRun` 和分页 fixture 已具备；同步 runner 仍需修正状态统计、错误重试游标、重复页检测和持久化 checkpoint，并补齐专门的 contract/unit 测试。下一阶段先完成阶段 4 收尾，再以 NVD 为首个真实 adapter。
+阶段 4 已完成。协议、分页 fixture、错误分类、同步状态和离线测试均已补齐；随后阶段 5 adapter 开发暴露出的 live 集成问题不回溯改变阶段 4 的离线契约。阶段 5 的公网和端到端能力另见 [PHASE5_REVIEW.md](PHASE5_REVIEW.md)。
 
 ## 已完成项
 
@@ -10,29 +10,26 @@
 - `sources.errors` 提供错误分类、重试提示和基本脱敏；
 - `PagedFixtureSource`/`FaultyPagedSource` 支持分页、故障注入、空结果和坏记录标记；
 - `domain.models` 增加 `SyncRun`、页 checkpoint 和错误摘要值对象；
-- `pipeline.sync` 提供 run/resume/cancel 服务骨架；
+- `pipeline.sync` 提供 run/resume/cancel 服务，并完成状态统计、重试游标、重复页检测和 checkpoint 幂等；
 - 默认 VulnTell CLI 仍 fixture-first、离线，未接入真实 HTTP；
 - `python -m pytest -q` 当前为 296 passed，`mypy src/magent` 无类型错误。
 
-## 阻塞项与证据
+## 当时发现的问题及处理结果
 
-1. 当前仓库没有 `tests/unit/test_sources.py`、`tests/unit/test_sync.py` 或阶段 4 contract 测试，路线图中引用的测试路径不存在；
-2. `SyncRunner` 正常跑完 3 页后返回 `partial`，因为 `total_pages` 未从页面流更新（可用 6 条记录、page size 2 的最小复现验证）；
-3. 可重试错误处理把游标重置为 `None` 并递增页码，可能重新抓取第一页、跳过目标页或造成错误统计；
-4. 重复页校验以 page fingerprint 查询 execution-key 字典，键空间不一致，重复页不会按预期被识别；
-5. checkpoint 目前主要保存在 runner 内存，`checkpoint_store` 参数未形成跨进程可恢复的持久化契约；
-6. `SyncRun` 的完成时间、错误摘要合并和失败状态转换尚未形成端到端验收；
-7. `apps.vulntell.sources.legacy` 与旧 `examples` 适配器并存，live adapter 前必须明确切换和兼容策略。
+1. 专门的 `tests/unit/test_sources.py`、`tests/unit/test_sync.py` 已补齐；
+2. 正常分页的 `total_pages`、重试同页和重复页 execution key 已修正并有测试；
+3. 阶段 4 仍保留单进程 checkpoint 实现边界，跨进程持久化将在阶段 6 存储层完成；
+4. `sources.legacy` 继续作为兼容层，live adapter 已迁移到正式模块。
 
 ## 门禁判定
 
 | 门禁 | 结果 |
 | --- | --- |
-| 协议 round-trip 与输入校验 | 部分完成，需测试固化 |
-| 分页 fixture 与错误分类 | 实现存在，需完整场景测试 |
-| 正常同步状态为 succeeded | 未通过 |
-| 中断后游标恢复且不重放已提交页 | 未通过 |
-| 跨进程 checkpoint/幂等 | 未通过 |
+| 协议 round-trip 与输入校验 | 通过 |
+| 分页 fixture 与错误分类 | 通过 |
+| 正常同步状态为 succeeded | 通过 |
+| 中断后游标恢复且不重放已提交页 | 通过（单进程边界） |
+| 跨进程 checkpoint/幂等 | 延后至阶段 6 存储层 |
 | 默认离线与安全脱敏 | 通过现有 CLI/框架测试 |
 | 真实 HTTP adapter | 未开始 |
 

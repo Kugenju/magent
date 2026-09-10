@@ -8,7 +8,7 @@
 ```bash
 pip install -e ".[dev]"          # 干净环境可编辑安装，无需网络/API Key
 python -m benchmarks.cli --out benchmarks/out   # 写 results.json / scenarios.csv / REPORT.md
-python -m examples.vulntell --trace benchmarks/out/vulntell   # 生成 Trace/Span/RunSummary
+python -m apps.vulntell --trace benchmarks/out/vulntell      # 生成 Trace/Span/RunSummary
 ```
 
 所有实验默认离线、确定性，不联网、不调真实 LLM、不抓取 URL、不提交临时数据
@@ -40,8 +40,8 @@ python -m examples.vulntell --trace benchmarks/out/vulntell   # 生成 Trace/Spa
 - `cross_source_consistency`：共享 CVE 跨源 `published_at` 一致；
 - `report_completeness`、`partial_failure_usable`、`metric_reproducible`。
 
-阶段 8 完成时全量测试为 250 passed，新增离线测试 39 个；阶段 9 发布门禁加入后，当前全量测试为
-**260 passed**，`mypy src/magent` 通过。
+阶段 8 完成时全量测试为 250 passed，新增离线测试 39 个；随着 VulnTell 来源、批次和存储
+测试加入，当前全量测试为 **427 passed**，`mypy src/magent` 通过。
 
 ## 结果解释边界（重要）
 

@@ -25,8 +25,9 @@ bumps the minor version. The offline-first, no-API-key, no-network default is a 
 - Phase 5: opt-in SQLite checkpoint, crash recovery, idempotent side effects, stable execution key.
 - Phase 6: tool protocol (schema-validated, allowlist, timeout, size-limit), pluggable LLM provider
   (`FakeProvider` + optional lazy OpenAI adapter), composable middleware.
-- Phase 7: `examples/vulntell` offline vertical example (multi-source collection → normalize → quality
-  alerts → dedupe → persist → concurrent recoverable graph → aggregate metrics → report).
+- Phase 7: `apps/vulntell` offline vertical example (multi-source collection → normalize → quality
+  alerts → dedupe → persist → concurrent recoverable graph → aggregate metrics → report);
+  `examples/vulntell` remains as a compatibility entry point.
 - Phase 8: read-only observability (`Trace`/`Span`/`RunSummary` + redaction), offline `benchmarks/`
   runner (determinism / isolation / parallel reliability / checkpoint recovery), VulnTell source-quality
   evaluation, and a reference-framework comparison recorder that never ranks.

@@ -9,7 +9,9 @@
 - 当前最大缺口是产品能力（真实数据源、增量同步、查询/API、报告和部署），不是调度内核；
 - 保持单仓库可以让 VulnTell 的故障和性能反馈直接形成框架回归测试。
 
-采用“同仓库、分包、稳定核心”的边界：`src/magent` 只接受通用能力修复；VulnTell 从 `examples/vulntell` 逐步迁移到 `src/vulntell` 或 `apps/vulntell`，通过公开 API 使用框架，不把 CVE/NVD/CVSS 模型加入 `magent`。
+采用“同仓库、分包、稳定核心”的边界：`src/magent` 只接受通用能力修复；VulnTell 的当前实现位于
+`apps/vulntell`，`examples/vulntell` 仅保留迁移兼容入口。VulnTell 通过公开 API 使用框架，不把
+CVE/NVD/CVSS 模型加入 `magent`。
 
 ## 什么时候才拆分仓库
 
@@ -67,9 +69,16 @@
 - [阶段完成汇总](vulntell/PHASE_COMPLETION_SUMMARY.md)
 - [情报源采集与批次交付指南](vulntell/INTELLIGENCE_COLLECTION_GUIDE.md)
 
-## 下一步（阶段 5 收尾）
+## 下一步（真实采集与批次验收）
 
-阶段 4 已完成。阶段 5 adapter 已提交，但收尾复核发现 NVD/CISA 尚未真正进入正式 CLI/Application pipeline，CNVD 也无法获得结构化 live 数据。下一步按 [PHASE5_CLOSEOUT_REVIEW.md](vulntell/PHASE5_CLOSEOUT_REVIEW.md) 和 [PHASE5_CLOSEOUT_PLAN.md](vulntell/PHASE5_CLOSEOUT_PLAN.md) 修复端到端集成；通过门禁后再进入阶段 6 存储与查询。
+当前 CLI 已提供显式的 `--live`、`--source` 和时间窗口参数，批次也已支持 COSV
+manifest、校验、导入和合并 API；默认流程仍保持 fixture-first、离线运行。真实来源整体尚未完成：
+最新 smoke 证据显示 17 个登记来源中仅 NVD 与 CISA KEV（2/17）完成真实 COSV 批次闭环，
+其余来源仍需真实 API/feed 验证或合规人工导入证据。下一步按
+[真实采集与分布式合并实施规范](vulntell/NEXT_PHASE_IMPLEMENTATION.md)、
+[真实 smoke 报告](vulntell/PHASEB_REAL_SMOKE_REPORT.md) 和
+[批次交付指南](vulntell/INTELLIGENCE_COLLECTION_GUIDE.md) 完成来源验收、批次交换和端到端合并；
+不得仅以 adapter 类、fake transport 或单元测试宣称来源完成。
 
 ## 退出/暂停条件
 

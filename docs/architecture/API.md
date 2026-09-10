@@ -503,11 +503,11 @@ the framework core.
 
 ### Offline run
 ```bash
-python -m examples.vulntell            # human-readable report (FakeProvider explanation)
-python -m examples.vulntell --json     # machine-readable Report
-python -m examples.vulntell --no-llm   # deterministic, no LLM
-python -m examples.vulntell --faulty cnvd   # inject a source failure (partial report)
-python -m examples.vulntell --resume --run-id <id> --checkpoint run.db  # recover
+python -m apps.vulntell                # human-readable report (FakeProvider explanation)
+python -m apps.vulntell --json         # machine-readable Report
+python -m apps.vulntell --no-llm       # deterministic, no LLM
+python -m apps.vulntell --faulty cnvd  # inject a source failure (partial report)
+python -m apps.vulntell --resume --run-id <id> --checkpoint run.db  # recover
 ```
 
 ### `build_vulntell_graph(meta, store, sink, provider=None, *, fixture_dir=None, faulty_sources=None)`

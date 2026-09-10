@@ -12,9 +12,9 @@
 - 阶段 1～8 已完成；
 - `src/magent` 已具备 Agent/State/Result、Graph、并发、EventBus、重试/超时/取消、Checkpoint/
   恢复/幂等、Tools、LLM Provider、Middleware 和只读可观测性；
-- `examples/vulntell` 已提供固定 fixture 驱动的多源漏洞情报流程；
+- `apps/vulntell` 已提供固定 fixture 驱动的多源漏洞情报流程，`examples/vulntell` 保留兼容入口；
 - `benchmarks/` 已提供离线场景、VulnTell 质量评测和参考框架对比记录；
-- 阶段 9 当前全量测试为 **260 passed**，`mypy src/magent` 已通过；阶段 9 专项发布门禁为 10 个测试；
+- 阶段 9 当前全量测试为 **427 passed**，`mypy src/magent` 已通过；阶段 9 专项发布门禁为 10 个测试；
 - 默认流程不需要网络、API Key 或真实 LLM；
 - 当前仓库已有 README、API、DESIGN、PHASE1～9、ROADMAP、参考项目对比、许可证、第三方归属、
   GitHub Actions 和正式发布检查清单；
@@ -165,7 +165,7 @@ GitHub repository
 阶段 9 不以盲目增加单元测试数量为目标，而以“干净环境可安装、可运行、可维护”为目标。至少
 完成以下验证：
 
-- 当前 260 个测试全部通过；
+- 当前 427 个测试全部通过；
 - `mypy src/magent` 通过；
 - 干净虚拟环境安装 `.[dev]` 成功，`import magent` 和版本读取成功；
 - 核心 Agent 示例、Graph 示例、Checkpoint 示例、Tools/LLM/Middleware 示例、VulnTell CLI 和

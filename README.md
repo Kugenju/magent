@@ -16,9 +16,10 @@ recovery), VulnTell source-quality evaluation, and a reference-framework compari
 recorder that records versions without emitting rankings.
 
 VulnTell (an open vulnerability-intelligence collection & source-quality
-evaluation app) is implemented as a downstream example that exercises this
-framework — it lives under `examples/vulntell` and never pollutes the `magent`
-core.
+evaluation app) is implemented as a downstream application that exercises this
+framework. Its current implementation lives under `apps/vulntell`; the
+`examples/vulntell` package remains as a compatibility entry point and never
+pollutes the `magent` core.
 
 VulnTell 当前产品化状态、阶段完成汇总以及情报源采集/批次交付方法，见
 [`docs/vulntell/PHASE_COMPLETION_SUMMARY.md`](docs/vulntell/PHASE_COMPLETION_SUMMARY.md)、
@@ -77,9 +78,9 @@ python examples/quickstart.py             # shortest: Agent -> State -> Result -
 python examples/producer_consumer.py      # phase 1: state visibility across agents
 python examples/checkpoint_resume.py      # phase 5: crash → resume → identical result
 python examples/phase6_tools_llm_middleware.py   # phase 6: tools + LLM + middleware
-python -m examples.vulntell               # phase 7: VulnTell vertical example (offline)
-python -m examples.vulntell --json        # phase 7: machine-readable report
-python -m examples.vulntell --trace benchmarks/out/vulntell   # phase 8: emit trace + summary
+python -m apps.vulntell                   # VulnTell application (offline)
+python -m apps.vulntell --json            # machine-readable report
+python -m apps.vulntell --trace benchmarks/out/vulntell   # emit trace + summary
 python -m benchmarks.cli --out benchmarks/out   # phase 8: offline evaluation suite
 ```
 
@@ -356,7 +357,7 @@ All tests are offline (no network, external services, or production database).
 ## Roadmap
 
 The VulnTell vertical example (phase 7) is implemented and committed under
-`examples/vulntell`. Phase 8 (observability + offline evaluation) is implemented
+`apps/vulntell`; `examples/vulntell` remains a compatibility entry point. Phase 8 (observability + offline evaluation) is implemented
 and committed under `src/magent/observability` and `benchmarks/`. See
 `docs/architecture/DESIGN.md`, `docs/phases/ROADMAP.md`, `docs/phases/PHASE6.md`, `docs/phases/PHASE7.md` and
 `docs/phases/PHASE8.md` and `docs/phases/PHASE9.md` for the current boundaries and acceptance criteria.

@@ -6,10 +6,10 @@ any blocking item is open.
 ## Build & install
 - [x] Clean virtual environment install `pip install -e ".[dev]"` succeeds (no network/API key needed).
 - [x] `import magent` and `importlib.metadata.version("magent")` return `0.1.0`.
-- [x] `examples/` and `benchmarks/` run from source checkout (intentionally not in the wheel).
+- [x] `apps/`, `examples/` and `benchmarks/` run from source checkout (intentionally not in the wheel).
 
 ## Tests & types
-- [x] Full suite `python -m pytest -q` passes (current: 260 passed).
+- [x] Full suite `python -m pytest -q` passes (current: 427 passed).
 - [x] `mypy src/magent` passes.
 - [x] `python -m pytest tests/unit/test_phase9_release.py -q` passes (10 passed).
 

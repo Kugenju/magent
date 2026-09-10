@@ -17,8 +17,9 @@
 
 ## 尚未完成
 
-阶段 5 的 adapter 已实现，但 live CLI/Application 端到端门禁未通过：NVD 接口适配仍有缺口，
-CISA 尚未完整接入 Graph，CNVD 只能走合规人工下载导入。详见
+阶段 5 的 adapter 已实现，当前已完成 NVD、CISA KEV、Red Hat、Ubuntu、MSRC、OSV 六个来源的
+真实 COSV 批次闭环；但 live CLI/Application 和“至少 10 个来源各 100 条”的阶段门禁仍未通过，
+CNVD 只能走合规人工下载导入。详见
 [PHASE5_CLOSEOUT_REVIEW.md](PHASE5_CLOSEOUT_REVIEW.md) 和
 [PHASEB_REAL_SMOKE_REPORT.md](PHASEB_REAL_SMOKE_REPORT.md)。
 
@@ -27,7 +28,6 @@ CISA 尚未完整接入 Graph，CNVD 只能走合规人工下载导入。详见
 
 ## 当前执行顺序
 
-1. 先按 [PHASE5_CLOSEOUT_PLAN.md](PHASE5_CLOSEOUT_PLAN.md) 完成 live 入口、来源分支和测试门禁；
-2. 通过后再推进阶段 6 存储/查询，并替换 `storage/legacy.py`；
+1. 继续完成其余来源的真实 API/feed 或合规人工导入证据，并保持窗口、字段和许可证可追溯；
+2. 通过真实来源门禁后再推进阶段 6 存储/查询，并替换 `storage/legacy.py`；
 3. 多人采集和 COSV 批次交付遵循 [INTELLIGENCE_COLLECTION_GUIDE.md](INTELLIGENCE_COLLECTION_GUIDE.md)。
-

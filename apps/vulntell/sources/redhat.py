@@ -26,7 +26,7 @@ from apps.vulntell.sources.protocol import SourcePage, SourceRecord, SourceReque
 @dataclass
 class RedHatConfig:
     """Red Hat Security Data 配置。"""
-    endpoint: str = "https://access.redhat.com/security/securitydata"
+    endpoint: str = "https://access.redhat.com/hydra/rest/securitydata/cve.json"
     timeout_seconds: float = 30.0
     page_size: int = 100
 
@@ -81,6 +81,8 @@ class RedHatAdapter:
         params = {
             "page": page,
             "limit": min(request.page_size, self._config.page_size),
+            "after": request.window_start.date().isoformat(),
+            "before": request.window_end.date().isoformat(),
         }
 
         # 添加过滤条件
@@ -114,9 +116,26 @@ class RedHatAdapter:
             if not isinstance(data, list):
                 data = data.get("data", [])
 
+            # Red Hat's public CVE feed is a full list; apply the requested
+            # half-open window before mapping so a "past month" request does
+            # not accidentally emit historical CVEs.
+            windowed = []
+            for item in data:
+                raw_date = item.get("public_date")
+                if raw_date:
+                    try:
+                        parsed = datetime.fromisoformat(str(raw_date).replace("Z", "+00:00"))
+                        if parsed.tzinfo is None:
+                            parsed = parsed.replace(tzinfo=timezone.utc)
+                        if not (request.window_start <= parsed.astimezone(timezone.utc) < request.window_end):
+                            continue
+                    except ValueError:
+                        pass
+                windowed.append(item)
+
             # 转换为 SourceRecord
             records = []
-            for item in data:
+            for item in windowed:
                 cve_id = item.get("CVE", "")
                 if not cve_id:
                     continue
@@ -151,6 +170,12 @@ class RedHatAdapter:
                         "fix_state": fix_state,
                         "package_name": package_name,
                         "packages": packages,
+                        # Canonical fields consumed by domain normalization.
+                        "cve_id": cve_id,
+                        "title": rhsa_id or cve_id,
+                        "description": item.get("bugzilla_description") or package_name or "Red Hat security advisory",
+                        "published_at": public_date,
+                        "modified_at": public_date,
                     },
                     metadata={
                         "source": "redhat",
@@ -211,7 +236,7 @@ class RedHatTransport:
             try:
                 response = await client.get(
                     endpoint,
-                    params=params,
+                    params={k: v for k, v in params.items() if k not in {"page", "limit"}},
                     timeout=timeout,
                 )
                 return {

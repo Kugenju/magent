@@ -246,16 +246,29 @@ class NVDAdapter:
                     continue
 
                 # 提取关键字段（不保存完整 payload）
+                descriptions = [
+                    d for d in cve.get("descriptions", [])
+                    if d.get("lang") == "en"
+                ][:1]
+                metrics = cve.get("metrics", {}) or {}
+                metric = (metrics.get("cvssMetricV31") or metrics.get("cvssMetricV30") or metrics.get("cvssMetricV2") or [{}])[0]
+                cvss_data = metric.get("cvssData", {}) if isinstance(metric, dict) else {}
                 record = SourceRecord(
                     source_record_id=record_id,
                     payload={
                         "id": record_id,
                         "published": cve.get("published"),
                         "lastModified": cve.get("lastModified"),
-                        "descriptions": [
-                            d for d in cve.get("descriptions", [])
-                            if d.get("lang") == "en"
-                        ][:1],  # 只保留英文描述
+                        "descriptions": descriptions,  # 只保留英文描述
+                        # Canonical fields consumed by domain normalization.
+                        "cve_id": record_id,
+                        "title": (descriptions[0].get("value") if descriptions else record_id),
+                        "description": (descriptions[0].get("value") if descriptions else None),
+                        "published_at": cve.get("published"),
+                        "modified_at": cve.get("lastModified"),
+                        "cvss_score": cvss_data.get("baseScore"),
+                        "cvss_vector": cvss_data.get("vectorString"),
+                        "cvss_version": cvss_data.get("version"),
                     },
                     metadata={
                         "source": "nvd",

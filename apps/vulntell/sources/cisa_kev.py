@@ -175,9 +175,24 @@ class CISAKEVAdapter:
         if self._config.max_records:
             end_idx = min(end_idx, self._config.max_records)
 
+        selected = vulnerabilities[start_idx:end_idx]
+        windowed = []
+        for vuln in selected:
+            raw_date = vuln.get("dateAdded")
+            if raw_date:
+                try:
+                    dt = datetime.fromisoformat(str(raw_date).replace("Z", "+00:00"))
+                    if dt.tzinfo is None:
+                        dt = dt.replace(tzinfo=timezone.utc)
+                    if not (request.window_start <= dt.astimezone(timezone.utc) < request.window_end):
+                        continue
+                except ValueError:
+                    pass
+            windowed.append(vuln)
+
         # 转换为 SourceRecord
         records = []
-        for vuln in vulnerabilities[start_idx:end_idx]:
+        for vuln in windowed:
             cve_id = vuln.get("cveID", "")
             if not cve_id:
                 continue
@@ -196,6 +211,13 @@ class CISAKEVAdapter:
                     "dueDate": vuln.get("dueDate"),
                     "knownRansomwareCampaignUse": vuln.get("knownRansomwareCampaignUse"),
                     "notes": vuln.get("notes"),
+                    # Canonical fields consumed by domain normalization.
+                    "cve_id": cve_id,
+                    "title": vuln.get("vulnerabilityName") or cve_id,
+                    "description": vuln.get("shortDescription") or vuln.get("vulnerabilityName"),
+                    "published_at": vuln.get("dateAdded"),
+                    "modified_at": vuln.get("dateAdded"),
+                    "source_added_at": vuln.get("dateAdded"),
                 },
                 metadata={
                     "source": "cisa_kev",

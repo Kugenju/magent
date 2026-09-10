@@ -8,6 +8,7 @@ from apps.vulntell.domain.models import RawSourceRecord
 from apps.vulntell.domain.normalize import normalize_record
 from apps.vulntell.cosv import batch_observations_to_cosv
 from apps.vulntell.cosv.serializer import serialize_cosv_to_file
+from apps.vulntell.cosv.schema import validate_cosv_record
 from .manifest import create_batch_manifest, save_manifest
 
 async def collect_adapter(adapter, request, output_dir: str|Path, *, collector_id="local", license="unknown"):
@@ -26,6 +27,16 @@ async def collect_adapter(adapter, request, output_dir: str|Path, *, collector_i
     for item in raw[:100]:
         obs, qi=normalize_record(item); observations.append(obs); issues.extend(qi)
     docs, map_issues=batch_observations_to_cosv(observations); issues.extend(map_issues)
+    # Do not deliver a batch whose normalized documents fail the COSV contract.
+    valid_docs = []
+    for doc in docs:
+        ok, errors = validate_cosv_record(doc.model_dump(mode="json"))
+        if ok:
+            valid_docs.append(doc)
+        else:
+            issues.append({"source": request.source, "source_record_id": doc.id,
+                           "type": "cosv_schema_error", "errors": errors})
+    docs = valid_docs
     records=out/"records.cosv.jsonl"
     if records.exists(): records.unlink()
     for doc in docs: serialize_cosv_to_file(doc, records, mode="a")

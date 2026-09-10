@@ -99,6 +99,8 @@ class OSVAdapter:
             params["ecosystem"] = request.filters["ecosystem"]
         if request.filters.get("package"):
             params["package"] = request.filters["package"]
+        if request.filters.get("packages"):
+            params["packages"] = request.filters["packages"]
 
         # 调用 API
         try:
@@ -189,6 +191,12 @@ class OSVAdapter:
                         "id": vuln_id,
                         "summary": summary,
                         "details": details,
+                        # Canonical fields consumed by domain normalization.
+                        "cve_id": next((a for a in aliases if isinstance(a, str) and a.startswith("CVE-")), None),
+                        "title": summary or vuln_id,
+                        "description": details or summary or vuln_id,
+                        "published_at": published,
+                        "modified_at": modified,
                         "published": published,
                         "modified": modified,
                         "aliases": aliases,
@@ -204,6 +212,25 @@ class OSVAdapter:
                     },
                 )
                 records.append(record)
+
+            # Querybatch returns the package's complete advisory history.
+            # Apply the requested half-open window when timestamps are
+            # available; advisories without a timestamp remain visible for
+            # compatibility with older mirrors/fixtures.
+            windowed = []
+            for record in records:
+                stamp = record.metadata.get("modified_at") or record.metadata.get("published_at")
+                if stamp:
+                    try:
+                        parsed = datetime.fromisoformat(str(stamp).replace("Z", "+00:00"))
+                        if parsed.tzinfo is None:
+                            parsed = parsed.replace(tzinfo=timezone.utc)
+                        if not (request.window_start <= parsed.astimezone(timezone.utc) < request.window_end):
+                            continue
+                    except ValueError:
+                        pass
+                windowed.append(record)
+            records = windowed
 
             # 计算是否有更多页
             has_more = next_page_token is not None
@@ -259,6 +286,12 @@ class OSVTransport:
                 # list-style mirrors/fixtures.
                 if endpoint.rstrip('/').endswith(('querybatch', 'querybatch/')):
                     queries = params.pop("queries", [])
+                    package_names = params.pop("packages", [])
+                    if package_names:
+                        queries = [
+                            {"package": {"ecosystem": params.get("ecosystem", "PyPI"), "name": name}}
+                            for name in package_names
+                        ]
                     if not queries and params.get("package"):
                         queries = [{"package": {"ecosystem": params.get("ecosystem", "PyPI"), "name": params["package"]}}]
                     response = await client.post(endpoint, json={"queries": queries}, timeout=timeout)

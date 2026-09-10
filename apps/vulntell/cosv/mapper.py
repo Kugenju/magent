@@ -36,6 +36,20 @@ def _extract_severity(normalized: dict[str, Any]) -> list[Severity]:
     """从 normalized_fields 提取 severity 信息。"""
     severity = []
 
+    # The domain normalizer stores single CVSS measurements in ``cvss``.
+    # Preserve them in COSV instead of silently dropping source quality data.
+    cvss = normalized.get("cvss")
+    if isinstance(cvss, dict) and (cvss.get("score") is not None or cvss.get("vector")):
+        version = str(cvss.get("version") or "3.1")
+        severity_type = SeverityType.CVSS_V31 if version.startswith("3.1") else (
+            SeverityType.CVSS_V3 if version.startswith("3") else SeverityType.CVSS_V2
+        )
+        severity.append(Severity(
+            type=severity_type,
+            score=str(cvss.get("score")) if cvss.get("score") is not None else None,
+            vector=cvss.get("vector"),
+        ))
+
     # 检查 cvss3
     cvss3 = normalized.get("cvss3")
     if cvss3:

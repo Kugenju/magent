@@ -15,6 +15,8 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
+import xml.etree.ElementTree as ET
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import Any, Callable, Optional
@@ -109,19 +111,26 @@ class MSRCAdapter:
         # 解析响应
         try:
             data = response.get("data", {})
+            if isinstance(data, str) and data.lstrip().startswith("<"):
+                data = self._parse_cvrf_xml(data)
             updates = data.get("value", [])
+            if isinstance(updates, dict):
+                updates = [updates]
 
             # 转换为 SourceRecord
             records = []
             for update in updates:
-                update_id = update.get("id", "")
+                # MSRC OData uses capitalized field names in production;
+                # lowercase aliases remain supported for fixtures.
+                update_id = update.get("id") or update.get("ID", "")
                 if not update_id:
                     continue
 
                 # 提取关键字段
-                alias = update.get("alias", "")
-                document_title = update.get("documentTitle", "")
-                release_date = update.get("releaseDate")
+                alias = update.get("alias") or update.get("Alias", "")
+                document_title = update.get("documentTitle") or update.get("DocumentTitle", "")
+                release_date = (update.get("releaseDate") or update.get("CurrentReleaseDate")
+                                or update.get("InitialReleaseDate"))
 
                 # 提取严重性
                 severity = update.get("severity")
@@ -161,6 +170,12 @@ class MSRCAdapter:
                         "cvss_vector": cvss_vector,
                         "products": products,
                         "references": references,
+                        # Canonical fields consumed by domain normalization.
+                        "cve_id": update.get("cve_id") or update.get("CVE", None),
+                        "title": document_title or alias or update_id,
+                        "description": document_title or alias or update_id,
+                        "published_at": release_date,
+                        "modified_at": release_date,
                     },
                     metadata={
                         "source": "msrc",
@@ -168,10 +183,25 @@ class MSRCAdapter:
                         "modified_at": release_date,
                     },
                 )
+                if release_date:
+                    try:
+                        parsed_release = datetime.fromisoformat(str(release_date).replace("Z", "+00:00"))
+                        if parsed_release.tzinfo is None:
+                            parsed_release = parsed_release.replace(tzinfo=timezone.utc)
+                        if not (request.window_start <= parsed_release.astimezone(timezone.utc) < request.window_end):
+                            continue
+                    except ValueError:
+                        pass
                 records.append(record)
 
             # 计算是否有更多页
-            total = data.get("total", 0)
+            total = data.get("total", len(updates))
+            # The updates index is not page-addressable after CVRF expansion;
+            # records are already bounded to the selected bulletins.
+            if isinstance(data, dict) and data.get("cvrf_expanded"):
+                updates = updates[: request.page_size]
+                total = len(updates)
+                page = 1
             has_more = page * self._config.page_size < total
             next_cursor = str(page + 1) if has_more else None
 
@@ -187,6 +217,38 @@ class MSRCAdapter:
 
         except Exception as exc:
             return SourceError.from_exception("msrc", exc)
+
+    @staticmethod
+    def _parse_cvrf_xml(xml_text: str) -> dict:
+        """Parse official MSRC CVRF XML into compact CVE records."""
+        root = ET.fromstring(xml_text)
+
+        def local(tag: str) -> str:
+            return tag.rsplit("}", 1)[-1]
+
+        def first_text(node, names: set[str]) -> str | None:
+            for child in node.iter():
+                if local(child.tag) in names and child.text:
+                    return child.text.strip()
+            return None
+
+        release = first_text(root, {"InitialReleaseDate", "CurrentReleaseDate"})
+        rows = []
+        for vuln in (n for n in root.iter() if local(n.tag) == "Vulnerability"):
+            cve = first_text(vuln, {"CVE"})
+            if not cve or not re.fullmatch(r"CVE-\d{4}-\d{4,}", cve):
+                continue
+            title = first_text(vuln, {"Title", "Notes"}) or cve
+            rows.append({
+                "id": cve,
+                "alias": cve,
+                "documentTitle": title,
+                "releaseDate": release,
+                "cve_id": cve,
+                "references": [],
+                "vulnerabilities": [],
+            })
+        return {"value": rows, "total": len(rows)}
 
     async def _default_transport(
         self,
@@ -219,14 +281,43 @@ class MSRCTransport:
 
         async with httpx.AsyncClient() as client:
             try:
+                if endpoint.rstrip("/").endswith("/updates"):
+                    # The updates collection is only an index.  Follow the
+                    # two most recent bulletins; the adapter's window filter
+                    # will discard records outside the requested interval.
+                    index = await client.get(endpoint, timeout=timeout)
+                    if index.status_code != 200:
+                        return {"status_code": index.status_code, "error": index.text}
+                    updates = index.json().get("value", [])
+                    updates = sorted(
+                        updates,
+                        key=lambda item: item.get("CurrentReleaseDate") or item.get("InitialReleaseDate") or "",
+                        reverse=True,
+                    )[:2]
+                    rows = []
+                    for update in updates:
+                        url = update.get("CvrfUrl")
+                        if not url:
+                            continue
+                        bulletin = await client.get(url, timeout=timeout)
+                        if bulletin.status_code != 200:
+                            continue
+                        parsed = MSRCAdapter._parse_cvrf_xml(bulletin.text)
+                        rows.extend(parsed.get("value", []))
+                    return {"status_code": 200, "data": {"value": rows, "total": len(rows), "cvrf_expanded": True}}
                 response = await client.get(
                     endpoint,
                     params=params,
                     timeout=timeout,
                 )
+                content_type = response.headers.get("content-type", "")
+                if "xml" in content_type or response.text.lstrip().startswith("<"):
+                    data = response.text
+                else:
+                    data = response.json() if response.status_code == 200 else None
                 return {
                     "status_code": response.status_code,
-                    "data": response.json() if response.status_code == 200 else None,
+                    "data": data,
                     "error": response.text if response.status_code != 200 else None,
                 }
             except httpx.TimeoutException:

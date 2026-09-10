@@ -26,7 +26,7 @@ from apps.vulntell.sources.protocol import SourcePage, SourceRecord, SourceReque
 @dataclass
 class UbuntuConfig:
     """Ubuntu CVE Tracker 配置。"""
-    endpoint: str = "https://ubuntu.com/security/notices"
+    endpoint: str = "https://ubuntu.com/security/cves.json"
     timeout_seconds: float = 30.0
     page_size: int = 100
 
@@ -81,6 +81,8 @@ class UbuntuAdapter:
         params = {
             "page": page,
             "limit": min(request.page_size, self._config.page_size),
+            "after": request.window_start.date().isoformat(),
+            "before": request.window_end.date().isoformat(),
         }
 
         # 添加过滤条件
@@ -109,11 +111,46 @@ class UbuntuAdapter:
         # 解析响应
         try:
             data = response.get("data", {})
+            # Ubuntu's public endpoint returns ``cves``; retain support for
+            # the older notice-shaped fixture used by compatibility tests.
             notices = data.get("notices", [])
+            if not notices and isinstance(data.get("cves"), list):
+                notices = [
+                    {
+                        "id": item.get("id"),
+                        "title": item.get("id"),
+                        "description": item.get("description"),
+                        "published": item.get("published"),
+                        "updated": item.get("updated_at"),
+                        "severity": item.get("priority"),
+                        "priority": item.get("priority"),
+                        "packages": item.get("packages", []),
+                        "references": item.get("references", []),
+                    }
+                    for item in data["cves"]
+                    if isinstance(item, dict)
+                ]
+
+            # Ubuntu's feed is also a rolling/full collection.  Restrict
+            # records by updated (or published) timestamp at the adapter
+            # boundary, preserving only the requested half-open window.
+            windowed = []
+            for notice in notices:
+                raw_date = notice.get("updated") or notice.get("published")
+                if raw_date:
+                    try:
+                        parsed = datetime.fromisoformat(str(raw_date).replace("Z", "+00:00"))
+                        if parsed.tzinfo is None:
+                            parsed = parsed.replace(tzinfo=timezone.utc)
+                        if not (request.window_start <= parsed.astimezone(timezone.utc) < request.window_end):
+                            continue
+                    except ValueError:
+                        pass
+                windowed.append(notice)
 
             # 转换为 SourceRecord
             records = []
-            for notice in notices:
+            for notice in windowed:
                 notice_id = notice.get("id", "")
                 if not notice_id:
                     continue
@@ -130,19 +167,22 @@ class UbuntuAdapter:
                 packages = notice.get("packages", [])
                 affected_packages = []
                 for pkg in packages:
-                    affected_packages.append({
-                        "name": pkg.get("name", ""),
-                        "version": pkg.get("version", ""),
-                        "release": pkg.get("release", ""),
-                    })
+                    if isinstance(pkg, dict):
+                        affected_packages.append({
+                            "name": pkg.get("name", ""),
+                            "version": pkg.get("version", ""),
+                            "release": pkg.get("release", ""),
+                        })
+                    elif isinstance(pkg, str) and pkg:
+                        affected_packages.append({"name": pkg, "version": "", "release": ""})
 
                 # 提取引用
                 references = []
                 for ref in notice.get("references", []):
-                    references.append({
-                        "type": ref.get("type", "WEB"),
-                        "url": ref.get("url", ""),
-                    })
+                    if isinstance(ref, dict):
+                        references.append({"type": ref.get("type", "WEB"), "url": ref.get("url", "")})
+                    elif isinstance(ref, str) and ref.startswith("http"):
+                        references.append({"type": "WEB", "url": ref})
 
                 record = SourceRecord(
                     source_record_id=notice_id,
@@ -156,6 +196,12 @@ class UbuntuAdapter:
                         "priority": priority,
                         "packages": affected_packages,
                         "references": references,
+                        # Canonical fields consumed by domain normalization.
+                        "cve_id": notice_id if str(notice_id).startswith("CVE-") else None,
+                        "title": title or notice_id,
+                        "description": description or title or notice_id,
+                        "published_at": published,
+                        "modified_at": updated,
                     },
                     metadata={
                         "source": "ubuntu",
@@ -214,9 +260,10 @@ class UbuntuTransport:
 
         async with httpx.AsyncClient() as client:
             try:
+                query = {} if endpoint.rstrip("/").endswith("cves.json") else params
                 response = await client.get(
                     endpoint,
-                    params=params,
+                    params=query,
                     timeout=timeout,
                 )
                 return {

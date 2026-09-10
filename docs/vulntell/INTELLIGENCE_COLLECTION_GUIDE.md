@@ -32,6 +32,7 @@ import asyncio
 from datetime import datetime, timezone, timedelta
 from apps.vulntell.batch import collect_adapter
 from apps.vulntell.sources import NVDAdapter, NVDConfig
+from apps.vulntell.sources.nvd import NVDTransport
 from apps.vulntell.sources.protocol import SourceRequest
 
 end = datetime.now(timezone.utc)
@@ -40,13 +41,15 @@ request = SourceRequest(
     window_start=end - timedelta(days=7), window_end=end, page_size=100,
 )
 manifest, documents = asyncio.run(
-    collect_adapter(NVDAdapter(config=NVDConfig()), request,
+    collect_adapter(NVDAdapter(config=NVDConfig(), transport=NVDTransport()), request,
                     "deliveries/alice/nvd/batch-20260831")
 )
 print(manifest.batch_id, len(documents))
 ```
 
-采集函数最多写入 100 条记录，先规范化再序列化；失败页应重试/恢复后再交付，不要手工修改 JSONL。
+采集函数最多写入 100 条记录，先规范化、映射并校验 COSV schema 再序列化；失败页应重试/恢复后再交付，
+不要手工修改 JSONL。adapter 必须使用显式 HTTP transport（例如 `NVDTransport`），默认构造不会联网。
+窗口过滤在 adapter 层完成，窗口内不足 100 条时按实际数量交付，不得用重复记录补齐。
 人工 CNVD 文件可将 `CNVDManualFileSource(CNVDManualConfig(path=...))` 作为 adapter 传入同一函数。
 
 ## 验证、导入与合并
@@ -66,11 +69,11 @@ merge_batches(
 )
 ```
 
-`validate_batch_directory` 会检查 manifest、文件 SHA-256 和 COSV schema；`import_batch` 按 batch_id
+`validate_batch_directory` 会检查 manifest、文件 SHA-256 和 COSV schema；`collect_adapter` 在写出前也会
+拒绝 schema 不合格文档。`import_batch` 按 batch_id
 原子导入且重复导入幂等；`merge_batches` 覆盖写入 `merged.cosv.jsonl` 并生成 `merge_report.json`。
 合并结果按 CVE、来源优先级和稳定排序去重，无法关联的来源 ID 保留为 pending；冲突、拒绝和重复数量
 以合并报告为准。采集者 ID 不是漏洞实体主键。
 
 当前正式 CLI 尚未提供完整 `collect/validate-batch/merge` 子命令，因此请使用上述 Python API；
 相关命令只有在阶段 5 收尾门禁通过后才可作为稳定接口对外承诺。
-

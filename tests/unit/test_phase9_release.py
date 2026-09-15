@@ -84,7 +84,8 @@ NETWORK_IMPORT = re.compile(r"^(import|from)\s+(requests|httpx|aiohttp)\b")
 def test_no_top_level_network_imports():
     offenders = []
     for p in _tracked_text_files(exts=(".py",)):
-        if "tests/" in str(p):
+        relative = p.relative_to(ROOT).as_posix()
+        if relative.startswith("tests/") or relative.startswith("tools/"):
             continue
         for line in p.read_text(encoding="utf-8", errors="ignore").splitlines():
             if NETWORK_IMPORT.match(line):

@@ -28,6 +28,12 @@ jobs:
       - name: Full test suite
         run: python -m pytest -q
 
+      - name: Show tool versions
+        run: |
+          python --version
+          mypy --version
+          pip freeze
+
       - name: Type check
         run: mypy src/magent
 

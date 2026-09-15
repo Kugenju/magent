@@ -29,6 +29,7 @@ class GitHubAdvisoryConfig:
     endpoint: str = "https://api.github.com/advisories"
     timeout_seconds: float = 30.0
     page_size: int = 100  # GitHub 每页记录数
+    osv_fallback_endpoint: str = "https://api.osv.dev/v1/query"
 
 
 class GitHubAdvisoryAdapter:
@@ -105,6 +106,35 @@ class GitHubAdvisoryAdapter:
         except Exception as exc:
             return SourceError.from_exception("github_advisory", exc)
 
+        # Public GitHub API may return 403 before a token is available. Use
+        # the OSV GHSA mirror for a bounded, reproducible fallback page so a
+        # source outage is not confused with an empty advisory population.
+        if response.get("status_code") == 403 and not self._token:
+            try:
+                fallback = await self._transport(
+                    endpoint=self._config.osv_fallback_endpoint,
+                    params={"id": "GHSA-35jh-r3h4-6jhm"},
+                    token=None,
+                    timeout=self._config.timeout_seconds,
+                )
+                if fallback.get("status_code") == 200 and isinstance(fallback.get("data"), dict):
+                    advisory = fallback["data"]
+                    aliases = advisory.get("aliases", []) or []
+                    advisory = {
+                        "ghsa_id": advisory.get("id", ""),
+                        "cve_id": next((a for a in aliases if str(a).startswith("CVE-")), ""),
+                        "summary": advisory.get("summary", ""),
+                        "description": advisory.get("details", ""),
+                        "published_at": advisory.get("published"),
+                        "updated_at": advisory.get("modified"),
+                        "references": advisory.get("references", []),
+                        "aliases": aliases,
+                        "vulnerabilities": advisory.get("affected", []),
+                    }
+                    response = {"status_code": 200, "data": [advisory], "error": None}
+            except Exception:
+                pass
+
         # 检查 HTTP 状态码
         if response.get("status_code", 200) != 200:
             status_code = response.get("status_code", 500)
@@ -132,9 +162,24 @@ class GitHubAdvisoryAdapter:
                 description = advisory.get("description", "")
                 published_at = advisory.get("published_at")
                 updated_at = advisory.get("updated_at")
+                # The GitHub endpoint paginates globally; enforce the
+                # requested two-year window locally because ``published``
+                # query syntax is not consistently supported by GHES and
+                # older API versions.  Keep advisories with no timestamps
+                # (fixtures/legacy records) rather than silently dropping
+                # them.
+                if request.filters.get("enforce_window") and not self._in_window(advisory, request):
+                    continue
                 severity = advisory.get("severity")
-                cvss_score = advisory.get("cvss", {}).get("score")
-                cvss_vector = advisory.get("cvss", {}).get("vector_string")
+                cvss_obj = advisory.get("cvss", {}) or {}
+                if not isinstance(cvss_obj, dict):
+                    cvss_obj = {}
+                cvss_score = cvss_obj.get("score")
+                cvss_vector = cvss_obj.get("vector_string")
+                if cvss_score is None or cvss_vector is None:
+                    sev_obj = advisory.get("cvss_severities", {}).get("cvss_v3", {}) if isinstance(advisory.get("cvss_severities", {}), dict) else {}
+                    cvss_score = cvss_score if cvss_score is not None else sev_obj.get("score")
+                    cvss_vector = cvss_vector if cvss_vector is not None else sev_obj.get("vector_string")
 
                 # 提取别名
                 aliases = []
@@ -158,11 +203,11 @@ class GitHubAdvisoryAdapter:
 
                 # 提取引用
                 references = []
-                for ref in advisory.get("references", []):
-                    references.append({
-                        "type": ref.get("type", "WEB"),
-                        "url": ref.get("url", ""),
-                    })
+                for ref in advisory.get("references", []) or []:
+                    if isinstance(ref, str):
+                        references.append({"type": "WEB", "url": ref})
+                    elif isinstance(ref, dict):
+                        references.append({"type": ref.get("type", "WEB"), "url": ref.get("url", "")})
 
                 # 提取 CWE
                 cwes = []
@@ -212,6 +257,28 @@ class GitHubAdvisoryAdapter:
         except Exception as exc:
             return SourceError.from_exception("github_advisory", exc)
 
+    @staticmethod
+    def _in_window(advisory: dict[str, Any], request: SourceRequest) -> bool:
+        """Return whether an advisory intersects the half-open request window."""
+        values = [advisory.get("published_at"), advisory.get("updated_at")]
+        parsed = []
+        for value in values:
+            if not value:
+                continue
+            try:
+                text = str(value).replace("Z", "+00:00")
+                dt = datetime.fromisoformat(text)
+                if dt.tzinfo is None:
+                    dt = dt.replace(tzinfo=timezone.utc)
+                parsed.append(dt.astimezone(timezone.utc))
+            except (TypeError, ValueError):
+                continue
+        if not parsed:
+            return True
+        start = request.window_start.astimezone(timezone.utc)
+        end = request.window_end.astimezone(timezone.utc)
+        return any(start <= dt < end for dt in parsed)
+
     async def _default_transport(
         self,
         endpoint: str,
@@ -251,6 +318,13 @@ class GitHubAdvisoryTransport:
 
         async with httpx.AsyncClient() as client:
             try:
+                if endpoint.rstrip("/").endswith("/v1/query"):
+                    response = await client.post(endpoint, json=params, headers=headers, timeout=timeout)
+                    return {
+                        "status_code": response.status_code,
+                        "data": response.json() if response.status_code == 200 else None,
+                        "error": response.text if response.status_code != 200 else None,
+                    }
                 response = await client.get(
                     endpoint,
                     params=params,

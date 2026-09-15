@@ -8,6 +8,7 @@
 from __future__ import annotations
 
 import datetime as dt
+import math
 
 from .models import (
     DEDUPLICATION_VERSION,
@@ -18,6 +19,9 @@ from .models import (
     MetricSnapshot,
     QualityIssue,
     SourceObservation,
+    EvaluationProfile,
+    MetricEvidence,
+    SourceMetricSnapshot,
 )
 from .policies import MIN_SAMPLES, RELEVANCE_PROFILE, REQUIRED_FIELDS
 
@@ -139,3 +143,135 @@ def compute_metrics(
         metrics=metrics,
         insufficient_data=insufficient,
     )
+
+
+def compute_source_metrics(
+    observations: list[SourceObservation],
+    quality_issues: list[QualityIssue] | None = None,
+    source_status: dict | None = None,
+    *,
+    profile: EvaluationProfile | None = None,
+) -> dict[str, SourceMetricSnapshot]:
+    """按来源计算可审计指标。
+
+    完整性、可验证性和分母均来自原始 ``SourceObservation``，不会使用归并后的
+    canonical 实体推断来源质量。返回值保持来源级独立快照，便于比较批次。
+    """
+    profile = profile or EvaluationProfile()
+    quality_issues = quality_issues or []
+    source_status = source_status or {}
+    sources = profile.source_ids or sorted({o.source for o in observations} | set(source_status))
+    result: dict[str, SourceMetricSnapshot] = {}
+    required = profile.required_fields or list(REQUIRED_FIELDS)
+    min_samples = profile.min_samples or MIN_SAMPLES
+
+    def percentile(values: list[float], q: float) -> float | None:
+        if not values:
+            return None
+        ordered = sorted(values)
+        index = (len(ordered) - 1) * q
+        lower = math.floor(index)
+        upper = math.ceil(index)
+        if lower == upper:
+            return ordered[lower]
+        return ordered[lower] + (ordered[upper] - ordered[lower]) * (index - lower)
+
+    for source in sources:
+        obs = [o for o in observations if o.source == source]
+        ids = [o.source_record_id for o in obs]
+        hashes = [o.raw_payload_hash for o in obs if o.raw_payload_hash]
+        denominator = {"observations": len(obs), "fields": {f: len(obs) for f in required}}
+        presence: dict[str, float | None] = {}
+        for field in required:
+            if not obs:
+                presence[field] = None
+                continue
+            present = 0
+            for o in obs:
+                value = o.normalized_fields.get(field)
+                if value is None:
+                    value = getattr(o, field, None)
+                if value not in (None, "", [], {}):
+                    present += 1
+            presence[field] = present / len(obs)
+        valid_hashes = sum(bool(o.raw_payload_hash) for o in obs)
+        status = source_status.get(source, "ok" if obs else "unknown")
+        if str(status).lower() in {"failed", "error"}:
+            state = "failed"
+        elif len(obs) < min_samples:
+            state = "insufficient_data"
+        elif str(status).lower() not in {"ok", "success", "succeeded"}:
+            state = "partial"
+        else:
+            state = "ok"
+        issue_count = sum(1 for i in quality_issues if i.source == source)
+        confidence = "high" if len(obs) >= min_samples and valid_hashes == len(obs) and issue_count == 0 else ("medium" if obs else "unknown")
+
+        delays = [
+            (o.source_added_at - o.published_at).total_seconds() / 86400.0
+            for o in obs
+            if o.source_added_at is not None
+            and o.published_at is not None
+            and o.source_added_at >= o.published_at
+        ]
+        references = [
+            ref
+            for o in obs
+            for ref in (o.normalized_fields.get("references") or [])
+            if isinstance(ref, dict)
+        ]
+        urls = [ref for ref in references if str(ref.get("url") or "").startswith(("http://", "https://"))]
+        verified = [ref for ref in urls if bool(ref.get("verified"))]
+        matched = 0
+        profile_terms = {
+            term.lower()
+            for term in (*profile.target_ecosystems, *profile.target_products,
+                         *profile.target_vulnerability_types, *profile.keywords)
+            if term
+        }
+        if profile_terms:
+            for o in obs:
+                text = " ".join(
+                    str(o.normalized_fields.get(field) or "")
+                    for field in ("title", "description", "affected", "cwe")
+                ).lower()
+                if any(term in text for term in profile_terms):
+                    matched += 1
+
+        raw_metrics = {
+            "observation_count": len(obs),
+            "raw_payload_hash_count": valid_hashes,
+            "timeliness": {
+                "delay_count": len(delays),
+                "avg_delay_days": (sum(delays) / len(delays)) if delays else None,
+                "p50_delay_days": percentile(delays, 0.50),
+                "p90_delay_days": percentile(delays, 0.90),
+            },
+            "verifiability": {
+                "reference_count": len(references),
+                "url_count": len(urls),
+                "verified_reference_count": len(verified),
+            },
+        }
+        complete_values = [v for v in presence.values() if v is not None]
+        normalized_metrics = {
+            "presence_rate": presence,
+            "traceable_rate": (valid_hashes / len(obs) if obs else None),
+            "timeliness_score": (1.0 / (1.0 + (sum(delays) / len(delays)))) if delays else None,
+            "url_coverage": (len(urls) / len(obs)) if obs else None,
+            "verified_reference_rate": (len(verified) / len(urls)) if urls else None,
+            "adaptability_rate": (matched / len(obs)) if obs and profile_terms else None,
+            "normalized_score": {
+                "completeness": (sum(complete_values) / len(complete_values)) if complete_values else None,
+            },
+        }
+        result[source] = SourceMetricSnapshot(
+            source=source,
+            raw=raw_metrics,
+            normalized=normalized_metrics,
+            denominator=denominator,
+            evidence=MetricEvidence(observation_ids=ids, raw_payload_hashes=hashes, quality_issue_count=issue_count),
+            confidence=confidence,
+            status=state,
+        )
+    return result

@@ -20,5 +20,6 @@
 - [下一阶段真实采集与分布式合并实施规范](NEXT_PHASE_IMPLEMENTATION.md)
 - [阶段 7 纵向示例](../phases/PHASE7.md)
 - [评测与复现](../evaluation/BENCHMARKS.md)
+- [论文修改与 VulnTell 实施计划](PAPER_REVISION_AND_IMPLEMENTATION_PLAN.md)
 
 `apps/vulntell` 是当前产品化应用入口，默认仍为离线、fixture-first；`examples/vulntell` 仅保留迁移兼容入口和过渡模块。VulnTell 继续通过 `magent` 的公开 API 集成，避免修改框架核心语义。

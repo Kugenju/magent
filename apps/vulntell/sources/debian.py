@@ -109,15 +109,34 @@ class DebianAdapter:
         # 解析响应
         try:
             data = response.get("data", {})
-            if not isinstance(data, dict):
-                data = {"packages": data}
-            
-            packages = data.get("packages", [])
+            # The live Security Tracker ``data/json`` endpoint is a
+            # complete snapshot, not a paginated ``packages`` API.  It is
+            # currently returned as a mapping keyed by CVE/DSA id (older
+            # fixtures used a ``packages`` list), so accept both shapes.
+            if isinstance(data, dict) and "packages" in data:
+                packages = data.get("packages") or []
+            elif isinstance(data, dict):
+                packages = []
+                for vuln_id, value in data.items():
+                    if isinstance(value, dict):
+                        item = dict(value)
+                        item.setdefault("id", vuln_id)
+                        packages.append(item)
+            elif isinstance(data, list):
+                packages = data
+            else:
+                packages = []
 
             # 转换为 SourceRecord
             records = []
             for pkg in packages:
                 package_name = pkg.get("package", "")
+                # Snapshot entries are keyed by vulnerability id and carry
+                # package state under ``package``/``releases``.  Preserve
+                # the vulnerability id as the stable record key.
+                vuln_id = pkg.get("id") or pkg.get("cve") or pkg.get("bug")
+                if not package_name and vuln_id:
+                    package_name = str(vuln_id)
                 if not package_name:
                     continue
 
@@ -129,7 +148,7 @@ class DebianAdapter:
                 unstable = pkg.get("unstable", "")
 
                 # 构建 record_id
-                record_id = f"debian-{package_name}"
+                record_id = f"debian-{vuln_id or package_name}"
                 if scope:
                     record_id = f"{record_id}:{scope}"
 
@@ -138,6 +157,8 @@ class DebianAdapter:
                     payload={
                         "id": record_id,
                         "package": package_name,
+                        "vulnerability_id": vuln_id,
+                        "releases": pkg.get("releases", {}),
                         "scope": scope,
                         "urgency": urgency,
                         "stable": stable,
@@ -153,9 +174,11 @@ class DebianAdapter:
                 records.append(record)
 
             # 计算是否有更多页
-            total = len(packages)
-            has_more = total == self._config.page_size
-            next_cursor = str(page + 1) if has_more else None
+            # ``data/json`` is an atomic snapshot; it has no server-side
+            # pagination.  Never infer truncation merely because the number
+            # of entries happens to equal 100.
+            has_more = False
+            next_cursor = None
 
             return SourcePage(
                 records=tuple(records),

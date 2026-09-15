@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import asyncio
 import re
 import xml.etree.ElementTree as ET
 from dataclasses import dataclass, field
@@ -83,6 +84,8 @@ class MSRCAdapter:
         params = {
             "page": page,
             "limit": min(request.page_size, self._config.page_size),
+            "window_start": request.window_start.isoformat(),
+            "window_end": request.window_end.isoformat(),
         }
 
         # 添加过滤条件
@@ -199,8 +202,10 @@ class MSRCAdapter:
             # The updates index is not page-addressable after CVRF expansion;
             # records are already bounded to the selected bulletins.
             if isinstance(data, dict) and data.get("cvrf_expanded"):
-                updates = updates[: request.page_size]
                 total = len(updates)
+                # The transport has already expanded every bulletin in the
+                # requested window into CVE rows. It is a complete snapshot,
+                # so do not apply the generic 100-record page cap here.
                 page = 1
             has_more = page * self._config.page_size < total
             next_cursor = str(page + 1) if has_more else None
@@ -282,9 +287,9 @@ class MSRCTransport:
         async with httpx.AsyncClient() as client:
             try:
                 if endpoint.rstrip("/").endswith("/updates"):
-                    # The updates collection is only an index.  Follow the
-                    # two most recent bulletins; the adapter's window filter
-                    # will discard records outside the requested interval.
+                    # The updates collection is only an index. Follow every
+                    # bulletin whose release history may overlap the request;
+                    # the adapter's window filter discards rows outside it.
                     index = await client.get(endpoint, timeout=timeout)
                     if index.status_code != 200:
                         return {"status_code": index.status_code, "error": index.text}
@@ -293,17 +298,68 @@ class MSRCTransport:
                         updates,
                         key=lambda item: item.get("CurrentReleaseDate") or item.get("InitialReleaseDate") or "",
                         reverse=True,
-                    )[:2]
-                    rows = []
-                    for update in updates:
+                    )
+                    # Filter the bulletin index before downloading CVRF
+                    # documents. Fetching all historical bulletins (192 at
+                    # present) makes a two-year run time out and is
+                    # unnecessary because the adapter applies the same
+                    # half-open window at the record boundary.
+                    start = params.get("window_start") or params.get("after")
+                    end = params.get("window_end") or params.get("before")
+                    if start and end:
+                        try:
+                            start_dt = datetime.fromisoformat(str(start).replace("Z", "+00:00"))
+                            end_dt = datetime.fromisoformat(str(end).replace("Z", "+00:00"))
+                            if start_dt.tzinfo is None: start_dt = start_dt.replace(tzinfo=timezone.utc)
+                            if end_dt.tzinfo is None: end_dt = end_dt.replace(tzinfo=timezone.utc)
+                            selected = []
+                            for item in updates:
+                                # Initial release determines whether the
+                                # bulletin belongs to the study window.
+                                # CurrentReleaseDate is often refreshed in
+                                # 2026 for decades-old bulletins and must not
+                                # pull those historical documents into the
+                                # two-year download set.
+                                stamps = [item.get("InitialReleaseDate") or item.get("CurrentReleaseDate")]
+                                dates = []
+                                for stamp in stamps:
+                                    if not stamp: continue
+                                    try:
+                                        dt = datetime.fromisoformat(str(stamp).replace("Z", "+00:00"))
+                                        if dt.tzinfo is None: dt = dt.replace(tzinfo=timezone.utc)
+                                        dates.append(dt.astimezone(timezone.utc))
+                                    except ValueError:
+                                        pass
+                                if not dates or any(start_dt <= dt < end_dt for dt in dates):
+                                    selected.append(item)
+                            updates = selected
+                        except ValueError:
+                            pass
+                    # Keep memory bounded: CVRF documents can be several MB
+                    # each. Four concurrent downloads avoid the previous
+                    # multi-GB accumulation while retaining useful speed.
+                    semaphore = asyncio.Semaphore(4)
+                    async def fetch_bulletin(update):
                         url = update.get("CvrfUrl")
                         if not url:
-                            continue
-                        bulletin = await client.get(url, timeout=timeout)
-                        if bulletin.status_code != 200:
-                            continue
-                        parsed = MSRCAdapter._parse_cvrf_xml(bulletin.text)
-                        rows.extend(parsed.get("value", []))
+                            return []
+                        async with semaphore:
+                            try:
+                                bulletin = await client.get(url, timeout=timeout)
+                                if bulletin.status_code != 200:
+                                    return []
+                                return MSRCAdapter._parse_cvrf_xml(bulletin.text).get("value", [])
+                            except (httpx.TimeoutException, httpx.RequestError):
+                                return []
+                    rows = []
+                    for start_idx in range(0, len(updates), 4):
+                        chunk = updates[start_idx:start_idx + 4]
+                        results = await asyncio.gather(*(fetch_bulletin(item) for item in chunk))
+                        for group in results:
+                            rows.extend(group)
+                        # Release completed XML parse objects before the next
+                        # chunk; only compact CVE rows are retained.
+                        del results
                     return {"status_code": 200, "data": {"value": rows, "total": len(rows), "cvrf_expanded": True}}
                 response = await client.get(
                     endpoint,

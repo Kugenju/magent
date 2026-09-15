@@ -254,11 +254,23 @@ class CISAKEVAdapter:
         endpoint: str,
         timeout: float,
     ) -> dict:
-        """默认 transport：抛出 NotImplementedError。"""
-        raise NotImplementedError(
-            "CISA KEV adapter requires a transport function. "
-            "Use httpx or aiohttp transport for live mode."
-        )
+        """官方 JSON feed transport。"""
+        try:
+            import httpx
+        except ImportError:
+            return {"status_code": 500, "error": "httpx not installed"}
+        async with httpx.AsyncClient() as client:
+            try:
+                response = await client.get(endpoint, timeout=timeout)
+                return {
+                    "status_code": response.status_code,
+                    "data": response.json() if response.status_code == 200 else None,
+                    "error": response.text if response.status_code != 200 else None,
+                }
+            except httpx.TimeoutException:
+                return {"status_code": 408, "error": "Request timed out"}
+            except httpx.RequestError as exc:
+                return {"status_code": 500, "error": str(exc)}
 
 
 class CISAKEVTransport:

@@ -29,6 +29,9 @@ class RedHatConfig:
     endpoint: str = "https://access.redhat.com/hydra/rest/securitydata/cve.json"
     timeout_seconds: float = 30.0
     page_size: int = 100
+    # The public endpoint returns fixed-size pages of up to 1000 records;
+    # ``page`` is the supported continuation parameter.
+    api_page_size: int = 1000
 
 
 class RedHatAdapter:
@@ -116,6 +119,7 @@ class RedHatAdapter:
             if not isinstance(data, list):
                 data = data.get("data", [])
 
+            raw_count = len(data)
             # Red Hat's public CVE feed is a full list; apply the requested
             # half-open window before mapping so a "past month" request does
             # not accidentally emit historical CVEs.
@@ -186,8 +190,11 @@ class RedHatAdapter:
                 records.append(record)
 
             # 计算是否有更多页
-            total = len(data)
-            has_more = total == self._config.page_size
+            # Red Hat caps each response at 1000 records.  A response that
+            # reaches that cap must be continued with ``page``; treating the
+            # first 1000 rows as a complete feed silently truncates the
+            # historical collection.
+            has_more = raw_count >= self._config.api_page_size
             next_cursor = str(page + 1) if has_more else None
 
             return SourcePage(
@@ -236,7 +243,7 @@ class RedHatTransport:
             try:
                 response = await client.get(
                     endpoint,
-                    params={k: v for k, v in params.items() if k not in {"page", "limit"}},
+                    params={k: v for k, v in params.items() if k != "limit"},
                     timeout=timeout,
                 )
                 return {

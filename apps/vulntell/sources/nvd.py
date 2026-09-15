@@ -14,6 +14,8 @@
 from __future__ import annotations
 
 import json
+import gzip
+import io
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta, timezone
 from typing import Any, Callable, Optional
@@ -36,6 +38,10 @@ class NVDConfig:
     max_window_days: int = NVD_MAX_WINDOW_DAYS  # 最大窗口天数
     max_response_bytes: int = 5 * 1024 * 1024
     max_records_per_page: int = 2000
+    # Use official yearly bulk feeds for large historical windows.
+    use_bulk: bool = False
+    bulk_base_url: str = "https://nvd.nist.gov/feeds/json/cve/2.0"
+    bulk_url_template: str = "https://nvd.nist.gov/feeds/json/cve/2.0/nvdcve-2.0-{year}.json.gz"
 
 
 @dataclass
@@ -149,6 +155,9 @@ class NVDAdapter:
         Returns:
             SourcePage 或 SourceError
         """
+        if self._config.use_bulk:
+            return await self._fetch_bulk_page(request, cursor)
+
         # 解析游标
         nvd_cursor = None
         if cursor:
@@ -201,6 +210,133 @@ class NVDAdapter:
             )
         except Exception as exc:
             return SourceError.from_exception("nvd", exc)
+
+        # 检查 HTTP 状态码
+        if response.get("status_code", 200) != 200:
+            status_code = response.get("status_code", 500)
+            return SourceError.from_http_status("nvd", status_code, response.get("error", ""))
+
+        try:
+            data = response.get("data", {})
+            try:
+                if len(json.dumps(data, ensure_ascii=False).encode("utf-8")) > self._config.max_response_bytes:
+                    return SourceError(source="nvd", kind=SourceErrorKind.INVALID_RESPONSE,
+                                       message="Response exceeds size limit", retryable=False)
+            except (TypeError, ValueError):
+                return SourceError(source="nvd", kind=SourceErrorKind.INVALID_RESPONSE,
+                                   message="Invalid response payload", retryable=False)
+            vulnerabilities = data.get("vulnerabilities", [])
+            total_results = data.get("totalResults", 0)
+            if not isinstance(vulnerabilities, list) or len(vulnerabilities) > self._config.max_records_per_page:
+                return SourceError(source="nvd", kind=SourceErrorKind.INVALID_RESPONSE,
+                                   message="Response record count exceeds limit", retryable=False)
+            vulnerabilities = sorted(vulnerabilities,
+                key=lambda v: ((v.get("cve", {}).get("lastModified") or ""),
+                               (v.get("cve", {}).get("id") or "")))
+            records = [self._cve_to_record(v.get("cve", {}),
+                       f"{slice_start.isoformat()}/{slice_end.isoformat()}")
+                       for v in vulnerabilities if v.get("cve", {}).get("id")]
+            server_count = data.get("resultsPerPage", len(vulnerabilities))
+            try: server_count = int(server_count)
+            except (TypeError, ValueError): server_count = len(vulnerabilities)
+            next_index = start_index + max(0, server_count)
+            has_more_in_slice = next_index < total_results
+            has_more_slices = len(slices) > 1
+            if has_more_in_slice:
+                next_cursor = NVDCursor(request.window_start, request.window_end, next_index,
+                                        nvd_cursor.slice_index if nvd_cursor else 0).to_string()
+            elif has_more_slices:
+                next_cursor = NVDCursor(request.window_start, request.window_end, 0,
+                                        (nvd_cursor.slice_index if nvd_cursor else 0) + 1).to_string()
+            else:
+                next_cursor = None
+            return SourcePage(records=tuple(records), next_cursor=next_cursor,
+                              has_more=next_cursor is not None,
+                              page_index=start_index // max(1, request.page_size),
+                              source="nvd", observed_at=datetime.now(timezone.utc),
+                              request_fingerprint=request.request_fingerprint)
+        except Exception as exc:
+            return SourceError.from_exception("nvd", exc)
+
+    async def _fetch_bulk_page(self, request: SourceRequest, cursor: Optional[str]) -> SourcePage | SourceError:
+        """Fetch official yearly ``nvdcve-2.0-YYYY.json.gz`` feeds.
+
+        Cursor is a compact JSON object containing year index and record offset;
+        feed contents are cached per year for checkpoint-safe pagination.
+        """
+        try:
+            start_year = request.window_start.astimezone(timezone.utc).year
+            end_year = (request.window_end - timedelta(microseconds=1)).astimezone(timezone.utc).year
+            years = list(range(start_year, end_year + 1))
+            yi, offset = 0, 0
+            if cursor:
+                try:
+                    c = json.loads(cursor); yi, offset = int(c["y"]), int(c.get("o", 0))
+                except Exception:
+                    return SourceError(source="nvd", kind=SourceErrorKind.INVALID_RESPONSE, message="Invalid cursor format", retryable=False)
+            if yi < 0 or yi >= len(years) or offset < 0:
+                return SourceError(source="nvd", kind=SourceErrorKind.INVALID_RESPONSE, message="Invalid cursor values", retryable=False)
+            if not hasattr(self, "_bulk_cache"):
+                self._bulk_cache = {}
+            year = years[yi]
+            records = self._bulk_cache.get(year)
+            if records is None:
+                template = self._config.bulk_url_template
+                if template == NVDConfig.__dataclass_fields__["bulk_url_template"].default and self._config.bulk_base_url != NVDConfig.__dataclass_fields__["bulk_base_url"].default:
+                    template = self._config.bulk_base_url.rstrip("/") + "/nvdcve-2.0-{year}.json.gz"
+                endpoint = template.format(year=year)
+                response = await self._transport(endpoint=endpoint, params={}, api_key=self._config.api_key, timeout=self._config.timeout_seconds)
+                if response.get("status_code", 500) != 200:
+                    return SourceError.from_http_status("nvd", response.get("status_code", 500), response.get("error", ""))
+                blob = response.get("content")
+                if blob is None:
+                    data = response.get("data")
+                    if isinstance(data, (bytes, bytearray)): blob = data
+                if not blob:
+                    return SourceError(source="nvd", kind=SourceErrorKind.INVALID_RESPONSE, message="Bulk feed missing content", retryable=False)
+                raw = gzip.decompress(blob) if bytes(blob)[:2] == b"\x1f\x8b" else bytes(blob)
+                data = json.loads(raw.decode("utf-8"))
+                vulns = data.get("vulnerabilities", []) if isinstance(data, dict) else []
+                parsed = []
+                for vuln in vulns:
+                    cve = vuln.get("cve", {}) if isinstance(vuln, dict) else {}
+                    pub, mod = cve.get("published"), cve.get("lastModified")
+                    in_window = False
+                    for stamp in (pub, mod):
+                        if not stamp: continue
+                        try:
+                            dt = datetime.fromisoformat(str(stamp).replace("Z", "+00:00"))
+                            if dt.tzinfo is None: dt = dt.replace(tzinfo=timezone.utc)
+                            if request.window_start <= dt.astimezone(timezone.utc) < request.window_end:
+                                in_window = True; break
+                        except ValueError:
+                            pass
+                    if in_window and cve.get("id"):
+                        parsed.append(self._cve_to_record(cve, f"bulk-{year}"))
+                records = tuple(parsed)
+                self._bulk_cache[year] = records
+            size = min(request.page_size, self._config.page_size)
+            page = records[offset:offset + size]
+            new_offset = offset + len(page)
+            if new_offset < len(records):
+                next_cursor = json.dumps({"y": yi, "o": new_offset}, separators=(",", ":"))
+            elif yi + 1 < len(years):
+                next_cursor = json.dumps({"y": yi + 1, "o": 0}, separators=(",", ":"))
+            else:
+                next_cursor = None
+            return SourcePage(records=tuple(page), next_cursor=next_cursor, has_more=next_cursor is not None,
+                              page_index=offset // max(1, size), source="nvd", observed_at=datetime.now(timezone.utc),
+                              request_fingerprint=request.request_fingerprint)
+        except Exception as exc:
+            return SourceError.from_exception("nvd", exc)
+
+    def _cve_to_record(self, cve: dict[str, Any], window_slice: str = "") -> SourceRecord:
+        record_id = cve.get("id", "")
+        descriptions = [d for d in cve.get("descriptions", []) if d.get("lang") == "en"][:1]
+        metrics = cve.get("metrics", {}) or {}
+        metric = (metrics.get("cvssMetricV31") or metrics.get("cvssMetricV30") or metrics.get("cvssMetricV2") or [{}])[0]
+        cvss_data = metric.get("cvssData", {}) if isinstance(metric, dict) else {}
+        return SourceRecord(source_record_id=record_id, payload={"id": record_id, "published": cve.get("published"), "lastModified": cve.get("lastModified"), "descriptions": descriptions, "cve_id": record_id, "title": descriptions[0].get("value") if descriptions else record_id, "description": descriptions[0].get("value") if descriptions else None, "published_at": cve.get("published"), "modified_at": cve.get("lastModified"), "cvss_score": cvss_data.get("baseScore"), "cvss_vector": cvss_data.get("vectorString"), "cvss_version": cvss_data.get("version")}, metadata={"source": "nvd", "published_at": cve.get("published"), "modified_at": cve.get("lastModified"), "window_slice": window_slice})
 
         # 检查 HTTP 状态码
         if response.get("status_code", 200) != 200:
@@ -295,18 +431,18 @@ class NVDAdapter:
             if has_more_in_slice:
                 # 当前分片还有更多页
                 next_cursor = NVDCursor(
-                    window_start=cursor.window_start if cursor else request.window_start,
-                    window_end=cursor.window_end if cursor else request.window_end,
+                    window_start=nvd_cursor.window_start if nvd_cursor else request.window_start,
+                    window_end=nvd_cursor.window_end if nvd_cursor else request.window_end,
                     start_index=next_index,
-                    slice_index=cursor.slice_index if cursor else 0,
+                    slice_index=nvd_cursor.slice_index if nvd_cursor else 0,
                 ).to_string()
             elif has_more_slices:
                 # 还有更多分片
                 next_cursor = NVDCursor(
-                    window_start=cursor.window_start if cursor else request.window_start,
-                    window_end=cursor.window_end if cursor else request.window_end,
+                    window_start=nvd_cursor.window_start if nvd_cursor else request.window_start,
+                    window_end=nvd_cursor.window_end if nvd_cursor else request.window_end,
                     start_index=0,
-                    slice_index=(cursor.slice_index if cursor else 0) + 1,
+                    slice_index=(nvd_cursor.slice_index if nvd_cursor else 0) + 1,
                 ).to_string()
             else:
                 next_cursor = None
@@ -370,6 +506,12 @@ class NVDTransport:
                     headers=headers,
                     timeout=timeout,
                 )
+                if endpoint.endswith(".json.gz"):
+                    return {
+                        "status_code": response.status_code,
+                        "content": response.content if response.status_code == 200 else None,
+                        "error": response.text if response.status_code != 200 else None,
+                    }
                 return {
                     "status_code": response.status_code,
                     "data": response.json() if response.status_code == 200 else None,

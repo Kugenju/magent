@@ -60,6 +60,12 @@ class BatchManifest(BaseModel):
     content_hash: str = ""
     license: str = "fixture-sample"
     status: BatchStatus = BatchStatus.PENDING
+    # 分页/截断审计元数据（新增可选字段，兼容旧清单）
+    page_count: int = 1
+    fetched_record_count: int = 0
+    truncated: bool = False
+    next_cursor: Optional[str] = None
+    collection_complete: bool = True
 
     def model_dump_stable(self) -> dict[str, Any]:
         """稳定序列化：保证相同输入产生相同内容哈希。"""
@@ -79,6 +85,12 @@ def create_batch_manifest(
     record_count: int,
     content_hash: str,
     license: str = "fixture-sample",
+    *,
+    page_count: int = 1,
+    fetched_record_count: int | None = None,
+    truncated: bool = False,
+    next_cursor: str | None = None,
+    collection_complete: bool = True,
 ) -> BatchManifest:
     """创建批次清单。
 
@@ -105,6 +117,11 @@ def create_batch_manifest(
         content_hash=content_hash,
         license=license,
         status=BatchStatus.RECEIVED,
+        page_count=page_count,
+        fetched_record_count=record_count if fetched_record_count is None else fetched_record_count,
+        truncated=truncated,
+        next_cursor=next_cursor,
+        collection_complete=collection_complete,
     )
 
 

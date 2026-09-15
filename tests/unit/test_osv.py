@@ -3,6 +3,9 @@
 from __future__ import annotations
 
 import asyncio
+import io
+import json
+import zipfile
 from datetime import datetime, timezone, timedelta
 
 import pytest
@@ -180,3 +183,24 @@ def test_osv_adapter_ecosystem():
     record = result.records[0]
     assert record.payload["packages"][0]["ecosystem"] == "npm"
     assert record.payload["packages"][0]["name"] == "test-package"
+
+
+def test_osv_bulk_snapshot_pagination_and_window():
+    """Official all.zip snapshots are parsed and paged without querybatch."""
+    buf = io.BytesIO()
+    with zipfile.ZipFile(buf, "w") as zf:
+        zf.writestr("GHSA-1.json", json.dumps({"id": "GHSA-1", "summary": "in",
+            "modified": "2025-01-01T00:00:00Z"}))
+        zf.writestr("GHSA-2.json", json.dumps({"id": "GHSA-2", "summary": "out",
+            "modified": "2020-01-01T00:00:00Z"}))
+
+    class BulkTransport:
+        async def __call__(self, **kwargs):
+            return {"status_code": 200, "content": buf.getvalue()}
+
+    adapter = OSVAdapter(config=OSVConfig(use_bulk=True, bulk_ecosystems=("PyPI",), page_size=1), transport=BulkTransport())
+    req = _make_request(window_start=datetime(2024, 1, 1, tzinfo=timezone.utc),
+                        window_end=datetime(2026, 1, 1, tzinfo=timezone.utc), page_size=1)
+    first = asyncio.run(adapter.fetch_page(req))
+    assert isinstance(first, SourcePage)
+    assert first.record_count == 1 and not first.has_more

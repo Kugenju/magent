@@ -29,6 +29,9 @@ class UbuntuConfig:
     endpoint: str = "https://ubuntu.com/security/cves.json"
     timeout_seconds: float = 30.0
     page_size: int = 100
+    # Optional offset for historical backfills. The public feed is ordered
+    # newest-first; this avoids scanning newer CVEs during a backfill.
+    initial_offset: int = 0
 
 
 class UbuntuAdapter:
@@ -64,11 +67,14 @@ class UbuntuAdapter:
         Returns:
             SourcePage 或 SourceError
         """
-        # 解析游标
-        page = 1
+        # Ubuntu's public cves.json endpoint uses an ``offset`` cursor and
+        # currently returns at most 10 entries per response.  ``page`` and
+        # ``limit`` are rejected by the endpoint, so the cursor is the raw
+        # offset rather than a page number.
+        offset = max(0, int(self._config.initial_offset))
         if cursor:
             try:
-                page = int(cursor)
+                offset = int(cursor)
             except ValueError:
                 return SourceError(
                     source="ubuntu",
@@ -78,12 +84,11 @@ class UbuntuAdapter:
                 )
 
         # 构建 Ubuntu API 参数
-        params = {
-            "page": page,
-            "limit": min(request.page_size, self._config.page_size),
-            "after": request.window_start.date().isoformat(),
-            "before": request.window_end.date().isoformat(),
-        }
+        # The endpoint accepts a maximum ``limit`` of 20.  Request the
+        # largest legal page so a two-year backfill does not require twice as
+        # many HTTP calls as necessary.
+        page_limit = min(max(int(request.page_size or 20), 1), 20)
+        params = {"offset": offset, "limit": page_limit}
 
         # 添加过滤条件
         if request.filters.get("cve_id"):
@@ -212,15 +217,46 @@ class UbuntuAdapter:
                 records.append(record)
 
             # 计算是否有更多页
-            total = data.get("total", 0)
-            has_more = page * self._config.page_size < total
-            next_cursor = str(page + 1) if has_more else None
+            # cves.json is a complete feed and UbuntuTransport does not send
+            # page/limit parameters for it. Pagination would repeat the same
+            # feed and inflate counts, so this endpoint is one snapshot.
+            # Advance using the number of raw entries, not the number that
+            # survived the time-window filter.  Otherwise filtered entries
+            # would cause duplicate pages or skipped records.  The endpoint
+            # has a fixed page size of ten; a short page is the end marker.
+            raw_items = data.get("cves", []) if isinstance(data, dict) else notices
+            raw_count = len(raw_items)
+            # The feed is ordered newest-first.  Once the oldest item in a
+            # page is before the requested start, all following pages are
+            # outside the window and can be skipped safely.
+            oldest_in_page = None
+            for item in raw_items:
+                stamp = item.get("updated_at") or item.get("updated") or item.get("published")
+                if stamp:
+                    try:
+                        parsed = datetime.fromisoformat(str(stamp).replace("Z", "+00:00"))
+                        if parsed.tzinfo is None:
+                            parsed = parsed.replace(tzinfo=timezone.utc)
+                        parsed = parsed.astimezone(timezone.utc)
+                        oldest_in_page = parsed if oldest_in_page is None else min(oldest_in_page, parsed)
+                    except ValueError:
+                        pass
+            total_results = data.get("total_results") if isinstance(data, dict) else None
+            try:
+                total_results = int(total_results) if total_results is not None else None
+            except (TypeError, ValueError):
+                total_results = None
+            has_more = (
+                (offset + raw_count < total_results) if total_results is not None
+                else raw_count >= page_limit
+            ) and not (oldest_in_page and oldest_in_page < request.window_start)
+            next_cursor = str(offset + raw_count) if has_more else None
 
             return SourcePage(
                 records=tuple(records),
                 next_cursor=next_cursor,
                 has_more=has_more,
-                page_index=page - 1,
+                page_index=offset // 10,
                 source="ubuntu",
                 observed_at=datetime.now(timezone.utc),
                 request_fingerprint=request.request_fingerprint,
@@ -260,10 +296,9 @@ class UbuntuTransport:
 
         async with httpx.AsyncClient() as client:
             try:
-                query = {} if endpoint.rstrip("/").endswith("cves.json") else params
                 response = await client.get(
                     endpoint,
-                    params=query,
+                    params=params,
                     timeout=timeout,
                 )
                 return {

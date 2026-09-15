@@ -24,7 +24,11 @@ from pydantic import BaseModel, Field, model_serializer
 SCHEMA_VERSION = "1"
 PARSER_VERSION = "1"
 DEDUPLICATION_VERSION = "1"
+# Keep the aggregate report/checkpoint contract at v1.  Source-level Q-SEPTET v2
+# is versioned independently so existing reports and frozen baselines remain
+# replayable while the new contract is adopted incrementally.
 METRIC_VERSION = "1"
+SOURCE_METRIC_VERSION = "2"
 
 
 def utc(value: dt.datetime) -> dt.datetime:
@@ -162,6 +166,44 @@ class MetricSnapshot(_VTBase):
     source_status: dict = Field(default_factory=dict)
     metrics: dict = Field(default_factory=dict)
     insufficient_data: bool = False
+
+
+class EvaluationProfile(_VTBase):
+    """评估契约：冻结指标定义、阈值及来源范围。"""
+
+    profile_id: str = "default"
+    profile_version: str = "1"
+    required_fields: list[str] = Field(default_factory=list)
+    min_samples: int = 0
+    source_ids: list[str] = Field(default_factory=list)
+    weights: dict[str, float] = Field(default_factory=dict)
+    thresholds: dict[str, float] = Field(default_factory=dict)
+    target_ecosystems: list[str] = Field(default_factory=list)
+    target_products: list[str] = Field(default_factory=list)
+    target_vulnerability_types: list[str] = Field(default_factory=list)
+    keywords: list[str] = Field(default_factory=list)
+    metric_version: str = SOURCE_METRIC_VERSION
+
+
+class MetricEvidence(_VTBase):
+    """指标证据指针；不携带原始 payload，仅引用 observation。"""
+
+    observation_ids: list[str] = Field(default_factory=list)
+    raw_payload_hashes: list[str] = Field(default_factory=list)
+    quality_issue_count: int = 0
+    notes: list[str] = Field(default_factory=list)
+
+
+class SourceMetricSnapshot(_VTBase):
+    """单来源指标及其分母、证据和置信状态。"""
+
+    source: str
+    raw: dict = Field(default_factory=dict)
+    normalized: dict = Field(default_factory=dict)
+    denominator: dict = Field(default_factory=dict)
+    evidence: MetricEvidence = Field(default_factory=MetricEvidence)
+    confidence: str = "unknown"  # high | medium | low | unknown
+    status: str = "unknown"  # ok | partial | failed | insufficient_data | unknown
 
 
 class EvaluationRun(_VTBase):
@@ -339,4 +381,3 @@ class SyncRun(_VTBase):
         if not self.can_transition_to(new_status):
             raise ValueError(f"Cannot transition from {self.status} to {new_status}")
         return self.model_copy(update={"status": new_status})
-

@@ -15,6 +15,8 @@ from __future__ import annotations
 
 import hashlib
 import json
+import io
+import zipfile
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import Any, Callable, Optional
@@ -31,6 +33,12 @@ class OSVConfig:
     batch_endpoint: str = "https://api.osv.dev/v1/querybatch"
     timeout_seconds: float = 30.0
     page_size: int = 100  # OSV 每页记录数
+    # Prefer the official bulk snapshots for historical collection.  The
+    # querybatch API requires package names and is not a vulnerability-feed
+    # pagination endpoint.
+    use_bulk: bool = False
+    bulk_base_url: str = "https://osv-vulnerabilities.storage.googleapis.com"
+    bulk_ecosystems: tuple[str, ...] = ("PyPI", "npm", "Go", "Maven", "crates.io")
 
 
 # OSV 生态映射
@@ -83,6 +91,9 @@ class OSVAdapter:
         Returns:
             SourcePage 或 SourceError
         """
+        if self._config.use_bulk:
+            return await self._fetch_bulk_page(request, cursor)
+
         # 解析游标
         page_token = None
         if cursor:
@@ -112,142 +123,116 @@ class OSVAdapter:
         except Exception as exc:
             return SourceError.from_exception("osv", exc)
 
-        # 检查 HTTP 状态码
         if response.get("status_code", 200) != 200:
-            status_code = response.get("status_code", 500)
-            return SourceError.from_http_status(
-                "osv",
-                status_code,
-                response.get("error", ""),
-            )
-
-        # 解析响应
+            return SourceError.from_http_status("osv", response.get("status_code", 500), response.get("error", ""))
         try:
             data = response.get("data", {}) or {}
-            # OSV querybatch responses wrap results per package; flatten them
-            # so callers always consume a uniform ``vulns`` list.  This also
-            # supports live transports that query /v1/querybatch directly.
             vulns = data.get("vulns", [])
             if not vulns and data.get("results"):
-                vulns = []
-                for result in data.get("results", []):
-                    vulns.extend(result.get("vulns", []) or [])
-            next_page_token = data.get("next_page_token")
-
-            # 转换为 SourceRecord
-            records = []
-            for vuln in vulns:
-                vuln_id = vuln.get("id", "")
-                if not vuln_id:
-                    continue
-
-                # 提取关键字段
-                summary = vuln.get("summary", "")
-                details = vuln.get("details", "")
-                published = vuln.get("published")
-                modified = vuln.get("modified", published)
-
-                # 提取受影响包信息
-                affected = vuln.get("affected", [])
-                packages = []
-                for aff in affected:
-                    pkg = aff.get("package", {})
-                    ecosystem = pkg.get("ecosystem", "")
-                    name = pkg.get("name", "")
-                    if ecosystem and name:
-                        packages.append({
-                            "ecosystem": ecosystem,
-                            "name": name,
-                        })
-
-                # 提取严重性
-                severity = vuln.get("severity", [])
-
-                # 提取别名
-                aliases = vuln.get("aliases", [])
-
-                # 提取引用
-                references = []
-                for ref in vuln.get("references", []):
-                    references.append({
-                        "type": ref.get("type", "WEB"),
-                        "url": ref.get("url", ""),
-                    })
-
-                # 提取版本范围
-                version_ranges = []
-                for aff in affected:
-                    ranges = aff.get("ranges", [])
-                    for r in ranges:
-                        events = r.get("events", [])
-                        version_ranges.append({
-                            "type": r.get("type", ""),
-                            "events": events,
-                        })
-
-                record = SourceRecord(
-                    source_record_id=vuln_id,
-                    payload={
-                        "id": vuln_id,
-                        "summary": summary,
-                        "details": details,
-                        # Canonical fields consumed by domain normalization.
-                        "cve_id": next((a for a in aliases if isinstance(a, str) and a.startswith("CVE-")), None),
-                        "title": summary or vuln_id,
-                        "description": details or summary or vuln_id,
-                        "published_at": published,
-                        "modified_at": modified,
-                        "published": published,
-                        "modified": modified,
-                        "aliases": aliases,
-                        "packages": packages,
-                        "severity": severity,
-                        "references": references,
-                        "version_ranges": version_ranges,
-                    },
-                    metadata={
-                        "source": "osv",
-                        "published_at": published,
-                        "modified_at": modified,
-                    },
-                )
-                records.append(record)
-
-            # Querybatch returns the package's complete advisory history.
-            # Apply the requested half-open window when timestamps are
-            # available; advisories without a timestamp remain visible for
-            # compatibility with older mirrors/fixtures.
+                vulns = [v for result in data.get("results", []) for v in (result.get("vulns", []) or [])]
+            records = [self._vuln_to_record(v) for v in vulns if v.get("id")]
             windowed = []
             for record in records:
                 stamp = record.metadata.get("modified_at") or record.metadata.get("published_at")
                 if stamp:
                     try:
                         parsed = datetime.fromisoformat(str(stamp).replace("Z", "+00:00"))
-                        if parsed.tzinfo is None:
-                            parsed = parsed.replace(tzinfo=timezone.utc)
-                        if not (request.window_start <= parsed.astimezone(timezone.utc) < request.window_end):
-                            continue
-                    except ValueError:
-                        pass
+                        if parsed.tzinfo is None: parsed = parsed.replace(tzinfo=timezone.utc)
+                        if not (request.window_start <= parsed.astimezone(timezone.utc) < request.window_end): continue
+                    except ValueError: pass
                 windowed.append(record)
-            records = windowed
-
-            # 计算是否有更多页
-            has_more = next_page_token is not None
-            next_cursor = next_page_token if has_more else None
-
-            return SourcePage(
-                records=tuple(records),
-                next_cursor=next_cursor,
-                has_more=has_more,
-                page_index=0,
-                source="osv",
-                observed_at=datetime.now(timezone.utc),
-                request_fingerprint=request.request_fingerprint,
-            )
-
+            token = data.get("next_page_token")
+            return SourcePage(records=tuple(windowed), next_cursor=token, has_more=token is not None,
+                              page_index=0, source="osv", observed_at=datetime.now(timezone.utc),
+                              request_fingerprint=request.request_fingerprint)
         except Exception as exc:
             return SourceError.from_exception("osv", exc)
+
+    async def _fetch_bulk_page(self, request: SourceRequest, cursor: Optional[str]) -> SourcePage | SourceError:
+        """Read official OSV ecosystem ``all.zip`` snapshots.
+
+        Snapshots are immutable and contain one JSON advisory per zip member;
+        they provide a reproducible full-feed alternative to querybatch.
+        Cursor is ``<ecosystem-index>:<offset>`` and therefore remains
+        checkpointable by the generic collector.
+        """
+        try:
+            ec_idx, offset = (0, 0)
+            if cursor:
+                parts = cursor.split(":", 1)
+                ec_idx, offset = int(parts[0]), int(parts[1]) if len(parts) > 1 else 0
+            if ec_idx >= len(self._config.bulk_ecosystems):
+                return SourcePage(records=(), next_cursor=None, has_more=False,
+                                  page_index=ec_idx, source="osv",
+                                  observed_at=datetime.now(timezone.utc),
+                                  request_fingerprint=request.request_fingerprint)
+            ecosystem = self._config.bulk_ecosystems[ec_idx]
+            cache_key = ecosystem
+            if not hasattr(self, "_bulk_cache"):
+                self._bulk_cache = {}
+            records = self._bulk_cache.get(cache_key)
+            if records is None:
+                endpoint = f"{self._config.bulk_base_url.rstrip('/')}/{ecosystem}/all.zip"
+                response = await self._transport(endpoint=endpoint, params={}, timeout=self._config.timeout_seconds)
+                if response.get("status_code", 500) != 200:
+                    return SourceError.from_http_status("osv", response.get("status_code", 500), response.get("error", ""))
+                blob = response.get("content")
+                if not blob:
+                    return SourceError.from_exception("osv", ValueError("bulk snapshot response missing content"))
+                parsed = []
+                with zipfile.ZipFile(io.BytesIO(blob)) as archive:
+                    for name in archive.namelist():
+                        if not name.endswith(".json"):
+                            continue
+                        try:
+                            vuln = json.loads(archive.read(name))
+                        except Exception:
+                            continue
+                        stamp = vuln.get("modified") or vuln.get("published")
+                        if stamp:
+                            try:
+                                dt = datetime.fromisoformat(str(stamp).replace("Z", "+00:00"))
+                                if dt.tzinfo is None: dt = dt.replace(tzinfo=timezone.utc)
+                                if not (request.window_start <= dt.astimezone(timezone.utc) < request.window_end):
+                                    continue
+                            except ValueError:
+                                pass
+                        vid = vuln.get("id")
+                        if not vid: continue
+                        parsed.append(self._vuln_to_record(vuln))
+                records = tuple(parsed)
+                self._bulk_cache[cache_key] = records
+            size = min(request.page_size, self._config.page_size)
+            page = records[offset:offset + size]
+            new_offset = offset + len(page)
+            if new_offset < len(records):
+                next_cursor = f"{ec_idx}:{new_offset}"
+            elif ec_idx + 1 < len(self._config.bulk_ecosystems):
+                next_cursor = f"{ec_idx + 1}:0"
+            else:
+                next_cursor = None
+            return SourcePage(records=tuple(page), next_cursor=next_cursor, has_more=next_cursor is not None,
+                              page_index=ec_idx, source="osv", observed_at=datetime.now(timezone.utc),
+                              request_fingerprint=request.request_fingerprint)
+        except Exception as exc:
+            return SourceError.from_exception("osv", exc)
+
+    def _vuln_to_record(self, vuln: dict[str, Any]) -> SourceRecord:
+        aliases = vuln.get("aliases", []) or []
+        published, modified = vuln.get("published"), vuln.get("modified", vuln.get("published"))
+        packages = []
+        for aff in vuln.get("affected", []) or []:
+            pkg = aff.get("package", {}) or {}
+            if pkg.get("ecosystem") and pkg.get("name"):
+                packages.append({"ecosystem": pkg["ecosystem"], "name": pkg["name"]})
+        refs = [{"type": r.get("type", "WEB"), "url": r.get("url", "")} for r in vuln.get("references", []) or []]
+        return SourceRecord(source_record_id=vuln["id"], payload={"id": vuln["id"], "summary": vuln.get("summary", ""),
+            "details": vuln.get("details", ""), "cve_id": next((a for a in aliases if isinstance(a, str) and a.startswith("CVE-")), None),
+            "title": vuln.get("summary") or vuln["id"], "description": vuln.get("details") or vuln.get("summary") or vuln["id"],
+            "published_at": published, "modified_at": modified, "published": published, "modified": modified,
+            "aliases": aliases, "packages": packages, "severity": vuln.get("severity", []), "references": refs},
+            metadata={"source": "osv", "published_at": published, "modified_at": modified})
+
 
     async def _default_transport(
         self,
@@ -284,6 +269,10 @@ class OSVTransport:
                 # compatibility with the adapter's paging contract, callers
                 # may provide ``queries`` in params; otherwise retain GET for
                 # list-style mirrors/fixtures.
+                if endpoint.endswith('.zip'):
+                    response = await client.get(endpoint, timeout=timeout)
+                    return {"status_code": response.status_code, "content": response.content,
+                            "error": response.text if response.status_code != 200 else None}
                 if endpoint.rstrip('/').endswith(('querybatch', 'querybatch/')):
                     queries = params.pop("queries", [])
                     package_names = params.pop("packages", [])

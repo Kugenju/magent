@@ -177,6 +177,10 @@ class MSRCAdapter:
                         "cve_id": update.get("cve_id") or update.get("CVE", None),
                         "title": document_title or alias or update_id,
                         "description": document_title or alias or update_id,
+                        "aliases": [alias] if alias else [],
+                        "affected": products,
+                        "severity": ([{"type": "CVSS_V31", "score": cvss_score, "vector": cvss_vector}]
+                                     if cvss_score is not None or cvss_vector else []),
                         "published_at": release_date,
                         "modified_at": release_date,
                     },

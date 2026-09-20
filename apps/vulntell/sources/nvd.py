@@ -389,6 +389,11 @@ class NVDAdapter:
                 metrics = cve.get("metrics", {}) or {}
                 metric = (metrics.get("cvssMetricV31") or metrics.get("cvssMetricV30") or metrics.get("cvssMetricV2") or [{}])[0]
                 cvss_data = metric.get("cvssData", {}) if isinstance(metric, dict) else {}
+                references = [
+                    {"type": "WEB", "url": r.get("url", "")}
+                    for r in cve.get("references", [])
+                    if isinstance(r, dict) and r.get("url")
+                ]
                 record = SourceRecord(
                     source_record_id=record_id,
                     payload={
@@ -405,6 +410,7 @@ class NVDAdapter:
                         "cvss_score": cvss_data.get("baseScore"),
                         "cvss_vector": cvss_data.get("vectorString"),
                         "cvss_version": cvss_data.get("version"),
+                        "references": references,
                     },
                     metadata={
                         "source": "nvd",

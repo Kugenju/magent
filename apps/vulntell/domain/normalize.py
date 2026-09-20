@@ -112,10 +112,20 @@ def normalize_record(raw: RawSourceRecord) -> tuple[SourceObservation, list[Qual
         if not is_cwe(str(item)):
             add("cwe", "invalid", "low", f"CWE 格式非法: {item!r}")
 
-    # 受影响产品
-    affected = p.get("affected") or []
+    # 受影响产品：不同来源历史上使用 affected 或 packages；在标准化层统一。
+    affected = p.get("affected") or p.get("packages") or []
     if not isinstance(affected, list):
         affected = [affected]
+
+    aliases = p.get("aliases") or []
+    if not isinstance(aliases, list):
+        aliases = [aliases]
+    aliases = sorted({str(alias).strip() for alias in aliases if str(alias).strip()})
+
+    # 来源对 severity 的命名不一致，保留原始结构供 COSV mapper 统一解析。
+    severity = p.get("severity") or []
+    if not isinstance(severity, list):
+        severity = [severity]
 
     # 引用
     references = p.get("references") or []
@@ -134,6 +144,8 @@ def normalize_record(raw: RawSourceRecord) -> tuple[SourceObservation, list[Qual
         "cvss": cvss,
         "cwe": list(cwe),
         "affected": list(affected),
+        "aliases": aliases,
+        "severity": severity,
         "references": [
             {"url": r.get("url"), "type": r.get("type"), "verified": bool(r.get("verified"))}
             if isinstance(r, dict)

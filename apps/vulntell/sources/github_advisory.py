@@ -228,6 +228,7 @@ class GitHubAdvisoryAdapter:
                         "cvss_score": cvss_score,
                         "cvss_vector": cvss_vector,
                         "aliases": aliases,
+                        "affected": packages,
                         "packages": packages,
                         "references": references,
                         "cwes": cwes,

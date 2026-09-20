@@ -230,7 +230,8 @@ class OSVAdapter:
             "details": vuln.get("details", ""), "cve_id": next((a for a in aliases if isinstance(a, str) and a.startswith("CVE-")), None),
             "title": vuln.get("summary") or vuln["id"], "description": vuln.get("details") or vuln.get("summary") or vuln["id"],
             "published_at": published, "modified_at": modified, "published": published, "modified": modified,
-            "aliases": aliases, "packages": packages, "severity": vuln.get("severity", []), "references": refs},
+            "aliases": aliases, "affected": packages, "packages": packages,
+            "severity": vuln.get("severity", []), "references": refs},
             metadata={"source": "osv", "published_at": published, "modified_at": modified})
 
 

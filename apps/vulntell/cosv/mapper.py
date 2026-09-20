@@ -70,6 +70,24 @@ def _extract_severity(normalized: dict[str, Any]) -> list[Severity]:
         elif isinstance(cvss2, str):
             severity.append(Severity(type=SeverityType.CVSS_V2, vector=cvss2))
 
+    # OSV/GitHub/MSRC 等来源使用 severity 数组；不要因字段名不同而丢弃。
+    for item in normalized.get("severity", []) or []:
+        if not isinstance(item, dict):
+            continue
+        score = item.get("score") or item.get("baseScore")
+        vector = item.get("vector") or item.get("vectorString")
+        raw_type = str(item.get("type") or item.get("method") or "").lower()
+        if "4" in raw_type:
+            stype = SeverityType.CVSS_V4
+        elif "2" in raw_type:
+            stype = SeverityType.CVSS_V2
+        elif "3.1" in raw_type or "31" in raw_type:
+            stype = SeverityType.CVSS_V31
+        else:
+            stype = SeverityType.CVSS_V3
+        if score is not None or vector:
+            severity.append(Severity(type=stype, score=str(score) if score is not None else None, vector=vector))
+
     return severity
 
 
@@ -105,10 +123,10 @@ def _extract_affected(normalized: dict[str, Any]) -> list[Affected]:
     affected = []
 
     # 检查受影响包
-    packages = normalized.get("affected", [])
+    packages = normalized.get("affected", []) or normalized.get("packages", [])
     for pkg in packages:
         if isinstance(pkg, dict):
-            name = pkg.get("name", "")
+            name = pkg.get("name") or pkg.get("package") or pkg.get("product", "")
             ecosystem = pkg.get("ecosystem", "unknown")
             if name:
                 ranges = []
@@ -181,9 +199,10 @@ def observation_to_cosv(obs: SourceObservation) -> COSVDocument:
         doc_id = f"{obs.source}:{source_record_id}"
 
     # 构建 aliases
-    aliases = []
+    aliases = [str(alias) for alias in normalized.get("aliases", []) or [] if str(alias).strip()]
     if cve_id and cve_id != doc_id:
         aliases.append(cve_id)
+    aliases = sorted(set(alias for alias in aliases if alias != doc_id))
 
     # 提取标题和描述
     summary = normalized.get("title") or normalized.get("summary")
@@ -223,9 +242,21 @@ def batch_observations_to_cosv(
     cosv_docs = []
     quality_issues = []
 
+    # 跨来源确定性关联：仅按规范化 CVE 精确匹配，不使用标题相似度猜测。
+    aliases_by_cve: dict[str, set[str]] = {}
+    for obs in observations:
+        if obs.cve_id and obs.cve_id.startswith("CVE-"):
+            aliases_by_cve.setdefault(obs.cve_id, set()).update(
+                str(alias).strip()
+                for alias in (obs.normalized_fields.get("aliases", []) or [])
+                if str(alias).strip()
+            )
+
     for obs in observations:
         try:
             doc = observation_to_cosv(obs)
+            if obs.cve_id in aliases_by_cve:
+                doc.aliases = sorted(set(doc.aliases) | aliases_by_cve[obs.cve_id] - {doc.id})
             cosv_docs.append(doc)
         except Exception as e:
             quality_issues.append({

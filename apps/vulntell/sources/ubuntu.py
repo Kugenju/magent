@@ -200,6 +200,8 @@ class UbuntuAdapter:
                         "severity": severity,
                         "priority": priority,
                         "packages": affected_packages,
+                        "affected": affected_packages,
+                        "aliases": [notice_id] if str(notice_id).startswith("CVE-") else [],
                         "references": references,
                         # Canonical fields consumed by domain normalization.
                         "cve_id": notice_id if str(notice_id).startswith("CVE-") else None,

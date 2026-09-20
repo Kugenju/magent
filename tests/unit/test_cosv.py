@@ -254,6 +254,29 @@ class TestCOSVMapper:
         assert len(docs) == 2
         assert len(issues) == 0
 
+    def test_aliases_and_cross_source_aliases_are_preserved(self):
+        obs1 = self._make_observation(
+            source="osv",
+            normalized_fields={"aliases": ["GHSA-aaaa-bbbb-cccc"]},
+        )
+        obs2 = self._make_observation(
+            source="github_advisory",
+            normalized_fields={"aliases": ["PYSEC-2024-1"]},
+        )
+        docs, issues = batch_observations_to_cosv([obs1, obs2])
+        assert not issues
+        assert docs[0].aliases == ["GHSA-aaaa-bbbb-cccc", "PYSEC-2024-1"]
+        assert docs[1].aliases == ["GHSA-aaaa-bbbb-cccc", "PYSEC-2024-1"]
+
+    def test_packages_and_source_severity_are_mapped(self):
+        obs = self._make_observation(normalized_fields={
+            "packages": [{"name": "demo", "ecosystem": "PyPI"}],
+            "severity": [{"type": "CVSS_V31", "score": 7.5, "vector": "v"}],
+        })
+        doc = observation_to_cosv(obs)
+        assert doc.affected[0].package.name == "demo"
+        assert doc.severity[0].score == "7.5"
+
 
 class TestCredentialLeakage:
     """凭据泄露测试。"""

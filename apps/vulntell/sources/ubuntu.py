@@ -15,6 +15,8 @@ from __future__ import annotations
 
 import hashlib
 import json
+import asyncio
+import os
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import Any, Callable, Optional
@@ -296,19 +298,27 @@ class UbuntuTransport:
         except ImportError:
             return {"status_code": 500, "error": "httpx not installed"}
 
-        async with httpx.AsyncClient() as client:
-            try:
-                response = await client.get(
-                    endpoint,
-                    params=params,
-                    timeout=timeout,
-                )
-                return {
-                    "status_code": response.status_code,
-                    "data": response.json() if response.status_code == 200 else None,
-                    "error": response.text if response.status_code != 200 else None,
-                }
-            except httpx.TimeoutException:
-                return {"status_code": 408, "error": "Request timed out"}
-            except httpx.RequestError as exc:
-                return {"status_code": 500, "error": str(exc)}
+        proxy = os.environ.get("HTTPS_PROXY") or os.environ.get("HTTP_PROXY")
+        client_kwargs = {"proxy": proxy} if proxy else {}
+        async with httpx.AsyncClient(**client_kwargs) as client:
+            for attempt in range(3):
+                try:
+                    response = await client.get(endpoint, params=params, timeout=timeout)
+                    if response.status_code in {408, 429, 500, 502, 503, 504} and attempt < 2:
+                        await asyncio.sleep(2 ** attempt)
+                        continue
+                    return {
+                        "status_code": response.status_code,
+                        "data": response.json() if response.status_code == 200 else None,
+                        "error": response.text if response.status_code != 200 else None,
+                    }
+                except httpx.TimeoutException:
+                    if attempt < 2:
+                        await asyncio.sleep(2 ** attempt)
+                        continue
+                    return {"status_code": 408, "error": "Request timed out"}
+                except httpx.RequestError as exc:
+                    if attempt < 2:
+                        await asyncio.sleep(2 ** attempt)
+                        continue
+                    return {"status_code": 500, "error": str(exc)}

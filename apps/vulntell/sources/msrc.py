@@ -211,8 +211,11 @@ class MSRCAdapter:
                 # requested window into CVE rows. It is a complete snapshot,
                 # so do not apply the generic 100-record page cap here.
                 page = 1
-            has_more = page * self._config.page_size < total
-            next_cursor = str(page + 1) if has_more else None
+                has_more = False
+                next_cursor = None
+            else:
+                has_more = page * self._config.page_size < total
+                next_cursor = str(page + 1) if has_more else None
 
             return SourcePage(
                 records=tuple(records),

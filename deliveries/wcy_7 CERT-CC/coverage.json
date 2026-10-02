@@ -1,0 +1,30 @@
+{
+  "status": "ok",
+  "year_summary_counts": {
+    "2024": 19,
+    "2025": 47,
+    "2026": 96
+  },
+  "enumerated_notes": 162,
+  "window_advisories": 135,
+  "enumeration_complete": true,
+  "source_observations": 258,
+  "cosv_records": 258,
+  "unique_cves": 246,
+  "cves_in_multiple_advisories": {},
+  "missing_cve_observations": 12,
+  "quality_issue_count": 258,
+  "warnings": [],
+  "duplicate_cosv_ids_policy": "Keep distinct advisory/CVE source observations; do not overwrite by CVE alone",
+  "parser_version": "public-789/1.0",
+  "field_coverage": {
+    "title": 258,
+    "description": 258,
+    "published_at": 258,
+    "modified_at": 258,
+    "affected": 0,
+    "cvss_score": 0,
+    "cwe": 0
+  },
+  "cvss_observations": 0
+}

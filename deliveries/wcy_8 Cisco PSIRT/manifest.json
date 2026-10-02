@@ -1,0 +1,20 @@
+{
+  "batch_id": "534fc646-5528-4c15-9ed0-1d591aa86557",
+  "collector_id": "241820271_wucaiying",
+  "source": "cisco",
+  "dataset_version": "2024-09-10_2026-09-15",
+  "window_start": "2024-09-10T00:00:00+00:00",
+  "window_end": "2026-09-15T00:00:00+00:00",
+  "cosv_schema_version": "1.0",
+  "cosv_parser_version": "public-789/1.0",
+  "created_at": "2026-10-02T09:40:10.221279Z",
+  "record_count": 630,
+  "content_hash": "c77660c6c8c189ad8721c942d49619d48038a9194e2a45538d072d3b3e2c95c6",
+  "license": "source publisher terms; research use; redistribution not independently cleared",
+  "status": "received",
+  "page_count": 7,
+  "fetched_record_count": 630,
+  "truncated": false,
+  "next_cursor": null,
+  "collection_complete": true
+}

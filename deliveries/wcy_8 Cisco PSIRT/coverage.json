@@ -1,0 +1,28 @@
+{
+  "status": "ok",
+  "enumerated_advisories": 5372,
+  "listing_total": 5372,
+  "window_advisories": 427,
+  "enumeration_complete": true,
+  "enrichment_failures": 0,
+  "publication_type_ids": "1,3",
+  "source_observations": 630,
+  "cosv_records": 630,
+  "unique_cves": 621,
+  "cves_in_multiple_advisories": {},
+  "missing_cve_observations": 9,
+  "quality_issue_count": 12,
+  "warnings": [],
+  "duplicate_cosv_ids_policy": "Keep distinct advisory/CVE source observations; do not overwrite by CVE alone",
+  "parser_version": "public-789/1.0",
+  "field_coverage": {
+    "title": 630,
+    "description": 630,
+    "published_at": 630,
+    "modified_at": 630,
+    "affected": 497,
+    "cvss_score": 618,
+    "cwe": 621
+  },
+  "cvss_observations": 618
+}

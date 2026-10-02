@@ -1,0 +1,13 @@
+{
+  "batch_contract_valid": true,
+  "errors": [],
+  "source_records": 357,
+  "cosv_records": 357,
+  "unique_source_ids": 357,
+  "source_ids_sorted": true,
+  "all_published_in_half_open_window": true,
+  "no_cross_cve_equivalent_aliases": true,
+  "offline_replay_byte_identical": true,
+  "sha256": "2de215394ffafe1ebb72a6a35858e1a247e83d3f175ac69d1f8d4b28de467369",
+  "passed": true
+}

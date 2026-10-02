@@ -1,0 +1,946 @@
+{
+  "status": "partial_enrichment",
+  "enumerated_advisories": 736,
+  "listing_total": 736,
+  "listing_pages": 50,
+  "window_advisories": 345,
+  "enumeration_complete": true,
+  "unresolved_details": 183,
+  "product_filter": "explicit empty/all",
+  "affected_scope": "advisory_level",
+  "source_observations": 357,
+  "cosv_records": 357,
+  "unique_cves": 352,
+  "cves_in_multiple_advisories": {},
+  "missing_cve_observations": 5,
+  "quality_issue_count": 10,
+  "warnings": [
+    {
+      "advisory_id": "FG-IR-25-667",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-25-667",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-23-494",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-23-494",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-25-501",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-25-501",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-23-165",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-23-165",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-24-535",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-24-535",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-20-105",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-20-105",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-21-023",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-21-023",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-23-261",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-23-261",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-23-381",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-23-381",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-23-204",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-23-204",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-23-424",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-23-424",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-23-304",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-23-304",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-23-130",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-23-130",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-23-395",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-23-395",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-23-061",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-23-061",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-23-135",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-23-135",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-23-290",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-23-290",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-23-306",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-23-306",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-23-265",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-23-265",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-23-383",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-23-383",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-23-221",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-23-221",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-23-085",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-23-085",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-23-277",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-23-277",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-23-090",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-23-090",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-23-062",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-23-062",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-21-233",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-21-233",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-23-120",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-23-120",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-23-007",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-23-007",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-23-184",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-23-184",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-310",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-22-310",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-120",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-22-120",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-23-126",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-23-126",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-288",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-22-288",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-23-149",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-23-149",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-479",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-22-479",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-23-015",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-23-015",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-23-076",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-23-076",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-375",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-22-375",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-332",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-22-332",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-521",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-22-521",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-229",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-22-229",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-468",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-22-468",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-494",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-22-494",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-393",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-22-393",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-23-013",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-23-013",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-520",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-22-520",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-407",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-22-407",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-452",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-22-452",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-464",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-22-464",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-456",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-22-456",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-444",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-22-444",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-050",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-22-050",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-335",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-22-335",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-409",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-22-409",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-060",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-22-060",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-432",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-22-432",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-056",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-22-056",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-429",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-22-429",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-502",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-22-502",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-381",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-22-381",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-275",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-22-275",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-481",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-22-481",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-355",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-22-355",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-477",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-22-477",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-21-218",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-21-218",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-388",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-22-388",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-20-078",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-20-078",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-18-232",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-18-232",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-281",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-22-281",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-369",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-22-369",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-364",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-22-364",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-346",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-22-346",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-167",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-22-167",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-164",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-22-164",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-20-014",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-20-014",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-131",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-22-131",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-300",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-22-300",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-080",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-22-080",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-312",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-22-312",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-133",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-22-133",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-460",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-22-460",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-21-214",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-21-214",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-111",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-22-111",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-20-220",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-20-220",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-118",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-22-118",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-260",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-22-260",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-304",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-22-304",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-048",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-22-048",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-273",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-22-273",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-163",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-22-163",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-046",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-22-046",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-21-126",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-21-126",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-136",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-22-136",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-142",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-22-142",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-151",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-22-151",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-21-234",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-21-234",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-21-186",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-21-186",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-329",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-22-329",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-265",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-22-265",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-166",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-22-166",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-061",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-22-061",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-371",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-22-371",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-21-170",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-21-170",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-21-248",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-21-248",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-074",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-22-074",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-064",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-22-064",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-216",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-22-216",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-218",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-22-218",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-228",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-22-228",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-174",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-22-174",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-223",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-22-223",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-21-228",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-21-228",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-399",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-22-399",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-419",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-22-419",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-026",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-22-026",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-21-242",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-21-242",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-21-163",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-21-163",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-158",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-22-158",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-20-143",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-20-143",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-21-215",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-21-215",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-140",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-22-140",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-306",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-22-306",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-073",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-22-073",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-21-222",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-21-222",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-21-235",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-21-235",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-036",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-22-036",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-055",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-22-055",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-077",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-22-077",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-21-155",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-21-155",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-051",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-22-051",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-049",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-22-049",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-21-213",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-21-213",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-21-056",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-21-056",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-21-179",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-21-179",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-21-206",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-21-206",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-058",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-22-058",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-21-057",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-21-057",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-044",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-22-044",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-21-024",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-21-024",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-008",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-22-008",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-109",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-22-109",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-071",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-22-071",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-021",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-22-021",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-21-147",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-21-147",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-041",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-22-041",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-21-239",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-21-239",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-007",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-22-007",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-21-154",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-21-154",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-062",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-22-062",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-21-040",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-21-040",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-21-230",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-21-230",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-052",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-22-052",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-21-226",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-21-226",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-018",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-22-018",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-21-002",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-21-002",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-21-070",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-21-070",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-21-232",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-21-232",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-019",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-22-019",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-21-060",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-21-060",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-21-062",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-21-062",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-21-238",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-21-238",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-21-065",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-21-065",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-21-078",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-21-078",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-21-064",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-21-064",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-072",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-22-072",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-21-028",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-21-028",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-21-255",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-21-255",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-20-091",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-20-091",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-21-128",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-21-128",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-21-227",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-21-227",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-21-210",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-21-210",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-21-165",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-21-165",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-21-099",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-21-099",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-21-106",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-21-106",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-21-189",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-21-189",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-21-008",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-21-008",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-21-148",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-21-148",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-21-158",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-21-158",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-20-217",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-20-217",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-21-180",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-21-180",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-21-166",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-21-166",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-21-185",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-21-185",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-21-132",
+      "error": "Missing offline cache: https://fortiguard.fortinet.com/psirt/FG-IR-21-132",
+      "window_membership": "unknown without first-publication detail"
+    }
+  ],
+  "duplicate_cosv_ids_policy": "Keep distinct advisory/CVE source observations; do not overwrite by CVE alone",
+  "parser_version": "public-789/1.0",
+  "field_coverage": {
+    "title": 357,
+    "description": 352,
+    "published_at": 357,
+    "modified_at": 357,
+    "affected": 350,
+    "cvss_score": 352,
+    "cwe": 352
+  },
+  "cvss_observations": 352
+}

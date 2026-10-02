@@ -1,0 +1,358 @@
+﻿source_record_id,CVE,published_at_UTC,modified_at_UTC,title,official_url
+FG-IR-22-155/CVE-2024-40590,CVE-2024-40590,2024-11-12T00:00:00Z,2024-11-12T00:00:00Z,missing digital certificate validation,https://www.fortiguard.com/psirt/FG-IR-22-155
+FG-IR-22-230/CVE-2022-45856,CVE-2022-45856,2024-09-10T00:00:00Z,2025-01-10T00:00:00Z,FortiClient(All) - Lack of client-side certificate validation using SAML SSO,https://www.fortiguard.com/psirt/FG-IR-22-230
+FG-IR-22-256/CVE-2024-36511,CVE-2024-36511,2024-09-10T00:00:00Z,2024-09-10T00:00:00Z,Cookie security policy bypass,https://www.fortiguard.com/psirt/FG-IR-22-256
+FG-IR-22-282/CVE-2024-31489,CVE-2024-31489,2024-09-10T00:00:00Z,2024-09-10T00:00:00Z,FortiClient - Lack of client-side certificate validation in ZTNA service,https://www.fortiguard.com/psirt/FG-IR-22-282
+FG-IR-23-008/CVE-2023-29184,CVE-2023-29184,2025-06-10T00:00:00Z,2025-06-10T00:00:00Z,SSH key is added even if operation is aborted,https://www.fortiguard.com/psirt/FG-IR-23-008
+FG-IR-23-115/CVE-2023-42784,CVE-2023-42784,2025-03-11T00:00:00Z,2025-03-14T00:00:00Z,Web application firewall rules bypass by using an empty filename,https://www.fortiguard.com/psirt/FG-IR-23-115
+FG-IR-23-115/CVE-2024-55594,CVE-2024-55594,2025-03-11T00:00:00Z,2025-03-14T00:00:00Z,Web application firewall rules bypass by using an empty filename,https://www.fortiguard.com/psirt/FG-IR-23-115
+FG-IR-23-117/CVE-2023-40723,CVE-2023-40723,2025-03-11T00:00:00Z,2025-03-11T00:00:00Z,Exposure of Sensitive Information to an Unauthorized Actor,https://www.fortiguard.com/psirt/FG-IR-23-117
+FG-IR-23-144/CVE-2023-34990,CVE-2023-34990,2024-12-18T00:00:00Z,2024-12-18T00:00:00Z,[FortiWLM] Unauthenticated limited file read vulnerability,https://www.fortiguard.com/psirt/FG-IR-23-144
+FG-IR-23-170/CVE-2024-56497,CVE-2024-56497,2025-01-14T00:00:00Z,2025-01-15T00:00:00Z,Restricted Shell Escape via Argument Injection,https://www.fortiguard.com/psirt/FG-IR-23-170
+FG-IR-23-209/CVE-2023-45584,CVE-2023-45584,2025-08-12T00:00:00Z,2026-01-14T00:00:00Z,Double free in automation-stitch,https://www.fortiguard.com/psirt/FG-IR-23-209
+FG-IR-23-216/CVE-2023-37933,CVE-2023-37933,2025-03-11T00:00:00Z,2025-03-11T00:00:00Z,XSS flaw in Fortiview/SecurityLogs pages,https://www.fortiguard.com/psirt/FG-IR-23-216
+FG-IR-23-220/CVE-2023-37931,CVE-2023-37931,2025-01-14T00:00:00Z,2025-01-14T00:00:00Z,Blind SQL injection vulnerability,https://www.fortiguard.com/psirt/FG-IR-23-220
+FG-IR-23-258/CVE-2023-37937,CVE-2023-37937,2025-01-14T00:00:00Z,2025-01-14T00:00:00Z,Restricted Shell Escape via Argument Injection,https://www.fortiguard.com/psirt/FG-IR-23-258
+FG-IR-23-260/CVE-2023-37936,CVE-2023-37936,2025-01-14T00:00:00Z,2025-01-14T00:00:00Z,Hardcoded Session Secret Leading to Unauthenticated Remote Code Execution,https://www.fortiguard.com/psirt/FG-IR-23-260
+FG-IR-23-267/CVE-2023-44255,CVE-2023-44255,2024-11-12T00:00:00Z,2024-12-10T00:00:00Z,Lack of capacity to filter logs by administrator access,https://www.fortiguard.com/psirt/FG-IR-23-267
+FG-IR-23-278/CVE-2024-50570,CVE-2024-50570,2024-12-18T00:00:00Z,2025-04-22T00:00:00Z,Credentials can be dumped from memory,https://www.fortiguard.com/psirt/FG-IR-23-278
+FG-IR-23-279/CVE-2024-40586,CVE-2024-40586,2025-02-11T00:00:00Z,2025-02-11T00:00:00Z,Improper access control to FortiSslvpnNamedPipe,https://www.fortiguard.com/psirt/FG-IR-23-279
+FG-IR-23-293/CVE-2023-42785,CVE-2023-42785,2025-01-14T00:00:00Z,2025-01-14T00:00:00Z,Null pointer dereference leading to sslvpn DOS,https://www.fortiguard.com/psirt/FG-IR-23-293
+FG-IR-23-293/CVE-2023-42786,CVE-2023-42786,2025-01-14T00:00:00Z,2025-01-14T00:00:00Z,Null pointer dereference leading to sslvpn DOS,https://www.fortiguard.com/psirt/FG-IR-23-293
+FG-IR-23-324/CVE-2024-27780,CVE-2024-27780,2025-02-11T00:00:00Z,2025-02-11T00:00:00Z,Reflected XSS (cross site scripting) in incident page,https://www.fortiguard.com/psirt/FG-IR-23-324
+FG-IR-23-342/CVE-2023-48786,CVE-2023-48786,2025-06-10T00:00:00Z,2025-06-10T00:00:00Z,Blind SSRF in API,https://www.fortiguard.com/psirt/FG-IR-23-342
+FG-IR-23-344/CVE-2025-22855,CVE-2025-22855,2025-04-08T00:00:00Z,2025-04-08T00:00:00Z,EMS can send javascript code to client through messages,https://www.fortiguard.com/psirt/FG-IR-23-344
+FG-IR-23-353/CVE-2023-48790,CVE-2023-48790,2025-03-11T00:00:00Z,2025-03-11T00:00:00Z,Cross Site Request Forgery in admin endpoint,https://www.fortiguard.com/psirt/FG-IR-23-353
+FG-IR-23-354/CVE-2023-46718,CVE-2023-46718,2025-10-14T00:00:00Z,2026-01-14T00:00:00Z,Stack-based buffer overflow on fortitoken import feature,https://www.fortiguard.com/psirt/FG-IR-23-354
+FG-IR-23-362/CVE-2024-21753,CVE-2024-21753,2024-09-10T00:00:00Z,2024-09-10T00:00:00Z,Multiple path traversal in administrative interface,https://www.fortiguard.com/psirt/FG-IR-23-362
+FG-IR-23-375/CVE-2024-32119,CVE-2024-32119,2025-06-10T00:00:00Z,2025-06-10T00:00:00Z,Telemetry protocol authentication is based over VDOM and FCTUID,https://www.fortiguard.com/psirt/FG-IR-23-375
+FG-IR-23-396/CVE-2024-23666,CVE-2024-23666,2024-11-12T00:00:00Z,2025-02-26T00:00:00Z,Readonly users could run some sensitive operations,https://www.fortiguard.com/psirt/FG-IR-23-396
+FG-IR-23-405/CVE-2024-26012,CVE-2024-26012,2025-01-14T00:00:00Z,2025-01-14T00:00:00Z,FortiAP - Restricted Shell Escape via CLI Command Injection,https://www.fortiguard.com/psirt/FG-IR-23-405
+FG-IR-23-407/CVE-2023-46715,CVE-2023-46715,2025-01-14T00:00:00Z,2025-03-24T00:00:00Z,IPsec dynamic assignation IP spoofing,https://www.fortiguard.com/psirt/FG-IR-23-407
+FG-IR-23-448/CVE-2023-47543,CVE-2023-47543,2024-11-12T00:00:00Z,2024-11-12T00:00:00Z,Insecure Direct Object Reference over API endpoints,https://www.fortiguard.com/psirt/FG-IR-23-448
+FG-IR-23-458/CVE-2024-21758,CVE-2024-21758,2025-01-14T00:00:00Z,2025-01-14T00:00:00Z,FortiWeb - Stack overflow in execute backup command,https://www.fortiguard.com/psirt/FG-IR-23-458
+FG-IR-23-461/CVE-2024-47573,CVE-2024-47573,2025-01-14T00:00:00Z,2025-01-14T00:00:00Z,Improper Validation of firmware Integrity,https://www.fortiguard.com/psirt/FG-IR-23-461
+FG-IR-23-472/CVE-2024-33506,CVE-2024-33506,2024-10-08T00:00:00Z,2024-10-08T00:00:00Z,Priviledged admin able to view device summary for device in different ADOM,https://www.fortiguard.com/psirt/FG-IR-23-472
+FG-IR-23-473/CVE-2024-36504,CVE-2024-36504,2025-01-14T00:00:00Z,2025-01-14T00:00:00Z,SSLVPN DOS,https://www.fortiguard.com/psirt/FG-IR-23-473
+FG-IR-23-475/CVE-2023-50176,CVE-2023-50176,2024-11-12T00:00:00Z,2024-11-12T00:00:00Z,FortiOS - SSLVPN session hijacking using SAML authentication,https://www.fortiguard.com/psirt/FG-IR-23-475
+FG-IR-23-476/CVE-2024-23106,CVE-2024-23106,2025-01-14T00:00:00Z,2025-01-14T00:00:00Z,EMS console login under brute force attack does not get locked,https://www.fortiguard.com/psirt/FG-IR-23-476
+FG-IR-24-010/CVE-2024-35280,CVE-2024-35280,2025-01-14T00:00:00Z,2026-02-04T00:00:00Z,XSS in /500/rescuemode and /500/sysupgrade pages,https://www.fortiguard.com/psirt/FG-IR-24-010
+FG-IR-24-022/CVE-2024-40592,CVE-2024-40592,2024-11-12T00:00:00Z,2024-11-12T00:00:00Z,FortiClientMacOS - Missing signature verification,https://www.fortiguard.com/psirt/FG-IR-24-022
+FG-IR-24-023/CVE-2024-54020,CVE-2024-54020,2025-05-13T00:00:00Z,2025-05-13T00:00:00Z,Unauthorized modification of global threat feeds,https://www.fortiguard.com/psirt/FG-IR-24-023
+FG-IR-24-025/CVE-2024-35281,CVE-2024-35281,2025-05-13T00:00:00Z,2025-05-13T00:00:00Z,Code Execution due to Node.JS Environment Variable,https://www.fortiguard.com/psirt/FG-IR-24-025
+FG-IR-24-032/CVE-2024-26011,CVE-2024-26011,2024-11-12T00:00:00Z,2024-12-10T00:00:00Z,FortiOS - Improper authentication in fgfmd,https://www.fortiguard.com/psirt/FG-IR-24-032
+FG-IR-24-033/CVE-2024-33510,CVE-2024-33510,2024-11-12T00:00:00Z,2024-11-12T00:00:00Z,SSLVPN WEB UI Text injection,https://www.fortiguard.com/psirt/FG-IR-24-033
+FG-IR-24-035/CVE-2024-27779,CVE-2024-27779,2025-07-08T00:00:00Z,2026-01-14T00:00:00Z,Session still active for deleted admin,https://www.fortiguard.com/psirt/FG-IR-24-035
+FG-IR-24-041/CVE-2024-26008,CVE-2024-26008,2025-10-14T00:00:00Z,2026-01-14T00:00:00Z,FGFM protocol allows unauthenticated reset of the connection,https://www.fortiguard.com/psirt/FG-IR-24-041
+FG-IR-24-042/CVE-2024-26009,CVE-2024-26009,2025-08-12T00:00:00Z,2025-08-12T00:00:00Z,Weak authentication - FGFM protocol,https://www.fortiguard.com/psirt/FG-IR-24-042
+FG-IR-24-045/CVE-2024-32124,CVE-2024-32124,2025-07-08T00:00:00Z,2025-07-08T00:00:00Z,Access control bypass in logging component,https://www.fortiguard.com/psirt/FG-IR-24-045
+FG-IR-24-046/CVE-2024-26013,CVE-2024-26013,2025-04-08T00:00:00Z,2025-04-22T00:00:00Z,No certificate name verification for fgfm connection,https://www.fortiguard.com/psirt/FG-IR-24-046
+FG-IR-24-046/CVE-2024-50565,CVE-2024-50565,2025-04-08T00:00:00Z,2025-04-22T00:00:00Z,No certificate name verification for fgfm connection,https://www.fortiguard.com/psirt/FG-IR-24-046
+FG-IR-24-048/CVE-2024-45327,CVE-2024-45327,2024-09-10T00:00:00Z,2025-09-05T00:00:00Z,Inadequate user validation and no brute force protection on change password requests,https://www.fortiguard.com/psirt/FG-IR-24-048
+FG-IR-24-051/CVE-2024-31490,CVE-2024-31490,2024-09-10T00:00:00Z,2026-01-14T00:00:00Z,Sensitive files disclosure in diagnostic logs download,https://www.fortiguard.com/psirt/FG-IR-24-051
+FG-IR-24-053/CVE-2024-55599,CVE-2024-55599,2025-07-08T00:00:00Z,2025-07-08T00:00:00Z,DNS type 65 resource record requests bypass DNS filter,https://www.fortiguard.com/psirt/FG-IR-24-053
+FG-IR-24-058/CVE-2024-50568,CVE-2024-50568,2025-06-10T00:00:00Z,2025-06-11T00:00:00Z,Weak authentication in security fabric daemon,https://www.fortiguard.com/psirt/FG-IR-24-058
+FG-IR-24-061/CVE-2024-27778,CVE-2024-27778,2025-01-14T00:00:00Z,2026-01-15T00:00:00Z,OS command injection,https://www.fortiguard.com/psirt/FG-IR-24-061
+FG-IR-24-062/CVE-2024-33507,CVE-2024-33507,2025-10-14T00:00:00Z,2026-01-14T00:00:00Z,Improper session handling during authentication,https://www.fortiguard.com/psirt/FG-IR-24-062
+FG-IR-24-063/CVE-2024-27781,CVE-2024-27781,2025-02-11T00:00:00Z,2026-01-14T00:00:00Z,Multiple Reflected and Stored Cross-Site Scripting,https://www.fortiguard.com/psirt/FG-IR-24-063
+FG-IR-24-071/CVE-2024-36510,CVE-2024-36510,2025-01-14T00:00:00Z,2025-09-05T00:00:00Z,User enumeration in authentication component,https://www.fortiguard.com/psirt/FG-IR-24-071
+FG-IR-24-078/CVE-2024-36506,CVE-2024-36506,2025-01-14T00:00:00Z,2025-01-14T00:00:00Z,Improper verification of source of a communication channel in administrative interface,https://www.fortiguard.com/psirt/FG-IR-24-078
+FG-IR-24-086/CVE-2024-35278,CVE-2024-35278,2025-01-14T00:00:00Z,2025-01-14T00:00:00Z,SQL Query Returned in FortiView Response,https://www.fortiguard.com/psirt/FG-IR-24-086
+FG-IR-24-091/CVE-2024-35275,CVE-2024-35275,2025-01-14T00:00:00Z,2025-01-14T00:00:00Z,SQL injections in sdnproxy daemon,https://www.fortiguard.com/psirt/FG-IR-24-091
+FG-IR-24-094/CVE-2024-33504,CVE-2024-33504,2025-02-11T00:00:00Z,2025-02-11T00:00:00Z,Use of Hard-coded Cryptographic Key to encrypt sensitive data,https://www.fortiguard.com/psirt/FG-IR-24-094
+FG-IR-24-097/CVE-2024-32115,CVE-2024-32115,2025-01-14T00:00:00Z,2025-01-14T00:00:00Z,Arbitrary file deletion in administrative interface,https://www.fortiguard.com/psirt/FG-IR-24-097
+FG-IR-24-098/CVE-2024-31496,CVE-2024-31496,2024-11-12T00:00:00Z,2024-11-12T00:00:00Z,Stack buffer overflow in CLI command,https://www.fortiguard.com/psirt/FG-IR-24-098
+FG-IR-24-099/CVE-2024-32116,CVE-2024-32116,2024-11-12T00:00:00Z,2024-11-12T00:00:00Z,Path traversal vulnerability in CLI commands,https://www.fortiguard.com/psirt/FG-IR-24-099
+FG-IR-24-106/CVE-2024-35273,CVE-2024-35273,2025-01-14T00:00:00Z,2025-01-14T00:00:00Z,Out-of-bounds Write in sndproxy,https://www.fortiguard.com/psirt/FG-IR-24-106
+FG-IR-24-110/CVE-2024-54018,CVE-2024-54018,2025-03-11T00:00:00Z,2026-01-14T00:00:00Z,OS Command Injection in administrative interface,https://www.fortiguard.com/psirt/FG-IR-24-110
+FG-IR-24-111/CVE-2024-32122,CVE-2024-32122,2025-04-08T00:00:00Z,2026-01-14T00:00:00Z,LDAP Clear-text credentials retrievable with IP modification,https://www.fortiguard.com/psirt/FG-IR-24-111
+FG-IR-24-115/CVE-2024-32117,CVE-2024-32117,2024-11-12T00:00:00Z,2024-11-12T00:00:00Z,Arbitrary file read in administrative interface,https://www.fortiguard.com/psirt/FG-IR-24-115
+FG-IR-24-116/CVE-2024-32118,CVE-2024-32118,2024-11-12T00:00:00Z,2024-11-12T00:00:00Z,OS command injection in CLI command,https://www.fortiguard.com/psirt/FG-IR-24-116
+FG-IR-24-123/CVE-2024-33508,CVE-2024-33508,2024-09-10T00:00:00Z,2024-09-10T00:00:00Z,Improper Neutralization of Special Elements used in a Command in DAS component,https://www.fortiguard.com/psirt/FG-IR-24-123
+FG-IR-24-124/CVE-2024-32123,CVE-2024-32123,2025-03-11T00:00:00Z,2025-03-12T00:00:00Z,OS command injection in CLI command,https://www.fortiguard.com/psirt/FG-IR-24-124
+FG-IR-24-125/CVE-2024-33505,CVE-2024-33505,2024-11-12T00:00:00Z,2024-11-15T00:00:00Z,Heap buffer overflow in httpd,https://www.fortiguard.com/psirt/FG-IR-24-125
+FG-IR-24-127/CVE-2024-33503,CVE-2024-33503,2025-01-14T00:00:00Z,2025-01-14T00:00:00Z,Multiple privilege escalation,https://www.fortiguard.com/psirt/FG-IR-24-127
+FG-IR-24-127/CVE-2024-45331,CVE-2024-45331,2025-01-14T00:00:00Z,2025-01-14T00:00:00Z,Multiple privilege escalation,https://www.fortiguard.com/psirt/FG-IR-24-127
+FG-IR-24-130/CVE-2024-33501,CVE-2024-33501,2025-03-11T00:00:00Z,2025-03-11T00:00:00Z,Authenticated SQLI on CLI,https://www.fortiguard.com/psirt/FG-IR-24-130
+FG-IR-24-133/CVE-2024-40593,CVE-2024-40593,2025-12-09T00:00:00Z,2026-01-14T00:00:00Z,Private key readable by admin,https://www.fortiguard.com/psirt/FG-IR-24-133
+FG-IR-24-135/CVE-2024-35277,CVE-2024-35277,2025-01-14T00:00:00Z,2025-01-14T00:00:00Z,Missing authentication for managed device configuration files,https://www.fortiguard.com/psirt/FG-IR-24-135
+FG-IR-24-139/CVE-2024-35282,CVE-2024-35282,2024-09-10T00:00:00Z,2026-01-14T00:00:00Z,Unencrypted keychain permanent password,https://www.fortiguard.com/psirt/FG-IR-24-139
+FG-IR-24-143/CVE-2024-33502,CVE-2024-33502,2025-01-14T00:00:00Z,2025-01-14T00:00:00Z,Arbitrary file delete on firmware import image feature,https://www.fortiguard.com/psirt/FG-IR-24-143
+FG-IR-24-144/CVE-2024-36513,CVE-2024-36513,2024-11-12T00:00:00Z,2024-11-12T00:00:00Z,Privilege escalation via lua auto patch function,https://www.fortiguard.com/psirt/FG-IR-24-144
+FG-IR-24-147/CVE-2024-36508,CVE-2024-36508,2025-02-11T00:00:00Z,2025-02-11T00:00:00Z,Multiple arbitrary file deletion in the CLI,https://www.fortiguard.com/psirt/FG-IR-24-147
+FG-IR-24-152/CVE-2024-36512,CVE-2024-36512,2025-01-14T00:00:00Z,2025-01-14T00:00:00Z,Arbitrary file write on GUI,https://www.fortiguard.com/psirt/FG-IR-24-152
+FG-IR-24-160/CVE-2024-35279,CVE-2024-35279,2025-02-11T00:00:00Z,2025-02-25T00:00:00Z,Stack buffer overflow in fabric service,https://www.fortiguard.com/psirt/FG-IR-24-160
+FG-IR-24-164/CVE-2024-46667,CVE-2024-46667,2025-01-14T00:00:00Z,2025-01-14T00:00:00Z,Denial of Service in TLS-SYSLOG handler,https://www.fortiguard.com/psirt/FG-IR-24-164
+FG-IR-24-165/CVE-2024-35276,CVE-2024-35276,2025-01-14T00:00:00Z,2025-01-14T00:00:00Z,Stack based buffer overflow in httpd,https://www.fortiguard.com/psirt/FG-IR-24-165
+FG-IR-24-178/CVE-2024-55590,CVE-2024-55590,2025-03-11T00:00:00Z,2025-03-11T00:00:00Z,Multiple command injections on CLI,https://www.fortiguard.com/psirt/FG-IR-24-178
+FG-IR-24-179/CVE-2024-35274,CVE-2024-35274,2024-11-12T00:00:00Z,2024-12-11T00:00:00Z,Path traversal vulnerability leading to file creation,https://www.fortiguard.com/psirt/FG-IR-24-179
+FG-IR-24-180/CVE-2024-36509,CVE-2024-36509,2024-11-12T00:00:00Z,2024-11-12T00:00:00Z,Exposure of password hashes to read-only admin,https://www.fortiguard.com/psirt/FG-IR-24-180
+FG-IR-24-184/CVE-2024-46671,CVE-2024-46671,2025-04-08T00:00:00Z,2025-04-08T00:00:00Z,Incorrect user management in widgets dashboard,https://www.fortiguard.com/psirt/FG-IR-24-184
+FG-IR-24-196/CVE-2024-45330,CVE-2024-45330,2024-10-08T00:00:00Z,2024-10-08T00:00:00Z,Format String Bug in fazsvcd,https://www.fortiguard.com/psirt/FG-IR-24-196
+FG-IR-24-199/CVE-2024-47574,CVE-2024-47574,2024-11-12T00:00:00Z,2024-11-12T00:00:00Z,Named Pipes Improper Access Control,https://www.fortiguard.com/psirt/FG-IR-24-199
+FG-IR-24-205/CVE-2024-36507,CVE-2024-36507,2024-11-12T00:00:00Z,2024-11-13T00:00:00Z,Online Installer DLL Hijacking,https://www.fortiguard.com/psirt/FG-IR-24-205
+FG-IR-24-210/CVE-2024-47572,CVE-2024-47572,2025-01-14T00:00:00Z,2025-09-05T00:00:00Z,Improper Neutralization of Formula Elements in a CSV File,https://www.fortiguard.com/psirt/FG-IR-24-210
+FG-IR-24-211/CVE-2024-52967,CVE-2024-52967,2025-01-14T00:00:00Z,2025-01-14T00:00:00Z,HTML Content Injection,https://www.fortiguard.com/psirt/FG-IR-24-211
+FG-IR-24-216/CVE-2024-50564,CVE-2024-50564,2025-01-14T00:00:00Z,2025-04-16T00:00:00Z,Hardcoded Encryption Key Used for Named Pipe Communication,https://www.fortiguard.com/psirt/FG-IR-24-216
+FG-IR-24-219/CVE-2024-46668,CVE-2024-46668,2025-01-14T00:00:00Z,2026-01-14T00:00:00Z,Multipart Form Data Denial of Service,https://www.fortiguard.com/psirt/FG-IR-24-219
+FG-IR-24-220/CVE-2024-40584,CVE-2024-40584,2025-02-11T00:00:00Z,2025-02-11T00:00:00Z,OS command injection in external connector,https://www.fortiguard.com/psirt/FG-IR-24-220
+FG-IR-24-221/CVE-2024-48886,CVE-2024-48886,2025-01-14T00:00:00Z,2025-01-14T00:00:00Z,Weak Authentication in csfd daemon,https://www.fortiguard.com/psirt/FG-IR-24-221
+FG-IR-24-221/CVE-2024-50563,CVE-2024-50563,2025-01-14T00:00:00Z,2025-01-14T00:00:00Z,Weak Authentication in csfd daemon,https://www.fortiguard.com/psirt/FG-IR-24-221
+FG-IR-24-222/CVE-2024-46662,CVE-2024-46662,2025-01-14T00:00:00Z,2025-01-14T00:00:00Z,Command injection in csfd daemon,https://www.fortiguard.com/psirt/FG-IR-24-222
+FG-IR-24-228/CVE-2024-47569,CVE-2024-47569,2025-10-14T00:00:00Z,2026-02-10T00:00:00Z,Insertion of Sensitive Information Into Sent Data Vulnerability in csfd daemon,https://www.fortiguard.com/psirt/FG-IR-24-228
+FG-IR-24-239/CVE-2024-47571,CVE-2024-47571,2025-01-14T00:00:00Z,2025-01-14T00:00:00Z,Admin Account Persistence after Deletion,https://www.fortiguard.com/psirt/FG-IR-24-239
+FG-IR-24-250/CVE-2024-46666,CVE-2024-46666,2025-01-14T00:00:00Z,2025-01-30T00:00:00Z,Unchecked boundary length causing multiple logic flaws,https://www.fortiguard.com/psirt/FG-IR-24-250
+FG-IR-24-257/CVE-2025-25250,CVE-2025-25250,2025-06-10T00:00:00Z,2025-08-08T00:00:00Z,Information Disclosure on SSLVPN endpoint,https://www.fortiguard.com/psirt/FG-IR-24-257
+FG-IR-24-259/CVE-2024-48884,CVE-2024-48884,2025-01-14T00:00:00Z,2026-01-14T00:00:00Z,Path traversal in csfd daemon,https://www.fortiguard.com/psirt/FG-IR-24-259
+FG-IR-24-259/CVE-2024-48885,CVE-2024-48885,2025-01-14T00:00:00Z,2026-01-14T00:00:00Z,Path traversal in csfd daemon,https://www.fortiguard.com/psirt/FG-IR-24-259
+FG-IR-24-261/CVE-2024-45328,CVE-2024-45328,2025-03-11T00:00:00Z,2025-03-11T00:00:00Z,Incorrect authorization in GUI console,https://www.fortiguard.com/psirt/FG-IR-24-261
+FG-IR-24-266/CVE-2024-46670,CVE-2024-46670,2025-01-14T00:00:00Z,2025-01-14T00:00:00Z,Out of bounds read in ipsec ike,https://www.fortiguard.com/psirt/FG-IR-24-266
+FG-IR-24-267/CVE-2024-46669,CVE-2024-46669,2025-01-14T00:00:00Z,2026-01-14T00:00:00Z,Integer Overflow in ipsec ike,https://www.fortiguard.com/psirt/FG-IR-24-267
+FG-IR-24-268/CVE-2024-47570,CVE-2024-47570,2025-12-09T00:00:00Z,2026-01-14T00:00:00Z,Insertion of sensitive information into REST API logs,https://www.fortiguard.com/psirt/FG-IR-24-268
+FG-IR-24-274/CVE-2024-45329,CVE-2024-45329,2025-06-10T00:00:00Z,2025-06-10T00:00:00Z,Insufficient Access Control Over API Endpoints,https://www.fortiguard.com/psirt/FG-IR-24-274
+FG-IR-24-280/CVE-2025-58324,CVE-2025-58324,2025-10-14T00:00:00Z,2026-01-14T00:00:00Z,Stored XSS in parser tester,https://www.fortiguard.com/psirt/FG-IR-24-280
+FG-IR-24-282/CVE-2024-54021,CVE-2024-54021,2025-01-14T00:00:00Z,2025-01-14T00:00:00Z,File-Filter Bypass in Explicit Web Proxy Policy,https://www.fortiguard.com/psirt/FG-IR-24-282
+FG-IR-24-285/CVE-2024-45326,CVE-2024-45326,2025-01-14T00:00:00Z,2026-02-04T00:00:00Z,Improper access control on the central management appliance,https://www.fortiguard.com/psirt/FG-IR-24-285
+FG-IR-24-287/CVE-2025-22251,CVE-2025-22251,2025-06-10T00:00:00Z,2025-06-10T00:00:00Z,Firewall session injection in FGSP,https://www.fortiguard.com/psirt/FG-IR-24-287
+FG-IR-24-300/CVE-2024-52968,CVE-2024-52968,2025-02-11T00:00:00Z,2025-02-11T00:00:00Z,Improper Authentication in FortiMonitor Agent,https://www.fortiguard.com/psirt/FG-IR-24-300
+FG-IR-24-302/CVE-2024-40591,CVE-2024-40591,2025-02-11T00:00:00Z,2025-03-13T00:00:00Z,Permission escalation due to an Improper Privilege Management,https://www.fortiguard.com/psirt/FG-IR-24-302
+FG-IR-24-304/CVE-2024-40587,CVE-2024-40587,2025-01-14T00:00:00Z,2025-01-14T00:00:00Z,OS command injection in CLI,https://www.fortiguard.com/psirt/FG-IR-24-304
+FG-IR-24-305/CVE-2024-52960,CVE-2024-52960,2025-03-11T00:00:00Z,2026-01-14T00:00:00Z,Client-side enforcement of server-side security related to vm download feature,https://www.fortiguard.com/psirt/FG-IR-24-305
+FG-IR-24-306/CVE-2024-52961,CVE-2024-52961,2025-03-11T00:00:00Z,2026-01-14T00:00:00Z,Os command injection on vm download feature,https://www.fortiguard.com/psirt/FG-IR-24-306
+FG-IR-24-309/CVE-2024-40588,CVE-2024-40588,2025-08-12T00:00:00Z,2026-01-14T00:00:00Z,Path traversal vulnerability in CLI,https://www.fortiguard.com/psirt/FG-IR-24-309
+FG-IR-24-310/CVE-2024-46664,CVE-2024-46664,2025-01-14T00:00:00Z,2025-01-14T00:00:00Z,Path traversal vulnerability in GUI,https://www.fortiguard.com/psirt/FG-IR-24-310
+FG-IR-24-311/CVE-2024-40585,CVE-2024-40585,2025-02-11T00:00:00Z,2025-02-11T00:00:00Z,Insertion of sensitive information into Event log,https://www.fortiguard.com/psirt/FG-IR-24-311
+FG-IR-24-325/CVE-2024-45324,CVE-2024-45324,2025-03-11T00:00:00Z,2026-01-14T00:00:00Z,Multiple format string vulnerabilities,https://www.fortiguard.com/psirt/FG-IR-24-325
+FG-IR-24-326/CVE-2024-46665,CVE-2024-46665,2025-01-14T00:00:00Z,2025-01-14T00:00:00Z,Exposure of sensitive information in RADIUS Accounting-Request,https://www.fortiguard.com/psirt/FG-IR-24-326
+FG-IR-24-327/CVE-2024-54027,CVE-2024-54027,2025-03-11T00:00:00Z,2026-01-14T00:00:00Z,Use of hardcoded key used for remote backup server password encryption,https://www.fortiguard.com/psirt/FG-IR-24-327
+FG-IR-24-331/CVE-2024-46663,CVE-2024-46663,2025-03-11T00:00:00Z,2025-03-19T00:00:00Z,Stack buffer overflow in CLI command,https://www.fortiguard.com/psirt/FG-IR-24-331
+FG-IR-24-339/CVE-2024-50562,CVE-2024-50562,2025-06-10T00:00:00Z,2025-06-10T00:00:00Z,Insufficient Session Expiration in SSL-VPN cookie,https://www.fortiguard.com/psirt/FG-IR-24-339
+FG-IR-24-344/CVE-2024-45325,CVE-2024-45325,2025-09-09T00:00:00Z,2025-09-09T00:00:00Z,OS command injection in CLI,https://www.fortiguard.com/psirt/FG-IR-24-344
+FG-IR-24-353/CVE-2024-54026,CVE-2024-54026,2025-03-11T00:00:00Z,2026-01-14T00:00:00Z,error based SQLI on device del feature,https://www.fortiguard.com/psirt/FG-IR-24-353
+FG-IR-24-361/CVE-2025-58325,CVE-2025-58325,2025-10-14T00:00:00Z,2026-01-14T00:00:00Z,Restricted CLI command bypass,https://www.fortiguard.com/psirt/FG-IR-24-361
+FG-IR-24-364/CVE-2025-25248,CVE-2025-25248,2025-08-12T00:00:00Z,2025-08-12T00:00:00Z,Integer Overflow on SSL-VPN bookmarks,https://www.fortiguard.com/psirt/FG-IR-24-364
+FG-IR-24-365/CVE-2024-54019,CVE-2024-54019,2025-06-10T00:00:00Z,2025-06-10T00:00:00Z,IPsec improper validation of certificate with host mismatch,https://www.fortiguard.com/psirt/FG-IR-24-365
+FG-IR-24-371/CVE-2024-45323,CVE-2024-45323,2024-09-10T00:00:00Z,2024-09-17T00:00:00Z,access to backend information and logs via RestAPI on shared environments,https://www.fortiguard.com/psirt/FG-IR-24-371
+FG-IR-24-372/CVE-2025-25255,CVE-2025-25255,2025-10-14T00:00:00Z,2026-01-14T00:00:00Z,Domain fronting protection bypass in explicit web proxy,https://www.fortiguard.com/psirt/FG-IR-24-372
+FG-IR-24-373/CVE-2024-52963,CVE-2024-52963,2025-01-14T00:00:00Z,2025-03-13T00:00:00Z,Out-of-bounds Write in IPSEC Daemon,https://www.fortiguard.com/psirt/FG-IR-24-373
+FG-IR-24-377/CVE-2024-55592,CVE-2024-55592,2025-03-11T00:00:00Z,2025-03-11T00:00:00Z,Incorrect authorization in incident page,https://www.fortiguard.com/psirt/FG-IR-24-377
+FG-IR-24-380/CVE-2025-46777,CVE-2025-46777,2025-05-13T00:00:00Z,2025-05-13T00:00:00Z,Insertion of sensitive information into system log,https://www.fortiguard.com/psirt/FG-IR-24-380
+FG-IR-24-381/CVE-2025-47295,CVE-2025-47295,2025-05-13T00:00:00Z,2025-05-13T00:00:00Z,Buffer over-read in FGFM,https://www.fortiguard.com/psirt/FG-IR-24-381
+FG-IR-24-385/CVE-2025-22862,CVE-2025-22862,2025-06-10T00:00:00Z,2026-01-14T00:00:00Z,Privilege escalation in automation-stitch,https://www.fortiguard.com/psirt/FG-IR-24-385
+FG-IR-24-388/CVE-2025-47294,CVE-2025-47294,2025-05-13T00:00:00Z,2025-05-13T00:00:00Z,Denial of Service in Security Fabric Root,https://www.fortiguard.com/psirt/FG-IR-24-388
+FG-IR-24-392/CVE-2024-54025,CVE-2024-54025,2025-04-08T00:00:00Z,2025-04-08T00:00:00Z,OS command injection on gen-ca-cert command,https://www.fortiguard.com/psirt/FG-IR-24-392
+FG-IR-24-397/CVE-2024-54024,CVE-2024-54024,2025-04-08T00:00:00Z,2025-04-08T00:00:00Z,OS command injection on diagnose feature (GUI),https://www.fortiguard.com/psirt/FG-IR-24-397
+FG-IR-24-401/CVE-2024-47566,CVE-2024-47566,2025-01-14T00:00:00Z,2025-01-14T00:00:00Z,Path traversal vulnerability in CLI,https://www.fortiguard.com/psirt/FG-IR-24-401
+FG-IR-24-405/CVE-2024-48893,CVE-2024-48893,2025-01-14T00:00:00Z,2025-09-05T00:00:00Z,Stored XSS in playbook block,https://www.fortiguard.com/psirt/FG-IR-24-405
+FG-IR-24-412/CVE-2024-48891,CVE-2024-48891,2025-10-14T00:00:00Z,2026-01-14T00:00:00Z,Privilege escalation in shell,https://www.fortiguard.com/psirt/FG-IR-24-412
+FG-IR-24-415,,2025-01-14T00:00:00Z,2025-09-05T00:00:00Z,OS command injection in IMAP connector,https://www.fortiguard.com/psirt/FG-IR-24-415
+FG-IR-24-417/CVE-2024-52969,CVE-2024-52969,2025-01-14T00:00:00Z,2025-01-14T00:00:00Z,Blind SQL injection in Update/Create case component,https://www.fortiguard.com/psirt/FG-IR-24-417
+FG-IR-24-421/CVE-2024-48892,CVE-2024-48892,2025-08-12T00:00:00Z,2025-09-05T00:00:00Z,Path traversal in Solution Pack upload,https://www.fortiguard.com/psirt/FG-IR-24-421
+FG-IR-24-422/CVE-2024-52966,CVE-2024-52966,2025-02-11T00:00:00Z,2025-02-11T00:00:00Z,Disclosure of Logs of Devices not belonging to the Current ADOM from Log View,https://www.fortiguard.com/psirt/FG-IR-24-422
+FG-IR-24-423/CVE-2024-47575,CVE-2024-47575,2024-10-23T00:00:00Z,2024-11-27T00:00:00Z,Missing authentication in fgfmsd,https://www.fortiguard.com/psirt/FG-IR-24-423
+FG-IR-24-425/CVE-2024-48889,CVE-2024-48889,2024-12-18T00:00:00Z,2024-12-18T00:00:00Z,OS command injection,https://www.fortiguard.com/psirt/FG-IR-24-425
+FG-IR-24-435/CVE-2024-48887,CVE-2024-48887,2025-04-08T00:00:00Z,2025-04-08T00:00:00Z,Unverified password change via set_password endpoint,https://www.fortiguard.com/psirt/FG-IR-24-435
+FG-IR-24-437/CVE-2025-24474,CVE-2025-24474,2025-07-08T00:00:00Z,2025-07-09T00:00:00Z,SQL injection in forward module,https://www.fortiguard.com/psirt/FG-IR-24-437
+FG-IR-24-438/CVE-2024-50567,CVE-2024-50567,2025-02-11T00:00:00Z,2025-02-11T00:00:00Z,OS Command Injections,https://www.fortiguard.com/psirt/FG-IR-24-438
+FG-IR-24-438/CVE-2024-50569,CVE-2024-50569,2025-02-11T00:00:00Z,2025-02-11T00:00:00Z,OS Command Injections,https://www.fortiguard.com/psirt/FG-IR-24-438
+FG-IR-24-439/CVE-2024-55597,CVE-2024-55597,2025-03-11T00:00:00Z,2025-03-11T00:00:00Z,Directory Traversal Arbitrary File Write Vulnerability,https://www.fortiguard.com/psirt/FG-IR-24-439
+FG-IR-24-442/CVE-2024-50571,CVE-2024-50571,2025-10-14T00:00:00Z,2026-01-27T00:00:00Z,Heap Overflow in fgfmsd,https://www.fortiguard.com/psirt/FG-IR-24-442
+FG-IR-24-452/CVE-2025-31514,CVE-2025-31514,2025-10-14T00:00:00Z,2026-01-14T00:00:00Z,Insertion of Sensitive 2FA Information in logs and debug command,https://www.fortiguard.com/psirt/FG-IR-24-452
+FG-IR-24-453/CVE-2024-52962,CVE-2024-52962,2025-04-08T00:00:00Z,2025-04-08T00:00:00Z,Log Pollution via login page,https://www.fortiguard.com/psirt/FG-IR-24-453
+FG-IR-24-457/CVE-2025-25253,CVE-2025-25253,2025-10-14T00:00:00Z,2026-01-14T00:00:00Z,ZTNA Server Improper Certificate Validation,https://www.fortiguard.com/psirt/FG-IR-24-457
+FG-IR-24-463/CVE-2024-50566,CVE-2024-50566,2025-01-14T00:00:00Z,2026-01-15T00:00:00Z,OS Command Injection,https://www.fortiguard.com/psirt/FG-IR-24-463
+FG-IR-24-465/CVE-2024-55593,CVE-2024-55593,2025-01-14T00:00:00Z,2025-01-14T00:00:00Z,SQL Injection in API EndPoints,https://www.fortiguard.com/psirt/FG-IR-24-465
+FG-IR-24-472/CVE-2025-22252,CVE-2025-22252,2025-05-13T00:00:00Z,2025-05-28T00:00:00Z,TACACS+ authentication bypass,https://www.fortiguard.com/psirt/FG-IR-24-472
+FG-IR-24-473/CVE-2024-52964,CVE-2024-52964,2025-08-12T00:00:00Z,2025-08-13T00:00:00Z,Arbitrary file overwrite in FGFMd,https://www.fortiguard.com/psirt/FG-IR-24-473
+FG-IR-24-474/CVE-2025-25254,CVE-2025-25254,2025-04-08T00:00:00Z,2025-04-08T00:00:00Z,Directory Traversal,https://www.fortiguard.com/psirt/FG-IR-24-474
+FG-IR-24-487/CVE-2025-25252,CVE-2025-25252,2025-10-14T00:00:00Z,2026-01-14T00:00:00Z,Insufficient Session Expiration in SSLVPN using SAML authentication,https://www.fortiguard.com/psirt/FG-IR-24-487
+FG-IR-24-501/CVE-2025-46215,CVE-2025-46215,2025-11-18T00:00:00Z,2026-01-14T00:00:00Z,File scan result bypass,https://www.fortiguard.com/psirt/FG-IR-24-501
+FG-IR-24-511/CVE-2024-52965,CVE-2024-52965,2025-07-08T00:00:00Z,2025-07-08T00:00:00Z,PKI via API: Authentication granted with an invalid certificate,https://www.fortiguard.com/psirt/FG-IR-24-511
+FG-IR-24-513/CVE-2025-32932,CVE-2025-32932,2025-08-12T00:00:00Z,2025-09-05T00:00:00Z,XSS in service requests,https://www.fortiguard.com/psirt/FG-IR-24-513
+FG-IR-24-542/CVE-2025-31366,CVE-2025-31366,2025-10-14T00:00:00Z,2026-01-15T00:00:00Z,Open Redirect and XSS in Web Filter warning page,https://www.fortiguard.com/psirt/FG-IR-24-542
+FG-IR-24-542/CVE-2025-47890,CVE-2025-47890,2025-10-14T00:00:00Z,2026-01-15T00:00:00Z,Open Redirect and XSS in Web Filter warning page,https://www.fortiguard.com/psirt/FG-IR-24-542
+FG-IR-24-544/CVE-2025-24471,CVE-2025-24471,2025-06-10T00:00:00Z,2025-06-10T00:00:00Z,eap-cert-auth bypass via revoked certificate,https://www.fortiguard.com/psirt/FG-IR-24-544
+FG-IR-24-546/CVE-2025-22258,CVE-2025-22258,2025-10-14T00:00:00Z,2026-01-14T00:00:00Z,Heap buffer overflow in websocket,https://www.fortiguard.com/psirt/FG-IR-24-546
+FG-IR-24-548/CVE-2025-24473,CVE-2025-24473,2025-05-13T00:00:00Z,2026-01-14T00:00:00Z,Index of FCT installation directory publicly accessible,https://www.fortiguard.com/psirt/FG-IR-24-548
+FG-IR-24-552/CVE-2025-22859,CVE-2025-22859,2025-05-13T00:00:00Z,2025-05-13T00:00:00Z,Path traversal in upload message,https://www.fortiguard.com/psirt/FG-IR-24-552
+FG-IR-25-006/CVE-2025-22254,CVE-2025-22254,2025-06-10T00:00:00Z,2026-01-14T00:00:00Z,Privilege escalation in GUI websocket module,https://www.fortiguard.com/psirt/FG-IR-25-006
+FG-IR-25-008/CVE-2025-22256,CVE-2025-22256,2025-06-10T00:00:00Z,2025-06-10T00:00:00Z,Improper Handling of Insufficient Permissions or Privileges in GUI websocket,https://www.fortiguard.com/psirt/FG-IR-25-008
+FG-IR-25-010/CVE-2025-49201,CVE-2025-49201,2025-10-14T00:00:00Z,2026-01-14T00:00:00Z,Weak authentication in WAD/GUI,https://www.fortiguard.com/psirt/FG-IR-25-010
+FG-IR-25-015/CVE-2025-24470,CVE-2025-24470,2025-02-11T00:00:00Z,2025-02-11T00:00:00Z,Off-by-slash vulnerability in Nginx config,https://www.fortiguard.com/psirt/FG-IR-25-015
+FG-IR-25-016/CVE-2025-25251,CVE-2025-25251,2025-05-13T00:00:00Z,2025-05-13T00:00:00Z,Local privilege escalation in XPC services,https://www.fortiguard.com/psirt/FG-IR-25-016
+FG-IR-25-026/CVE-2025-24477,CVE-2025-24477,2025-07-08T00:00:00Z,2026-02-10T00:00:00Z,Heap-based buffer overflow in cw_stad daemon,https://www.fortiguard.com/psirt/FG-IR-25-026
+FG-IR-25-032/CVE-2025-54838,CVE-2025-54838,2025-12-09T00:00:00Z,2026-01-14T00:00:00Z,Incorrect authorization in multi-vdom environment,https://www.fortiguard.com/psirt/FG-IR-25-032
+FG-IR-25-037/CVE-2025-31365,CVE-2025-31365,2025-10-14T00:00:00Z,2026-01-14T00:00:00Z,Code injection in login window,https://www.fortiguard.com/psirt/FG-IR-25-037
+FG-IR-25-084/CVE-2025-25249,CVE-2025-25249,2026-01-13T00:00:00Z,2026-02-23T00:00:00Z,Heap-based buffer overflow in cw_acd daemon,https://www.fortiguard.com/psirt/FG-IR-25-084
+FG-IR-25-093/CVE-2025-52436,CVE-2025-52436,2026-02-10T00:00:00Z,2026-02-10T00:00:00Z,XSS via back button,https://www.fortiguard.com/psirt/FG-IR-25-093
+FG-IR-25-099/CVE-2025-31104,CVE-2025-31104,2025-06-10T00:00:00Z,2025-06-10T00:00:00Z,Multiple OS command injection in Web Vulnerability Scanner,https://www.fortiguard.com/psirt/FG-IR-25-099
+FG-IR-25-1052/CVE-2026-22153,CVE-2026-22153,2026-02-10T00:00:00Z,2026-02-10T00:00:00Z,LDAP authentication bypass in Agentless VPN and FSSO,https://www.fortiguard.com/psirt/FG-IR-25-1052
+FG-IR-25-112/CVE-2025-47761,CVE-2025-47761,2025-11-18T00:00:00Z,2026-01-14T00:00:00Z,Arbitrary memory write via FortIPS driver,https://www.fortiguard.com/psirt/FG-IR-25-112
+FG-IR-25-1142/CVE-2026-21643,CVE-2026-21643,2026-02-06T00:00:00Z,2026-02-06T00:00:00Z,SQLi in administrative interface,https://www.fortiguard.com/psirt/FG-IR-25-1142
+FG-IR-25-122/CVE-2025-26466,CVE-2025-26466,2025-03-11T00:00:00Z,2026-04-14T00:00:00Z,Pre-authentication Denial of Service attack in OpenSSH - CVE-2025-26466,https://www.fortiguard.com/psirt/FG-IR-25-122
+FG-IR-25-125/CVE-2025-46373,CVE-2025-46373,2025-11-18T00:00:00Z,2026-01-14T00:00:00Z,Buffer Overflow via fortips driver,https://www.fortiguard.com/psirt/FG-IR-25-125
+FG-IR-25-126/CVE-2025-46774,CVE-2025-46774,2025-10-14T00:00:00Z,2026-01-14T00:00:00Z,Missing signature verification for FortiClient.app,https://www.fortiguard.com/psirt/FG-IR-25-126
+FG-IR-25-150/CVE-2025-27759,CVE-2025-27759,2025-08-12T00:00:00Z,2025-08-12T00:00:00Z,Command injection in CLI,https://www.fortiguard.com/psirt/FG-IR-25-150
+FG-IR-25-151/CVE-2025-25257,CVE-2025-25257,2025-07-08T00:00:00Z,2026-01-15T00:00:00Z,Unauthenticated SQL injection in GUI,https://www.fortiguard.com/psirt/FG-IR-25-151
+FG-IR-25-152/CVE-2025-25256,CVE-2025-25256,2025-08-12T00:00:00Z,2025-08-12T00:00:00Z,Remote unauthenticated command injection,https://www.fortiguard.com/psirt/FG-IR-25-152
+FG-IR-25-160/CVE-2025-46752,CVE-2025-46752,2025-10-14T00:00:00Z,2026-01-14T00:00:00Z,Enrollment code on install saved in log,https://www.fortiguard.com/psirt/FG-IR-25-160
+FG-IR-25-166,,2025-03-11T00:00:00Z,2025-03-11T00:00:00Z,Apache Camel Vulnerability - CVE-2025-27636,https://www.fortiguard.com/psirt/FG-IR-25-166
+FG-IR-25-173/CVE-2025-53744,CVE-2025-53744,2025-08-12T00:00:00Z,2025-08-12T00:00:00Z,Incorrect Privilege Assignment in Security Fabric,https://www.fortiguard.com/psirt/FG-IR-25-173
+FG-IR-25-198/CVE-2025-54973,CVE-2025-54973,2025-10-14T00:00:00Z,2026-01-14T00:00:00Z,Race condion in FortiCloud SSO SAML authentication,https://www.fortiguard.com/psirt/FG-IR-25-198
+FG-IR-25-225/CVE-2025-48839,CVE-2025-48839,2025-11-18T00:00:00Z,2026-01-14T00:00:00Z,Out-of-bounds write in multiple endpoints,https://www.fortiguard.com/psirt/FG-IR-25-225
+FG-IR-25-250/CVE-2025-47856,CVE-2025-47856,2025-07-08T00:00:00Z,2025-07-08T00:00:00Z,Command injection vulnerability,https://www.fortiguard.com/psirt/FG-IR-25-250
+FG-IR-25-251/CVE-2025-46776,CVE-2025-46776,2025-11-18T00:00:00Z,2026-01-14T00:00:00Z,Authenticated CLI Commands Buffer Overflow,https://www.fortiguard.com/psirt/FG-IR-25-251
+FG-IR-25-253/CVE-2025-47857,CVE-2025-47857,2025-08-12T00:00:00Z,2025-08-12T00:00:00Z,Command injection in CLI command,https://www.fortiguard.com/psirt/FG-IR-25-253
+FG-IR-25-254/CVE-2025-32756,CVE-2025-32756,2025-05-13T00:00:00Z,2026-01-15T00:00:00Z,Stack-based buffer overflow vulnerability in API,https://www.fortiguard.com/psirt/FG-IR-25-254
+FG-IR-25-259/CVE-2025-46775,CVE-2025-46775,2025-11-18T00:00:00Z,2026-01-14T00:00:00Z,Credential leakage through debug commands,https://www.fortiguard.com/psirt/FG-IR-25-259
+FG-IR-25-260/CVE-2025-47855,CVE-2025-47855,2026-01-13T00:00:00Z,2026-01-14T00:00:00Z,Unauthenticated access to local configuration,https://www.fortiguard.com/psirt/FG-IR-25-260
+FG-IR-25-358/CVE-2025-53843,CVE-2025-53843,2025-11-18T00:00:00Z,2026-01-15T00:00:00Z,Stack buffer overflow in CAPWAP daemon,https://www.fortiguard.com/psirt/FG-IR-25-358
+FG-IR-25-362/CVE-2025-64156,CVE-2025-64156,2025-12-09T00:00:00Z,2026-01-14T00:00:00Z,Multiple authenticated SQL injection via extraParam,https://www.fortiguard.com/psirt/FG-IR-25-362
+FG-IR-25-378/CVE-2025-53845,CVE-2025-53845,2025-10-14T00:00:00Z,2026-01-14T00:00:00Z,Missing authentication check in OFTP service,https://www.fortiguard.com/psirt/FG-IR-25-378
+FG-IR-25-383/CVE-2025-32766,CVE-2025-32766,2025-08-12T00:00:00Z,2025-08-12T00:00:00Z,Stack buffer overflow in CLI command,https://www.fortiguard.com/psirt/FG-IR-25-383
+FG-IR-25-384/CVE-2025-62439,CVE-2025-62439,2026-02-10T00:00:00Z,2026-02-10T00:00:00Z,Firewall policy bypass in FSSO Terminal Services Agent,https://www.fortiguard.com/psirt/FG-IR-25-384
+FG-IR-25-411/CVE-2025-62631,CVE-2025-62631,2025-12-09T00:00:00Z,2026-02-10T00:00:00Z,Insufficient Session Expiration in SSLVPN,https://www.fortiguard.com/psirt/FG-IR-25-411
+FG-IR-25-448/CVE-2025-52970,CVE-2025-52970,2025-08-12T00:00:00Z,2026-01-14T00:00:00Z,Authentication bypass via invalid parameter,https://www.fortiguard.com/psirt/FG-IR-25-448
+FG-IR-25-454/CVE-2025-53679,CVE-2025-53679,2025-12-09T00:00:00Z,2026-01-14T00:00:00Z,OS command injection in GUI backup options,https://www.fortiguard.com/psirt/FG-IR-25-454
+FG-IR-25-477/CVE-2025-54353,CVE-2025-54353,2025-12-09T00:00:00Z,2026-01-14T00:00:00Z,Reflected XSS in HA cluster,https://www.fortiguard.com/psirt/FG-IR-25-477
+FG-IR-25-479/CVE-2025-53949,CVE-2025-53949,2025-12-09T00:00:00Z,2026-01-14T00:00:00Z,OS command injection in multiple endpoints,https://www.fortiguard.com/psirt/FG-IR-25-479
+FG-IR-25-512/CVE-2025-53609,CVE-2025-53609,2025-09-09T00:00:00Z,2026-01-14T00:00:00Z,Path traversal in policy scripting,https://www.fortiguard.com/psirt/FG-IR-25-512
+FG-IR-25-513/CVE-2025-58034,CVE-2025-58034,2025-11-18T00:00:00Z,2026-01-14T00:00:00Z,Multiple OS command injection in API and CLI,https://www.fortiguard.com/psirt/FG-IR-25-513
+FG-IR-25-528/CVE-2026-21743,CVE-2026-21743,2026-02-10T00:00:00Z,2026-02-12T00:00:00Z,Missing authorization on CSV user import,https://www.fortiguard.com/psirt/FG-IR-25-528
+FG-IR-25-545/CVE-2025-54821,CVE-2025-54821,2025-11-18T00:00:00Z,2026-01-14T00:00:00Z,Trusted hosts bypass via SSH,https://www.fortiguard.com/psirt/FG-IR-25-545
+FG-IR-25-554/CVE-2025-57823,CVE-2025-57823,2025-12-09T00:00:00Z,2026-01-14T00:00:00Z,Missing authorization on log access,https://www.fortiguard.com/psirt/FG-IR-25-554
+FG-IR-25-599/CVE-2025-59808,CVE-2025-59808,2025-12-09T00:00:00Z,2026-01-14T00:00:00Z,Current password requirement bypass for self password change,https://www.fortiguard.com/psirt/FG-IR-25-599
+FG-IR-25-601/CVE-2025-59810,CVE-2025-59810,2025-12-09T00:00:00Z,2026-01-14T00:00:00Z,Broken access control on API endpoints,https://www.fortiguard.com/psirt/FG-IR-25-601
+FG-IR-25-616/CVE-2025-59923,CVE-2025-59923,2025-12-09T00:00:00Z,2026-01-14T00:00:00Z,Read-only admin could obtain admin configuration secrets,https://www.fortiguard.com/psirt/FG-IR-25-616
+FG-IR-25-628/CVE-2025-53951,CVE-2025-53951,2025-10-14T00:00:00Z,2026-01-14T00:00:00Z,Path Traversal in agent leads to Privilege Escalation,https://www.fortiguard.com/psirt/FG-IR-25-628
+FG-IR-25-628/CVE-2025-54658,CVE-2025-54658,2025-10-14T00:00:00Z,2026-01-14T00:00:00Z,Path Traversal in agent leads to Privilege Escalation,https://www.fortiguard.com/psirt/FG-IR-25-628
+FG-IR-25-632/CVE-2025-58413,CVE-2025-58413,2025-11-18T00:00:00Z,2026-01-15T00:00:00Z,Stack buffer overflow in CAPWAP daemon,https://www.fortiguard.com/psirt/FG-IR-25-632
+FG-IR-25-634/CVE-2025-54972,CVE-2025-54972,2025-11-18T00:00:00Z,2026-01-14T00:00:00Z,CRLF Header Injection in webmail user GUI,https://www.fortiguard.com/psirt/FG-IR-25-634
+FG-IR-25-639/CVE-2025-53950,CVE-2025-53950,2025-10-14T00:00:00Z,2026-01-14T00:00:00Z,Private Personal Information Collection by Debug Bundle,https://www.fortiguard.com/psirt/FG-IR-25-639
+FG-IR-25-647/CVE-2025-59718,CVE-2025-59718,2025-12-09T00:00:00Z,2026-03-20T00:00:00Z,Multiple Fortinet Products' FortiCloud SSO Login Authentication Bypass,https://www.fortiguard.com/psirt/FG-IR-25-647
+FG-IR-25-647/CVE-2025-59719,CVE-2025-59719,2025-12-09T00:00:00Z,2026-03-20T00:00:00Z,Multiple Fortinet Products' FortiCloud SSO Login Authentication Bypass,https://www.fortiguard.com/psirt/FG-IR-25-647
+FG-IR-25-653/CVE-2025-58903,CVE-2025-58903,2025-10-14T00:00:00Z,2026-01-14T00:00:00Z,Multiple Unchecked Return Value leading to Null Pointer Dereference,https://www.fortiguard.com/psirt/FG-IR-25-653
+FG-IR-25-661/CVE-2025-62676,CVE-2025-62676,2026-02-10T00:00:00Z,2026-02-16T00:00:00Z,Arbitrary XML file write in FCConfig,https://www.fortiguard.com/psirt/FG-IR-25-661
+FG-IR-25-664/CVE-2025-57741,CVE-2025-57741,2025-10-14T00:00:00Z,2026-01-14T00:00:00Z,Local Privilege Escalation in LaunchDaemon,https://www.fortiguard.com/psirt/FG-IR-25-664
+FG-IR-25-666/CVE-2025-58692,CVE-2025-58692,2025-11-18T00:00:00Z,2026-01-14T00:00:00Z,SQL injections in voice and administrative interface,https://www.fortiguard.com/psirt/FG-IR-25-666
+FG-IR-25-684/CVE-2025-54822,CVE-2025-54822,2025-10-14T00:00:00Z,2026-01-14T00:00:00Z,Improper autorization over static files,https://www.fortiguard.com/psirt/FG-IR-25-684
+FG-IR-25-685/CVE-2025-57716,CVE-2025-57716,2025-10-14T00:00:00Z,2026-01-14T00:00:00Z,DLL hijacking in online installer,https://www.fortiguard.com/psirt/FG-IR-25-685
+FG-IR-25-686/CVE-2025-54971,CVE-2025-54971,2025-11-18T00:00:00Z,2026-01-14T00:00:00Z,Invocation of Process Using Visible Sensitive Information in FortiADC,https://www.fortiguard.com/psirt/FG-IR-25-686
+FG-IR-25-735/CVE-2025-59922,CVE-2025-59922,2026-01-13T00:00:00Z,2026-01-14T00:00:00Z,Authenticated SQL injection in API endpoint,https://www.fortiguard.com/psirt/FG-IR-25-735
+FG-IR-25-736/CVE-2025-58412,CVE-2025-58412,2025-11-18T00:00:00Z,2026-01-14T00:00:00Z,XSS in default error page,https://www.fortiguard.com/psirt/FG-IR-25-736
+FG-IR-25-739/CVE-2025-64153,CVE-2025-64153,2025-12-09T00:00:00Z,2026-01-14T00:00:00Z,Multiple authenticated OS Command Injections via API,https://www.fortiguard.com/psirt/FG-IR-25-739
+FG-IR-25-756/CVE-2025-57740,CVE-2025-57740,2025-10-14T00:00:00Z,2026-01-14T00:00:00Z,Authenticated Heap Overflow in SSL-VPN bookmarks,https://www.fortiguard.com/psirt/FG-IR-25-756
+FG-IR-25-771/CVE-2025-54988,CVE-2025-54988,2025-10-14T00:00:00Z,2026-01-14T00:00:00Z,Apache Tika CVE-2025-54988,https://www.fortiguard.com/psirt/FG-IR-25-771
+FG-IR-25-772/CVE-2025-64155,CVE-2025-64155,2026-01-13T00:00:00Z,2026-01-14T00:00:00Z,Unauthenticated remote command injection,https://www.fortiguard.com/psirt/FG-IR-25-772
+FG-IR-25-778/CVE-2025-58693,CVE-2025-58693,2026-01-13T00:00:00Z,2026-01-14T00:00:00Z,Arbitrary file deletion in administrative interface,https://www.fortiguard.com/psirt/FG-IR-25-778
+FG-IR-25-783/CVE-2025-67685,CVE-2025-67685,2026-01-13T00:00:00Z,2026-01-14T00:00:00Z,SSRF in GUI console,https://www.fortiguard.com/psirt/FG-IR-25-783
+FG-IR-25-789/CVE-2025-61713,CVE-2025-61713,2025-11-18T00:00:00Z,2026-02-10T00:00:00Z,Cleartext credentials in diagnose output,https://www.fortiguard.com/psirt/FG-IR-25-789
+FG-IR-25-795/CVE-2025-64157,CVE-2025-64157,2026-02-10T00:00:00Z,2026-02-10T00:00:00Z,Format String Vulnerability in CAPWAP fast-failover mode,https://www.fortiguard.com/psirt/FG-IR-25-795
+FG-IR-25-812/CVE-2025-60024,CVE-2025-60024,2025-12-09T00:00:00Z,2026-01-14T00:00:00Z,Path traversal vulnerability in administrative interface,https://www.fortiguard.com/psirt/FG-IR-25-812
+FG-IR-25-843/CVE-2025-59669,CVE-2025-59669,2025-11-18T00:00:00Z,2026-01-14T00:00:00Z,Use of hardcoded password for the redis service,https://www.fortiguard.com/psirt/FG-IR-25-843
+FG-IR-25-844/CVE-2025-54660,CVE-2025-54660,2025-11-18T00:00:00Z,2026-01-14T00:00:00Z,Information disclosure through debug features,https://www.fortiguard.com/psirt/FG-IR-25-844
+FG-IR-25-861/CVE-2025-59921,CVE-2025-59921,2025-10-14T00:00:00Z,2026-01-14T00:00:00Z,Debug endpoint can display password in clear text,https://www.fortiguard.com/psirt/FG-IR-25-861
+FG-IR-25-910/CVE-2025-64446,CVE-2025-64446,2025-11-14T00:00:00Z,2026-01-14T00:00:00Z,Path confusion vulnerability in GUI,https://www.fortiguard.com/psirt/FG-IR-25-910
+FG-IR-25-934/CVE-2025-68686,CVE-2025-68686,2026-02-10T00:00:00Z,2026-02-10T00:00:00Z,SSL-VPN Symlink Persistence Patch Bypass,https://www.fortiguard.com/psirt/FG-IR-25-934
+FG-IR-25-945/CVE-2025-64447,CVE-2025-64447,2025-12-09T00:00:00Z,2026-01-14T00:00:00Z,Capacity to forge authentication cookies,https://www.fortiguard.com/psirt/FG-IR-25-945
+FG-IR-25-984/CVE-2025-64471,CVE-2025-64471,2025-12-09T00:00:00Z,2026-01-14T00:00:00Z,Capacity to use password hashes instead of password for authentication,https://www.fortiguard.com/psirt/FG-IR-25-984
+FG-IR-26-060/CVE-2026-24858,CVE-2026-24858,2026-01-27T00:00:00Z,2026-03-23T00:00:00Z,Administrative FortiCloud SSO authentication bypass,https://www.fortiguard.com/psirt/FG-IR-26-060
+FG-IR-26-076/CVE-2025-15467,CVE-2025-15467,2026-01-30T00:00:00Z,2026-03-13T00:00:00Z,OpenSSL CVE-2025-15467,https://www.fortiguard.com/psirt/FG-IR-26-076
+FG-IR-26-077/CVE-2026-25972,CVE-2026-25972,2026-03-10T00:00:00Z,2026-03-10T00:00:00Z,Reflected Cross Site Scripting (XSS) in error page,https://www.fortiguard.com/psirt/FG-IR-26-077
+FG-IR-26-078/CVE-2025-68482,CVE-2025-68482,2026-03-10T00:00:00Z,2026-03-10T00:00:00Z,Lack of TLS Certificate Validation during initial SSO Authentication,https://www.fortiguard.com/psirt/FG-IR-26-078
+FG-IR-26-079/CVE-2026-22629,CVE-2026-22629,2026-03-10T00:00:00Z,2026-03-12T00:00:00Z,Authentication Lockout Bypass via Race Condition,https://www.fortiguard.com/psirt/FG-IR-26-079
+FG-IR-26-080/CVE-2025-55717,CVE-2025-55717,2026-03-10T00:00:00Z,2026-03-10T00:00:00Z,Insecure Exposure of Plaintext Passwords in Debug Logs,https://www.fortiguard.com/psirt/FG-IR-26-080
+FG-IR-26-081/CVE-2025-48418,CVE-2025-48418,2026-03-10T00:00:00Z,2026-03-10T00:00:00Z,Privilege escalation using undocumented CLI command,https://www.fortiguard.com/psirt/FG-IR-26-081
+FG-IR-26-082/CVE-2026-24017,CVE-2026-24017,2026-03-10T00:00:00Z,2026-03-10T00:00:00Z,Authentication rate-limit bypass permits to brute force admin logins,https://www.fortiguard.com/psirt/FG-IR-26-082
+FG-IR-26-083/CVE-2026-24018,CVE-2026-24018,2026-03-10T00:00:00Z,2026-03-10T00:00:00Z,Local privilege escalation via improper symlink following,https://www.fortiguard.com/psirt/FG-IR-26-083
+FG-IR-26-084/CVE-2025-54659,CVE-2025-54659,2026-03-10T00:00:00Z,2026-03-10T00:00:00Z,Path traversal vulnerability in FortiSOAR Agent Connector Bridge server,https://www.fortiguard.com/psirt/FG-IR-26-084
+FG-IR-26-085/CVE-2026-22628,CVE-2026-22628,2026-03-10T00:00:00Z,2026-03-10T00:00:00Z,shell command limitation bypass by SSH local config overriding,https://www.fortiguard.com/psirt/FG-IR-26-085
+FG-IR-26-086/CVE-2026-22627,CVE-2026-22627,2026-03-10T00:00:00Z,2026-03-10T00:00:00Z,Buffer Overflow in LLDP OUI field,https://www.fortiguard.com/psirt/FG-IR-26-086
+FG-IR-26-087/CVE-2026-24640,CVE-2026-24640,2026-03-10T00:00:00Z,2026-03-10T00:00:00Z,Stack-based Buffer Overflow in API protection,https://www.fortiguard.com/psirt/FG-IR-26-087
+FG-IR-26-088/CVE-2025-66178,CVE-2025-66178,2026-03-10T00:00:00Z,2026-03-10T00:00:00Z,OS Command injection in FortiWeb API,https://www.fortiguard.com/psirt/FG-IR-26-088
+FG-IR-26-089/CVE-2026-24641,CVE-2026-24641,2026-03-10T00:00:00Z,2026-03-10T00:00:00Z,Null Pointer Dereference in Anti-Defacement feature,https://www.fortiguard.com/psirt/FG-IR-26-089
+FG-IR-26-090/CVE-2026-22572,CVE-2026-22572,2026-03-10T00:00:00Z,2026-03-13T00:00:00Z,MFA Bypass in GUI,https://www.fortiguard.com/psirt/FG-IR-26-090
+FG-IR-26-091/CVE-2025-53608,CVE-2025-53608,2026-03-10T00:00:00Z,2026-03-10T00:00:00Z,XSS in LDAP server option,https://www.fortiguard.com/psirt/FG-IR-26-091
+FG-IR-26-092/CVE-2025-68648,CVE-2025-68648,2026-03-10T00:00:00Z,2026-03-10T00:00:00Z,Format string vulnerability in fazsvcd,https://www.fortiguard.com/psirt/FG-IR-26-092
+FG-IR-26-093/CVE-2026-30897,CVE-2026-30897,2026-03-10T00:00:00Z,2026-03-10T00:00:00Z,Stack buffer overflow in API,https://www.fortiguard.com/psirt/FG-IR-26-093
+FG-IR-26-094/CVE-2026-25689,CVE-2026-25689,2026-03-10T00:00:00Z,2026-03-10T00:00:00Z,Arbitrary file deletion in administrative interface,https://www.fortiguard.com/psirt/FG-IR-26-094
+FG-IR-26-095/CVE-2025-49784,CVE-2025-49784,2026-03-10T00:00:00Z,2026-03-10T00:00:00Z,SQL injection in jsonrpc api,https://www.fortiguard.com/psirt/FG-IR-26-095
+FG-IR-26-096/CVE-2026-25836,CVE-2026-25836,2026-03-10T00:00:00Z,2026-04-14T00:00:00Z,OS command injection on vmimages update feature,https://www.fortiguard.com/psirt/FG-IR-26-096
+FG-IR-26-097/CVE-2025-48840,CVE-2025-48840,2026-03-10T00:00:00Z,2026-03-10T00:00:00Z,Protected hostname bypass,https://www.fortiguard.com/psirt/FG-IR-26-097
+FG-IR-26-098/CVE-2025-54820,CVE-2025-54820,2026-03-10T00:00:00Z,2026-03-11T00:00:00Z,Buffer overflow via fgtupdates service,https://www.fortiguard.com/psirt/FG-IR-26-098
+FG-IR-26-099/CVE-2026-35616,CVE-2026-35616,2026-04-04T00:00:00Z,2026-04-21T00:00:00Z,API authentication and authorization bypass,https://www.fortiguard.com/psirt/FG-IR-26-099
+FG-IR-26-100/CVE-2026-39808,CVE-2026-39808,2026-04-14T00:00:00Z,2026-04-14T00:00:00Z,OS Command Injection through API endpoint,https://www.fortiguard.com/psirt/FG-IR-26-100
+FG-IR-26-101/CVE-2026-23708,CVE-2026-23708,2026-04-14T00:00:00Z,2026-04-14T00:00:00Z,2FA request can be replayed without a valid token after one successful request,https://www.fortiguard.com/psirt/FG-IR-26-101
+FG-IR-26-102/CVE-2026-39809,CVE-2026-39809,2026-04-14T00:00:00Z,2026-04-14T00:00:00Z,Multiple SQL Injections,https://www.fortiguard.com/psirt/FG-IR-26-102
+FG-IR-26-103/CVE-2025-59809,CVE-2025-59809,2026-04-14T00:00:00Z,2026-04-14T00:00:00Z,SSRF via Report template and scheduling,https://www.fortiguard.com/psirt/FG-IR-26-103
+FG-IR-26-104/CVE-2026-22576,CVE-2026-22576,2026-04-14T00:00:00Z,2026-04-14T00:00:00Z,Clear-text credentials retrievable with IP modification for connectors,https://www.fortiguard.com/psirt/FG-IR-26-104
+FG-IR-26-105/CVE-2026-22574,CVE-2026-22574,2026-04-14T00:00:00Z,2026-04-14T00:00:00Z,Clear-text credentials retrievable with IP modification for LDAP,https://www.fortiguard.com/psirt/FG-IR-26-105
+FG-IR-26-106/CVE-2026-21742,CVE-2026-21742,2026-04-14T00:00:00Z,2026-04-14T00:00:00Z,Cleartext Credentials in response for API endpoints,https://www.fortiguard.com/psirt/FG-IR-26-106
+FG-IR-26-106/CVE-2026-22155,CVE-2026-22155,2026-04-14T00:00:00Z,2026-04-14T00:00:00Z,Cleartext Credentials in response for API endpoints,https://www.fortiguard.com/psirt/FG-IR-26-106
+FG-IR-26-107/CVE-2026-39810,CVE-2026-39810,2026-04-14T00:00:00Z,2026-04-14T00:00:00Z,Hardcoded symmetric encryption key for Postgresql,https://www.fortiguard.com/psirt/FG-IR-26-107
+FG-IR-26-108/CVE-2026-39811,CVE-2026-39811,2026-04-14T00:00:00Z,2026-04-14T00:00:00Z,Integer Overflow Denial of Service in administrative interface,https://www.fortiguard.com/psirt/FG-IR-26-108
+FG-IR-26-109/CVE-2025-61886,CVE-2025-61886,2026-04-14T00:00:00Z,2026-04-14T00:00:00Z,Reflected XSS in Operation Center,https://www.fortiguard.com/psirt/FG-IR-26-109
+FG-IR-26-110/CVE-2026-39812,CVE-2026-39812,2026-04-14T00:00:00Z,2026-04-14T00:00:00Z,Multiple Stored XSS,https://www.fortiguard.com/psirt/FG-IR-26-110
+FG-IR-26-111/CVE-2025-61848,CVE-2025-61848,2026-04-14T00:00:00Z,2026-08-11T00:00:00Z,SQL Injection via JSON RPC API,https://www.fortiguard.com/psirt/FG-IR-26-111
+FG-IR-26-112/CVE-2026-39813,CVE-2026-39813,2026-04-14T00:00:00Z,2026-04-14T00:00:00Z,Unauthenticated Authentication bypass and Privilege escalation in FortiSandbox,https://www.fortiguard.com/psirt/FG-IR-26-112
+FG-IR-26-113/CVE-2026-27316,CVE-2026-27316,2026-04-14T00:00:00Z,2026-04-14T00:00:00Z,Credential disclosure in LDAP configuration web page.,https://www.fortiguard.com/psirt/FG-IR-26-113
+FG-IR-26-114/CVE-2026-39814,CVE-2026-39814,2026-04-14T00:00:00Z,2026-04-14T00:00:00Z,Multiple Path traversals in CLI,https://www.fortiguard.com/psirt/FG-IR-26-114
+FG-IR-26-115/CVE-2026-25691,CVE-2026-25691,2026-04-14T00:00:00Z,2026-04-14T00:00:00Z,Arbitrary directory delete on vmimages delete feature,https://www.fortiguard.com/psirt/FG-IR-26-115
+FG-IR-26-116/CVE-2026-22573,CVE-2026-22573,2026-04-14T00:00:00Z,2026-04-14T00:00:00Z,Path Traversal on File Content Extraction connector,https://www.fortiguard.com/psirt/FG-IR-26-116
+FG-IR-26-117/CVE-2026-22154,CVE-2026-22154,2026-04-14T00:00:00Z,2026-04-14T00:00:00Z,Stored Cross Site Scripting (XSS) in Reports View page,https://www.fortiguard.com/psirt/FG-IR-26-117
+FG-IR-26-118/CVE-2026-21741,CVE-2026-21741,2026-04-14T00:00:00Z,2026-04-14T00:00:00Z,Open Redirection via Import CSV option,https://www.fortiguard.com/psirt/FG-IR-26-118
+FG-IR-26-119/CVE-2026-39815,CVE-2026-39815,2026-04-14T00:00:00Z,2026-04-14T00:00:00Z,SQL Injection via API,https://www.fortiguard.com/psirt/FG-IR-26-119
+FG-IR-26-120/CVE-2025-68649,CVE-2025-68649,2026-04-14T00:00:00Z,2026-04-14T00:00:00Z,Path Traversal in CLI,https://www.fortiguard.com/psirt/FG-IR-26-120
+FG-IR-26-121/CVE-2026-22828,CVE-2026-22828,2026-04-14T00:00:00Z,2026-04-14T00:00:00Z,Heap-based buffer overflow in oftpd daemon,https://www.fortiguard.com/psirt/FG-IR-26-121
+FG-IR-26-122/CVE-2025-61624,CVE-2025-61624,2026-04-14T00:00:00Z,2026-04-14T00:00:00Z,Path Traversal in CLI,https://www.fortiguard.com/psirt/FG-IR-26-122
+FG-IR-26-123/CVE-2025-53844,CVE-2025-53844,2026-05-12T00:00:00Z,2026-05-12T00:00:00Z,Out-of-bounds access in CAPWAP daemon,https://www.fortiguard.com/psirt/FG-IR-26-123
+FG-IR-26-124/CVE-2024-23104,CVE-2024-23104,2026-04-14T00:00:00Z,2026-04-14T00:00:00Z,unauthorized backup file access,https://www.fortiguard.com/psirt/FG-IR-26-124
+FG-IR-26-125/CVE-2025-53847,CVE-2025-53847,2026-04-14T00:00:00Z,2026-04-14T00:00:00Z,Missing Authentication for critical function in CAPWAP daemon,https://www.fortiguard.com/psirt/FG-IR-26-125
+FG-IR-26-126,,2026-04-14T00:00:00Z,2026-04-14T00:00:00Z,Axios npm Package Compromised,https://www.fortiguard.com/psirt/FG-IR-26-126
+FG-IR-26-127/CVE-2026-40688,CVE-2026-40688,2026-04-15T00:00:00Z,2026-04-15T00:00:00Z,Out-Of-Bounds Write in administrative interface,https://www.fortiguard.com/psirt/FG-IR-26-127
+FG-IR-26-128/CVE-2026-44277,CVE-2026-44277,2026-05-12T00:00:00Z,2026-05-13T00:00:00Z,Improper access control on API endpoints,https://www.fortiguard.com/psirt/FG-IR-26-128
+FG-IR-26-129/CVE-2026-44278,CVE-2026-44278,2026-05-12T00:00:00Z,2026-05-12T00:00:00Z,Hardcoded Encryption Key Used for VPN Saved Passwords,https://www.fortiguard.com/psirt/FG-IR-26-129
+FG-IR-26-130/CVE-2026-44279,CVE-2026-44279,2026-05-12T00:00:00Z,2026-05-12T00:00:00Z,OTP Disclosure via Exported TokenContentProvider,https://www.fortiguard.com/psirt/FG-IR-26-130
+FG-IR-26-131/CVE-2025-53680,CVE-2025-53680,2026-05-12T00:00:00Z,2026-05-12T00:00:00Z,Command injection in CLI,https://www.fortiguard.com/psirt/FG-IR-26-131
+FG-IR-26-132/CVE-2025-53681,CVE-2025-53681,2026-05-12T00:00:00Z,2026-05-12T00:00:00Z,SQL command injection in administrative portal,https://www.fortiguard.com/psirt/FG-IR-26-132
+FG-IR-26-133/CVE-2025-53870,CVE-2025-53870,2026-05-12T00:00:00Z,2026-05-12T00:00:00Z,OS command injection in CLI,https://www.fortiguard.com/psirt/FG-IR-26-133
+FG-IR-26-134/CVE-2026-25088,CVE-2026-25088,2026-05-12T00:00:00Z,2026-05-12T00:00:00Z,User controlled SQL commands,https://www.fortiguard.com/psirt/FG-IR-26-134
+FG-IR-26-136/CVE-2026-26083,CVE-2026-26083,2026-05-12T00:00:00Z,2026-05-12T00:00:00Z,Incorrect global authorization,https://www.fortiguard.com/psirt/FG-IR-26-136
+FG-IR-26-137/CVE-2025-67604,CVE-2025-67604,2026-05-12T00:00:00Z,2026-05-12T00:00:00Z,DoS due to unsafe function in signal handler,https://www.fortiguard.com/psirt/FG-IR-26-137
+FG-IR-26-138/CVE-2026-25690,CVE-2026-25690,2026-05-12T00:00:00Z,2026-05-12T00:00:00Z,Arbitrary log file read in administrative interface,https://www.fortiguard.com/psirt/FG-IR-26-138
+FG-IR-26-139,,2026-05-13T00:00:00Z,2026-06-08T00:00:00Z,Linux Kernel Vulnerability copy.fail - CVE-2026-31431,https://www.fortiguard.com/psirt/FG-IR-26-139
+FG-IR-26-140/CVE-2026-49938,CVE-2026-49938,2026-06-09T00:00:00Z,2026-06-09T00:00:00Z,Improper access control in API endpoints,https://www.fortiguard.com/psirt/FG-IR-26-140
+FG-IR-26-141/CVE-2026-25089,CVE-2026-25089,2026-06-09T00:00:00Z,2026-06-09T00:00:00Z,Second-Order OS Command Injection via JSON Input on start vnc feature,https://www.fortiguard.com/psirt/FG-IR-26-141
+FG-IR-26-143/CVE-2025-67862,CVE-2025-67862,2026-06-09T00:00:00Z,2026-06-09T00:00:00Z,Restricted CLI escape using Lua,https://www.fortiguard.com/psirt/FG-IR-26-143
+FG-IR-26-144,,2026-06-03T00:00:00Z,2026-06-03T00:00:00Z,Linux Kernel vulnerability Dirty Frag,https://www.fortiguard.com/psirt/FG-IR-26-144
+FG-IR-26-145/CVE-2026-59835,CVE-2026-59835,2026-07-14T00:00:00Z,2026-07-14T00:00:00Z,Unauthenticated VNC access exposed on all interfaces,https://www.fortiguard.com/psirt/FG-IR-26-145
+FG-IR-26-146/CVE-2025-53379,CVE-2025-53379,2026-07-14T00:00:00Z,2026-07-14T00:00:00Z,Out of bounds read in GUI,https://www.fortiguard.com/psirt/FG-IR-26-146
+FG-IR-26-147/CVE-2026-59836,CVE-2026-59836,2026-07-14T00:00:00Z,2026-07-14T00:00:00Z,Missed certificate verification in AD Connector communication with FortiClient EMS,https://www.fortiguard.com/psirt/FG-IR-26-147
+FG-IR-26-148/CVE-2026-59837,CVE-2026-59837,2026-07-14T00:00:00Z,2026-07-14T00:00:00Z,Stack Buffer Overflow in Log Report,https://www.fortiguard.com/psirt/FG-IR-26-148
+FG-IR-26-149/CVE-2026-59838,CVE-2026-59838,2026-07-14T00:00:00Z,2026-07-14T00:00:00Z,Cross-Site Scripting in Domain parameter,https://www.fortiguard.com/psirt/FG-IR-26-149
+FG-IR-26-150/CVE-2026-23573,CVE-2026-23573,2026-07-14T00:00:00Z,2026-07-14T00:00:00Z,SSL-VPN Reflected XSS,https://www.fortiguard.com/psirt/FG-IR-26-150
+FG-IR-26-151/CVE-2026-59839,CVE-2026-59839,2026-07-14T00:00:00Z,2026-07-14T00:00:00Z,Path traversal in CLI command allows deletion of root file system,https://www.fortiguard.com/psirt/FG-IR-26-151
+FG-IR-26-152/CVE-2025-62675,CVE-2025-62675,2026-07-14T00:00:00Z,2026-07-14T00:00:00Z,Header injection in Web Filter warning page,https://www.fortiguard.com/psirt/FG-IR-26-152
+FG-IR-26-153/CVE-2025-62826,CVE-2025-62826,2026-07-14T00:00:00Z,2026-07-14T00:00:00Z,Header injection in captive portal authentication form,https://www.fortiguard.com/psirt/FG-IR-26-153
+FG-IR-26-154/CVE-2025-43892,CVE-2025-43892,2026-07-14T00:00:00Z,2026-07-14T00:00:00Z,Buffer overread in authd and wad daemon,https://www.fortiguard.com/psirt/FG-IR-26-154
+FG-IR-26-154/CVE-2026-59840,CVE-2026-59840,2026-07-14T00:00:00Z,2026-07-14T00:00:00Z,Buffer overread in authd and wad daemon,https://www.fortiguard.com/psirt/FG-IR-26-154
+FG-IR-26-155/CVE-2026-59841,CVE-2026-59841,2026-07-14T00:00:00Z,2026-07-14T00:00:00Z,Supers override fails to properly override supervisor address,https://www.fortiguard.com/psirt/FG-IR-26-155
+FG-IR-26-156/CVE-2026-70465,CVE-2026-70465,2026-08-12T00:00:00Z,2026-08-12T00:00:00Z,Heap overflow in kernel driver due to missing size validation,https://www.fortiguard.com/psirt/FG-IR-26-156
+FG-IR-26-157/CVE-2026-70466,CVE-2026-70466,2026-08-12T00:00:00Z,2026-09-03T00:00:00Z,Content-Encoding WAF Evasion,https://www.fortiguard.com/psirt/FG-IR-26-157
+FG-IR-26-158/CVE-2026-26035,CVE-2026-26035,2026-08-12T00:00:00Z,2026-08-12T00:00:00Z,Broken access control in the RADIUS type admin group,https://www.fortiguard.com/psirt/FG-IR-26-158
+FG-IR-26-159/CVE-2026-70467,CVE-2026-70467,2026-08-12T00:00:00Z,2026-08-12T00:00:00Z,Server-Side Request Forgery (SSRF),https://www.fortiguard.com/psirt/FG-IR-26-159
+FG-IR-26-160/CVE-2026-70468,CVE-2026-70468,2026-08-12T00:00:00Z,2026-08-12T00:00:00Z,FGFM Authentication Weakening via CLI Configuration,https://www.fortiguard.com/psirt/FG-IR-26-160
+FG-IR-26-161/CVE-2026-71407,CVE-2026-71407,2026-08-12T00:00:00Z,2026-08-12T00:00:00Z,Stack buffer overflow in WAD,https://www.fortiguard.com/psirt/FG-IR-26-161
+FG-IR-26-162/CVE-2026-71408,CVE-2026-71408,2026-08-12T00:00:00Z,2026-08-12T00:00:00Z,UI DoS attack,https://www.fortiguard.com/psirt/FG-IR-26-162
+FG-IR-26-163/CVE-2026-49975,CVE-2026-49975,2026-08-12T00:00:00Z,2026-08-26T00:00:00Z,HTTP/2 Bomb CVE-2026-49975,https://www.fortiguard.com/psirt/FG-IR-26-163
+FG-IR-26-164/CVE-2026-84385,CVE-2026-84385,2026-09-08T00:00:00Z,2026-09-08T00:00:00Z,Broken Access control on Websocket streams,https://www.fortiguard.com/psirt/FG-IR-26-164
+FG-IR-26-165/CVE-2026-84386,CVE-2026-84386,2026-09-08T00:00:00Z,2026-09-08T00:00:00Z,Arbitrary process termination from exposed minifilter communication port,https://www.fortiguard.com/psirt/FG-IR-26-165
+FG-IR-26-166/CVE-2026-26084,CVE-2026-26084,2026-09-08T00:00:00Z,2026-09-08T00:00:00Z,Unauthenticated Control of NAT Rules Leading to Exposure of Sensitive Information,https://www.fortiguard.com/psirt/FG-IR-26-166
+FG-IR-26-167/CVE-2026-84387,CVE-2026-84387,2026-09-08T00:00:00Z,2026-09-08T00:00:00Z,Cron Job Injection in Remote Backup,https://www.fortiguard.com/psirt/FG-IR-26-167
+FG-IR-26-168/CVE-2026-84388,CVE-2026-84388,2026-09-08T00:00:00Z,2026-09-08T00:00:00Z,Improper Authentication of FortiPAM Server,https://www.fortiguard.com/psirt/FG-IR-26-168
+FG-IR-26-169/CVE-2026-84389,CVE-2026-84389,2026-09-08T00:00:00Z,2026-09-08T00:00:00Z,Open Redirect on FortiSIEM,https://www.fortiguard.com/psirt/FG-IR-26-169
+FG-IR-26-170/CVE-2026-84390,CVE-2026-84390,2026-09-08T00:00:00Z,2026-09-08T00:00:00Z,JWT used for authentication in web GUI signed with static key,https://www.fortiguard.com/psirt/FG-IR-26-170
+FG-IR-26-171/CVE-2026-22575,CVE-2026-22575,2026-09-08T00:00:00Z,2026-09-08T00:00:00Z,Workflow session email approval process bypass,https://www.fortiguard.com/psirt/FG-IR-26-171
+FG-IR-26-172/CVE-2026-84391,CVE-2026-84391,2026-09-08T00:00:00Z,2026-09-08T00:00:00Z,Uncontrolled Resource Consumption in SNMP,https://www.fortiguard.com/psirt/FG-IR-26-172
+FG-IR-26-173/CVE-2026-84392,CVE-2026-84392,2026-09-08T00:00:00Z,2026-09-08T00:00:00Z,Null Pointer Dereference in Log Report,https://www.fortiguard.com/psirt/FG-IR-26-173
+FG-IR-26-174/CVE-2026-84393,CVE-2026-84393,2026-09-08T00:00:00Z,2026-09-08T00:00:00Z,ZTNA Portal Improper Certificate Validation,https://www.fortiguard.com/psirt/FG-IR-26-174

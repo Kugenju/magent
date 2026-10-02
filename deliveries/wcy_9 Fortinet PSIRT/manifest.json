@@ -1,0 +1,20 @@
+{
+  "batch_id": "c70c11b7-6a30-415a-9a9e-2c133c296e07",
+  "collector_id": "241820271_wucaiying",
+  "source": "fortinet",
+  "dataset_version": "2024-09-10_2026-09-15",
+  "window_start": "2024-09-10T00:00:00+00:00",
+  "window_end": "2026-09-15T00:00:00+00:00",
+  "cosv_schema_version": "1.0",
+  "cosv_parser_version": "public-789/1.0",
+  "created_at": "2026-10-02T09:40:19.210320Z",
+  "record_count": 357,
+  "content_hash": "2de215394ffafe1ebb72a6a35858e1a247e83d3f175ac69d1f8d4b28de467369",
+  "license": "source publisher terms; research use; redistribution not independently cleared",
+  "status": "received",
+  "page_count": 4,
+  "fetched_record_count": 357,
+  "truncated": false,
+  "next_cursor": null,
+  "collection_complete": false
+}

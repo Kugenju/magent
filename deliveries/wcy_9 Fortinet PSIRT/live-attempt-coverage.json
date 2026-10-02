@@ -1,0 +1,946 @@
+{
+  "status": "partial_enrichment",
+  "enumerated_advisories": 736,
+  "listing_total": 736,
+  "listing_pages": 50,
+  "window_advisories": 345,
+  "enumeration_complete": true,
+  "unresolved_details": 183,
+  "product_filter": "explicit empty/all",
+  "affected_scope": "advisory_level",
+  "source_observations": 357,
+  "cosv_records": 357,
+  "unique_cves": 352,
+  "cves_in_multiple_advisories": {},
+  "missing_cve_observations": 5,
+  "quality_issue_count": 10,
+  "warnings": [
+    {
+      "advisory_id": "FG-IR-25-667",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-25-667 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-23-494",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-23-494 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-25-501",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-25-501 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-23-165",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-23-165 (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1000)')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-24-535",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-24-535 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-20-105",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-20-105 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-21-023",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-21-023 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-23-261",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-23-261 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-23-381",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-23-381 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-23-204",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-23-204 (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1000)')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-23-424",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-23-424 (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1000)')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-23-304",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-23-304 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-23-130",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-23-130 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-23-395",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-23-395 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-23-061",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-23-061 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-23-135",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-23-135 (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1000)')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-23-290",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-23-290 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-23-306",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-23-306 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-23-265",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-23-265 (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1000)')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-23-383",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-23-383 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-23-221",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-23-221 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-23-085",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-23-085 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-23-277",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-23-277 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-23-090",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-23-090 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-23-062",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-23-062 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-21-233",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-21-233 (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1000)')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-23-120",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-23-120 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-23-007",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-23-007 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-23-184",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-23-184 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-310",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-22-310 (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1000)')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-120",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-22-120 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-23-126",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-23-126 (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1000)')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-288",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-22-288 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-23-149",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-23-149 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-479",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-22-479 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-23-015",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-23-015 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-23-076",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-23-076 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-375",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-22-375 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-332",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-22-332 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-521",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-22-521 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-229",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-22-229 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-468",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-22-468 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-494",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-22-494 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-393",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-22-393 (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1000)')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-23-013",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-23-013 (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1000)')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-520",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-22-520 (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1000)')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-407",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-22-407 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-452",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-22-452 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-464",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-22-464 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-456",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-22-456 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-444",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-22-444 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-050",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-22-050 (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1000)')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-335",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-22-335 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-409",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-22-409 (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1000)')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-060",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-22-060 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-432",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-22-432 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-056",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-22-056 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-429",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-22-429 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-502",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-22-502 (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1000)')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-381",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-22-381 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-275",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-22-275 (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1000)')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-481",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-22-481 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-355",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-22-355 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-477",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-22-477 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-21-218",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-21-218 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-388",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-22-388 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-20-078",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-20-078 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-18-232",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-18-232 (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1000)')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-281",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-22-281 (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1000)')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-369",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-22-369 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-364",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-22-364 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-346",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-22-346 (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1000)')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-167",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-22-167 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-164",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-22-164 (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1000)')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-20-014",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-20-014 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-131",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-22-131 (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1000)')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-300",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-22-300 (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1000)')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-080",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-22-080 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-312",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-22-312 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-133",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-22-133 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-460",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-22-460 (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1000)')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-21-214",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-21-214 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-111",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-22-111 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-20-220",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-20-220 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-118",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-22-118 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-260",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-22-260 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-304",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-22-304 (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1000)')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-048",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-22-048 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-273",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-22-273 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-163",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-22-163 (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1000)')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-046",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-22-046 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-21-126",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-21-126 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-136",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-22-136 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-142",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-22-142 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-151",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-22-151 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-21-234",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-21-234 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-21-186",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-21-186 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-329",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-22-329 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-265",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-22-265 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-166",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-22-166 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-061",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-22-061 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-371",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-22-371 (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1000)')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-21-170",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-21-170 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-21-248",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-21-248 (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1000)')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-074",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-22-074 (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1000)')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-064",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-22-064 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-216",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-22-216 (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1000)')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-218",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-22-218 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-228",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-22-228 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-174",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-22-174 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-223",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-22-223 (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1000)')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-21-228",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-21-228 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-399",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-22-399 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-419",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-22-419 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-026",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-22-026 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-21-242",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-21-242 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-21-163",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-21-163 (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1000)')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-158",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-22-158 (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1000)')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-20-143",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-20-143 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-21-215",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-21-215 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-140",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-22-140 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-306",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-22-306 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-073",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-22-073 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-21-222",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-21-222 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-21-235",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-21-235 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-036",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-22-036 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-055",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-22-055 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-077",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-22-077 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-21-155",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-21-155 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-051",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-22-051 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-049",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-22-049 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-21-213",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-21-213 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-21-056",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-21-056 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-21-179",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-21-179 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-21-206",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-21-206 (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1000)')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-058",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-22-058 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-21-057",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-21-057 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-044",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-22-044 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-21-024",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-21-024 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-008",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-22-008 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-109",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-22-109 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-071",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-22-071 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-021",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-22-021 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-21-147",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-21-147 (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1000)')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-041",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-22-041 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-21-239",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-21-239 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-007",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-22-007 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-21-154",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-21-154 (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1000)')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-062",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-22-062 (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1000)')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-21-040",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-21-040 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-21-230",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-21-230 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-052",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-22-052 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-21-226",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-21-226 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-018",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-22-018 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-21-002",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-21-002 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-21-070",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-21-070 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-21-232",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-21-232 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-019",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-22-019 (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1000)')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-21-060",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-21-060 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-21-062",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-21-062 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-21-238",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-21-238 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-21-065",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-21-065 (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1000)')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-21-078",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-21-078 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-21-064",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-21-064 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-22-072",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-22-072 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-21-028",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-21-028 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-21-255",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-21-255 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-20-091",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-20-091 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-21-128",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-21-128 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-21-227",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-21-227 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-21-210",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-21-210 (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1000)')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-21-165",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-21-165 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-21-099",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-21-099 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-21-106",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-21-106 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-21-189",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-21-189 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-21-008",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-21-008 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-21-148",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-21-148 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-21-158",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-21-158 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-20-217",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-20-217 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-21-180",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-21-180 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-21-166",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-21-166 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-21-185",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-21-185 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    },
+    {
+      "advisory_id": "FG-IR-21-132",
+      "error": "HTTPSConnectionPool(host='fortiguard.fortinet.com', port=443): Max retries exceeded with url: /psirt/FG-IR-21-132 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))",
+      "window_membership": "unknown without first-publication detail"
+    }
+  ],
+  "duplicate_cosv_ids_policy": "Keep distinct advisory/CVE source observations; do not overwrite by CVE alone",
+  "parser_version": "public-789/1.0",
+  "field_coverage": {
+    "title": 357,
+    "description": 352,
+    "published_at": 357,
+    "modified_at": 357,
+    "affected": 350,
+    "cvss_score": 352,
+    "cwe": 352
+  },
+  "cvss_observations": 352
+}

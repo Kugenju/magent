@@ -16,6 +16,31 @@ from typing import Any, Optional
 from .errors import SourceError, SourceErrorKind
 from .protocol import SourcePage, SourceRecord, SourceRequest
 
+_CVE_PREFIX = "CVE-"
+
+
+def _normalize_published_date(value: Any) -> Optional[str]:
+    """将人工下载文件中的发布日期标准化为 ISO-8601；失败返回 None。"""
+    if value is None:
+        return None
+    text = str(value).strip()
+    if not text:
+        return None
+    # 常见：2025-03-01 / 2025/03/01 / 20250301
+    for fmt in ("%Y-%m-%d", "%Y/%m/%d", "%Y%m%d"):
+        try:
+            from datetime import datetime as _dt
+            return _dt.strptime(text, fmt).date().isoformat()
+        except ValueError:
+            continue
+    # 已是完整 ISO 时间则直接透传
+    try:
+        from datetime import datetime as _dt
+        parsed = _dt.fromisoformat(text.replace("Z", "+00:00"))
+        return parsed.date().isoformat()
+    except ValueError:
+        return None
+
 
 @dataclass(frozen=True)
 class CNVDManualConfig:
@@ -76,10 +101,28 @@ class CNVDManualFileSource:
                 record_id = str(norm.get("cnvdId", "")).strip()
                 if not record_id:
                     continue
-                out.append(SourceRecord(record_id, norm, {
+                # Canonical 字段：让 domain normalize / COSV mapper 能消费
+                cve_raw = str(norm.get("cveId") or "").strip()
+                cve_id = cve_raw if cve_raw.upper().startswith(_CVE_PREFIX) else None
+                published_iso = _normalize_published_date(norm.get("publishedDate"))
+                payload = dict(norm)
+                payload.update({
+                    "id": record_id,
+                    "cve_id": cve_id,
+                    "title": norm.get("title") or record_id,
+                    "description": norm.get("title"),
+                    "aliases": [cve_id] if cve_id else [],
+                    "cnvd_level": norm.get("level"),
+                    "cnvd_type": norm.get("type"),
+                    "published_at": published_iso,
+                    "modified_at": published_iso,
+                    "import_sha256": self.file_sha256,
+                })
+                out.append(SourceRecord(record_id, payload, {
                     "source": "cnvd", "import_mode": "manual_download",
                     "file_sha256": self.file_sha256,
-                    "published_at": norm.get("publishedDate"),
+                    "import_sha256": self.file_sha256,
+                    "published_at": published_iso,
                 }))
             self._records = out
             return out

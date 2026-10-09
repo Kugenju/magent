@@ -160,3 +160,35 @@ def test_cnvd_config_defaults():
     assert "cnvd.org.cn" in config.endpoint
     assert config.page_size == 20
     assert config.timeout_seconds == 30.0
+
+
+def test_cnvd_adapter_waf_challenge_521():
+    """HTTP 521 + JavaScript WAF challenge：返回不可重试的 forbidden 错误。"""
+    transport = MockTransport({}, status_code=521)
+    adapter = CNVDAdapter(transport=transport)
+    req = _make_request()
+
+    result = asyncio.run(adapter.fetch_page(req))
+    assert hasattr(result, "kind")
+    assert result.kind == SourceErrorKind.FORBIDDEN
+    assert result.retryable is False
+    assert "CNVDManualFileSource" in result.message
+
+
+def test_cnvd_adapter_waf_challenge_body():
+    """响应体含 JS challenge 特征：即使状态码异常也识别为 WAF。"""
+    class ChallengeTransport:
+        async def __call__(self, **kwargs) -> dict:
+            return {
+                "status_code": 521,
+                "data": None,
+                "error": "<script>document.cookie=('_')+('j')+('s')+('l')...</script>",
+            }
+
+    adapter = CNVDAdapter(transport=ChallengeTransport())
+    req = _make_request()
+
+    result = asyncio.run(adapter.fetch_page(req))
+    assert hasattr(result, "kind")
+    assert result.kind == SourceErrorKind.FORBIDDEN
+    assert result.retryable is False

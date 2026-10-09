@@ -27,6 +27,12 @@ from apps.vulntell.sources import (
     DebianConfig,
     GitHubAdvisoryAdapter,
     GitHubAdvisoryConfig,
+    EUVDAdapter,
+    EUVDConfig,
+    JVNAdapter,
+    JVNConfig,
+    CNVDManualConfig,
+    CNVDManualFileSource,
 )
 from apps.vulntell.sources.cisa_kev import CISAKEVTransport
 from apps.vulntell.sources.msrc import MSRCTransport
@@ -36,6 +42,8 @@ from apps.vulntell.sources.redhat import RedHatTransport
 from apps.vulntell.sources.ubuntu import UbuntuTransport
 from apps.vulntell.sources.debian import DebianTransport
 from apps.vulntell.sources.github_advisory import GitHubAdvisoryTransport
+from apps.vulntell.sources.euvd import EUVDTransport
+from apps.vulntell.sources.jvn import JVNTransport
 from apps.vulntell.sources.protocol import SourceRequest
 
 START = datetime(2024, 9, 10, tzinfo=timezone.utc)
@@ -92,8 +100,10 @@ async def collect_one(name: str, adapter, page_size: int, license_name: str) -> 
 
 async def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--sources", nargs="*", choices=["nvd", "cisa_kev", "redhat", "ubuntu", "msrc", "osv", "debian", "github_advisory"],
+    parser.add_argument("--sources", nargs="*", choices=["nvd", "cisa_kev", "redhat", "ubuntu", "msrc", "osv", "debian", "github_advisory", "euvd", "jvn", "cnvd"],
                         help="采集指定来源；默认采集全部来源")
+    parser.add_argument("--cnvd-file", type=Path, default=None,
+                        help="CNVD 人工下载的 CSV/JSON 文件路径（CNVD 官方 WAF 拦截自动采集，需人工下载后导入）")
     args = parser.parse_args()
     ROOT.mkdir(parents=True, exist_ok=True)
     jobs = [
@@ -107,7 +117,20 @@ async def main() -> None:
         # therefore performs no synthetic pagination).
         ("debian", DebianAdapter(config=DebianConfig(page_size=100, timeout_seconds=120), transport=DebianTransport()), 100, "Debian-terms"),
         ("github_advisory", GitHubAdvisoryAdapter(config=GitHubAdvisoryConfig(page_size=100, timeout_seconds=60), transport=GitHubAdvisoryTransport(), token=os.getenv("GITHUB_TOKEN")), 100, "GitHub-terms"),
+        # EUVD: ENISA 官方公开 API，按窗口日期过滤 + 0 起分页。
+        ("euvd", EUVDAdapter(config=EUVDConfig(page_size=100, timeout_seconds=120), transport=EUVDTransport()), 100, "EUVD-terms"),
+        # JVN: MyJVN API（feed=hnd），完整 Y/M/D 起止窗口 + startItem 分页，单页上限 50。
+        ("jvn", JVNAdapter(config=JVNConfig(page_size=50, timeout_seconds=120), transport=JVNTransport()), 50, "JVN-terms"),
     ]
+    # CNVD 官方端点返回 HTTP 521 + JavaScript WAF challenge，自动采集不可用；
+    # 合规路径是人工下载 CSV/JSON 后通过 --cnvd-file 导入。
+    if args.cnvd_file is not None:
+        jobs.append((
+            "cnvd",
+            CNVDManualFileSource(config=CNVDManualConfig(path=args.cnvd_file, page_size=100)),
+            100,
+            "CNVD-terms",
+        ))
     results = []
     selected = set(args.sources or [j[0] for j in jobs])
     for job in jobs:
@@ -126,7 +149,7 @@ async def main() -> None:
         except (OSError, ValueError, TypeError):
             prior = {}
     prior.update({item["source"]: item for item in results})
-    results = [prior[name] for name in ("nvd", "cisa_kev", "redhat", "ubuntu", "msrc", "osv", "debian", "github_advisory") if name in prior]
+    results = [prior[name] for name in ("nvd", "cisa_kev", "redhat", "ubuntu", "msrc", "osv", "debian", "github_advisory", "euvd", "jvn", "cnvd") if name in prior]
     summary = {
         "window_start": START.isoformat(),
         "window_end": END.isoformat(),

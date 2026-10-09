@@ -127,6 +127,17 @@ def normalize_record(raw: RawSourceRecord) -> tuple[SourceObservation, list[Qual
     if not isinstance(severity, list):
         severity = [severity]
 
+    # 来源专属字段：仅在来源 payload 显式提供时透传，供 COSV
+    # database_specific 使用（如 CNVD 人工导入的等级与文件哈希）。
+    source_specific: dict[str, Any] = {}
+    for key in (
+        "cnvd_level", "cnvd_type", "import_sha256", "import_batch",
+        "kev_date_added", "kev_due_date", "kev_ransomware_use",
+        "source_version_text",
+    ):
+        if key in p and p[key] not in (None, ""):
+            source_specific[key] = p[key]
+
     # 引用
     references = p.get("references") or []
     if not isinstance(references, list):
@@ -152,6 +163,7 @@ def normalize_record(raw: RawSourceRecord) -> tuple[SourceObservation, list[Qual
             else {"url": str(r), "type": None, "verified": False}
             for r in references
         ],
+        **source_specific,
     }
 
     obs = SourceObservation(

@@ -132,10 +132,25 @@ class CNVDAdapter:
         # 检查 HTTP 状态码
         if response.get("status_code", 200) != 200:
             status_code = response.get("status_code", 500)
+            error_text = response.get("error", "") or ""
+            # CNVD 官方端点在 WAF 反爬挑战下返回 521 + JavaScript challenge。
+            # 重试无法通过验证，按合规要求明确拒绝并指向人工下载导入路径。
+            if status_code == 521 or "document.cookie" in error_text:
+                return SourceError(
+                    source="cnvd",
+                    kind=SourceErrorKind.FORBIDDEN,
+                    message=(
+                        "CNVD returned HTTP 521 / JavaScript WAF challenge. "
+                        "Automated collection is not supported; use manual download "
+                        "import via CNVDManualFileSource instead."
+                    ),
+                    retryable=False,
+                    http_status=status_code,
+                )
             return SourceError.from_http_status(
                 "cnvd",
                 status_code,
-                response.get("error", ""),
+                error_text,
             )
 
         # 解析响应

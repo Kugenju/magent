@@ -21,3 +21,9 @@ where = ["src"]
 testpaths = ["tests"]
 pythonpath = ["src"]
 asyncio_mode = "auto"
+
+# 'openai' is an optional, lazily imported vendor SDK (see
+# src/magent/llm/openai_adapter.py); its stubs are not installed in CI.
+[[tool.mypy.overrides]]
+module = ["openai"]
+ignore_missing_imports = true

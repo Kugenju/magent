@@ -1,188 +1,108 @@
-"""VulnTell COSV 数据模型（阶段 A）。
-
-COSV (Chinese Open Source Vulnerability format) 文档结构，遵循 INTELLIGENCE_SOURCES.md 规范。
-
-字段要求：
-- schema_version: 必填，非空字符串；表示 COSV schema 版本
-- id: 必填、全局唯一、稳定；优先使用 CVE-...，无 CVE 时使用来源稳定 ID
-- modified: 必填，RFC 3339/ISO-8601 UTC 时间（带 Z）
-- published: 有则为 RFC 3339 UTC 时间；未知时省略
-- aliases: 可选字符串数组；放置 CVE、GHSA、CNVD 等跨库别名
-- summary: 可选短标题，字符串；保留来源语言
-- details: 可选详细描述，字符串
-- affected: 可选数组；每项必须有 package（name、ecosystem），版本范围用 events
-- severity: 可选数组；保存 CVSS 向量和评分类型
-- references: 有则为数组；每项包含 type 和 url
-- credits: 可选字符串数组；仅记录来源明确公开的致谢信息
-- database_specific: 可选对象；仅放来源专属、非标准字段
-"""
-
+"""COSV-Schema v1.0.0 数据模型。"""
 from __future__ import annotations
-
 from datetime import datetime
 from enum import Enum
 from typing import Any, Optional
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
-from pydantic import BaseModel, Field, field_validator
+COSV_SCHEMA_VERSION = "1.0.0"
+SUPPORTED_COSV_SCHEMA_VERSIONS = {COSV_SCHEMA_VERSION}
 
+def _is_utc_timestamp(value: str) -> bool:
+    if not isinstance(value, str) or not value.endswith("Z"): return False
+    try: parsed = datetime.fromisoformat(value[:-1] + "+00:00")
+    except ValueError: return False
+    return parsed.tzinfo is not None and parsed.utcoffset() is not None
 
 class VersionEvent(BaseModel):
-    """版本事件：introduced、fixed、last_affected、limit。"""
-
-    introduced: Optional[str] = None
-    fixed: Optional[str] = None
-    last_affected: Optional[str] = None
-    limit: Optional[str] = None
-
-    @field_validator("introduced", "fixed", "last_affected", "limit")
-    @classmethod
-    def validate_version(cls, v: Optional[str]) -> Optional[str]:
-        if v is not None and not isinstance(v, str):
-            raise ValueError("version must be a string")
-        return v
-
+    model_config = ConfigDict(extra="forbid")
+    introduced: Optional[str] = None; fixed: Optional[str] = None
+    last_affected: Optional[str] = None; limit: Optional[str] = None
+    @model_validator(mode="after")
+    def exactly_one_endpoint(self):
+        if sum(v is not None for v in (self.introduced,self.fixed,self.last_affected,self.limit)) != 1:
+            raise ValueError("a range event must contain exactly one endpoint")
+        return self
 
 class VersionRange(BaseModel):
-    """版本范围：使用 events 语义。"""
-
-    type: Optional[str] = None
+    model_config = ConfigDict(extra="forbid")
+    type: str; repo: Optional[str] = None
     events: list[VersionEvent] = Field(default_factory=list)
-
+    database_specific: Optional[dict[str, Any]] = None
+    @field_validator("type")
+    @classmethod
+    def normalize_type(cls, v): return v.upper() if v else v
+    @model_validator(mode="after")
+    def valid_type(self):
+        if self.type is not None and self.type not in {"ECOSYSTEM","GIT","SEMVER"}: raise ValueError("invalid range type")
+        return self
 
 class Package(BaseModel):
-    """受影响包信息。"""
-
-    name: str
-    ecosystem: str
-
-
+    model_config = ConfigDict(extra="forbid")
+    ecosystem: str; name: str; purl: Optional[str] = None; language: Optional[str] = None
+    repository: Optional[str] = None; introduced_commits: list[str] = Field(default_factory=list)
+    fixed_commits: list[str] = Field(default_factory=list); home_page: Optional[str] = None; edition: Optional[str] = None
 class Affected(BaseModel):
-    """受影响条目。"""
-
-    package: Package
-    ranges: list[VersionRange] = Field(default_factory=list)
-    versions: list[str] = Field(default_factory=list)
-
-
-class SeverityType(str, Enum):
-    """严重性类型。"""
-
-    CVSS_V2 = "CVSS_V2"
-    CVSS_V3 = "CVSS_V3"
-    CVSS_V31 = "CVSS_V31"
-    CVSS_V4 = "CVSS_V4"
-
-
+    model_config = ConfigDict(extra="forbid")
+    package: Package; ranges: list[VersionRange] = Field(default_factory=list); versions: list[str] = Field(default_factory=list)
 class Severity(BaseModel):
-    """严重性信息。"""
-
-    type: SeverityType
-    score: Optional[str] = None
-    vector: Optional[str] = None
-
-
+    model_config = ConfigDict(extra="forbid")
+    type: str; score: Optional[str] = None; level: Optional[str] = None; score_num: Optional[str] = None
+class SeverityType(str, Enum):
+    CVSS_V2="CVSS_V2"; CVSS_V3="CVSS_V3"; CVSS_V31="CVSS_V31"; CVSS_V4="CVSS_V4"
 class ReferenceType(str, Enum):
-    """引用类型。"""
-
-    ADVISORY = "ADVISORY"
-    WEB = "WEB"
-    FIX = "FIX"
-    REPORT = "REPORT"
-    PACKAGE = "PACKAGE"
-
-
+    ADVISORY="advisory"; WEB="web"; FIX="patch"; REPORT="report"; PACKAGE="package"
 class Reference(BaseModel):
-    """引用信息。"""
-
-    type: ReferenceType
-    url: str
-
-
+    model_config = ConfigDict(extra="forbid")
+    type: str; url: str
+class TimeLineEvent(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    type: str; value: str
+    @field_validator("value")
+    @classmethod
+    def valid_value(cls,v):
+        if not _is_utc_timestamp(v): raise ValueError("time_line.value must be RFC3339 UTC")
+        return v
+class PatchDetail(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    patch_url: Optional[str]=None; issue_url: Optional[str]=None; main_language: Optional[str]=None; author: Optional[str]=None; commiter: Optional[str]=None
+    branches: list[str]=Field(default_factory=list); tags: list[str]=Field(default_factory=list)
+class Contributor(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    org: Optional[str]=None; name: Optional[str]=None; email: Optional[str]=None; contributions: Optional[str]=None
 class Credit(BaseModel):
-    """致谢信息。"""
-
     name: str
     contact: list[str] = Field(default_factory=list)
-
-
 class DatabaseSpecific(BaseModel):
-    """来源专属字段。"""
-
-    class Config:
-        extra = "allow"
-
-    source: Optional[str] = None
-    source_id: Optional[str] = None
-    import_batch: Optional[str] = None
-    import_sha256: Optional[str] = None
-    cnvd_level: Optional[str] = None
-    kev_date_added: Optional[str] = None
-    kev_due_date: Optional[str] = None
-    kev_ransomware_use: Optional[bool] = None
-    source_version_text: Optional[str] = None
-
-
+    model_config = ConfigDict(extra="allow")
 class COSVDocument(BaseModel):
-    """COSV 文档结构。
-
-    遵循 INTELLIGENCE_SOURCES.md 规范的完整 COSV 文档。
-    """
-
-    schema_version: str = "1.0"
-    id: str
-    modified: str  # RFC 3339 UTC
-    published: Optional[str] = None
-    aliases: list[str] = Field(default_factory=list)
-    summary: Optional[str] = None
-    details: Optional[str] = None
-    affected: list[Affected] = Field(default_factory=list)
-    severity: list[Severity] = Field(default_factory=list)
-    references: list[Reference] = Field(default_factory=list)
-    credits: list[str] = Field(default_factory=list)
-    database_specific: Optional[DatabaseSpecific] = None
-
+    model_config = ConfigDict(extra="forbid")
+    schema_version: str = COSV_SCHEMA_VERSION; id: str
+    aliases: list[str]=Field(default_factory=list); related: list[str]=Field(default_factory=list)
+    cwe_ids: list[str]=Field(default_factory=list); cwe_names: list[str]=Field(default_factory=list)
+    time_line: list[TimeLineEvent]=Field(default_factory=list); summary: Optional[str]=None; details: Optional[str]=None
+    references: list[Reference]=Field(default_factory=list); published: Optional[str]=None; withdrawn: Optional[str]=None; modified: str
+    severity: list[Severity]=Field(default_factory=list); affected: list[Affected]=Field(default_factory=list)
+    patches_detail: list[PatchDetail]=Field(default_factory=list); contributors: list[Contributor]=Field(default_factory=list)
+    confirm_type: Optional[str]=None; database_specific: Optional[dict[str,Any]]=None; credits: list[str]=Field(default_factory=list)
     @field_validator("id")
     @classmethod
-    def validate_id(cls, v: str) -> str:
-        if not v:
-            raise ValueError("id must not be empty")
+    def valid_id(cls,v):
+        if not isinstance(v,str) or not v.strip(): raise ValueError("id must be a non-empty string")
         return v
-
-    @field_validator("modified")
+    @field_validator("schema_version")
     @classmethod
-    def validate_modified(cls, v: str) -> str:
-        # 验证 RFC 3339 UTC 格式
-        try:
-            dt = datetime.fromisoformat(v.replace("Z", "+00:00"))
-            if dt.tzinfo is None:
-                raise ValueError("modified must be UTC (with Z suffix)")
-        except ValueError as e:
-            raise ValueError(f"modified must be RFC 3339 UTC: {e}")
+    def valid_schema(cls,v):
+        if v not in SUPPORTED_COSV_SCHEMA_VERSIONS: raise ValueError(f"unsupported COSV schema_version: {v}")
         return v
-
-    @field_validator("aliases")
+    @field_validator("modified","published","withdrawn")
     @classmethod
-    def validate_aliases(cls, v: list[str]) -> list[str]:
-        # 去重并稳定排序
-        return sorted(set(v))
-
-    @field_validator("references")
+    def valid_time(cls,v):
+        if v is not None and not _is_utc_timestamp(v): raise ValueError("timestamp must be RFC3339 UTC with Z")
+        return v
+    @field_validator("confirm_type")
     @classmethod
-    def validate_references(cls, v: list[Reference]) -> list[Reference]:
-        # 去重并稳定排序
-        seen = set()
-        unique = []
-        for ref in v:
-            key = (ref.type, ref.url)
-            if key not in seen:
-                seen.add(key)
-                unique.append(ref)
-        return sorted(unique, key=lambda x: (x.type, x.url))
-
-    def model_dump_stable(self) -> dict[str, Any]:
-        """稳定序列化：保证相同输入产生相同内容哈希。"""
-        return self.model_dump(
-            mode="json",
-            exclude_none=True,
-            exclude_unset=True,
-        )
+    def valid_confirm(cls,v):
+        if v is not None and v not in {"manual_confirmed","algorithm_confirmed","double_confirmed"}: raise ValueError("invalid confirm_type")
+        return v
+    def model_dump_stable(self): return self.model_dump(mode="json", exclude_none=True, exclude_unset=True)

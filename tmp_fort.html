@@ -1,0 +1,458 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <script async defer src="https://filestore.fortinet.com/fortiguard/dist/altcha.min.js" type="module" nonce="c37dxmde7TQ+dqnGbkTrow=="></script>
+  <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <title>Just a moment</title>
+  <link rel="shortcut icon" href="https://filestore.fortinet.com/fortiguard/static/images/favicon.ico?v=53822" type="image/x-icon" />
+  <style>
+    /* Dark theme: minimal local styles (no Bootstrap) */
+    html,body{height:100%}
+    body{min-height:100vh;display:flex;align-items:flex-start;justify-content:center;margin:0;padding-left:1rem;padding-right:1rem;padding-top:20vh;background:#212121;color:#e6eef8;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,'Noto Sans',sans-serif}
+    .container{width:100%;max-width:720px;margin-left:auto;margin-right:auto;padding-left:1rem;padding-right:1rem}
+    .security-panel{border:1px solid rgba(255,255,255,0.04);border-radius:12px;padding:1.75rem;background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01));box-shadow:0 8px 30px rgba(2,6,23,0.6)}
+    .domain-title{font-size:2rem;font-weight:600;margin:0 0 0.25rem;color:#e6eef8}
+    .subtitle{font-size:0.95rem;color:#9fb0c8;margin:0 0 1rem}
+    .message{font-size:0.95rem;color:#cfe5ff;margin-top:0.75rem}
+    .captcha-wrap{margin-top:1rem}
+    hr.divider{height:1px;border:0;margin:1.25rem 0;border-radius:4px;background:linear-gradient(90deg,rgba(255,255,255,0),rgba(255,255,255,0.06),rgba(255,255,255,0));}
+    .screen-id{font-size:0.8rem;color:#9fb0c8;text-align:center}
+    .panel-footer{display:flex;justify-content:space-between;align-items:center;gap:0.75rem;margin-top:0.75rem;flex-wrap:nowrap}
+    /* Altcha's checkbox is a bare native input in the build filestore serves, so
+       the browser paints its checked state blue; only a direct rule turns it
+       the theme green. */
+    .altcha-checkbox input[type="checkbox"]{appearance:none;-webkit-appearance:none;width:18px;height:18px;margin:0;background:#2a2a2a;border:1px solid rgba(255,255,255,0.25);border-radius:4px;cursor:pointer}
+    .altcha-checkbox input[type="checkbox"]:checked{background-color:#3cb17e;border-color:#3cb17e;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='none' stroke='%23ffffff' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round' d='M3.5 8.5l3 3 6-6'/%3E%3C/svg%3E");background-position:center;background-repeat:no-repeat;background-size:12px 12px}
+    .altcha-checkbox input[type="checkbox"]:focus-visible{outline:2px solid #3cb17e;outline-offset:2px}
+    @media (min-width:1200px){.container{max-width:1140px}}
+    @media (max-width:640px){
+      .panel-footer{flex-wrap:wrap;justify-content:center}
+      .panel-footer .screen-id{flex-basis:100%;text-align:center;margin-top:0.5rem}
+      .panel-footer .powered{text-align:center;}
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="security-panel" role="dialog" aria-labelledby="domain-title" aria-describedby="security-review">
+      <h1 id="domain-title" class="domain-title">Loading domain...</h1>
+      <p class="subtitle">Just a moment — verifying connection security.</p>
+
+      <div id="connection-check" class="message">We are checking that your connection to this site is secure.</div>
+
+      <div class="captcha-wrap">
+        <form method="POST" id="security-form" action="/psirt">
+          <input type="hidden" name="screen_id" value="SC-10A7A97674D2" />
+          <div class="mb-2 mt-2">
+            <altcha-widget
+                  id="altcha"
+                  challengeurl="/v1/challenge"
+                  hidelogo
+                  hidefooter
+                  auto="onload"
+                  style="display:none"
+              ></altcha-widget>
+          </div>
+        </form>
+      </div>
+
+      <p id="security-review" class="message"></p>
+
+      <hr class="divider" aria-hidden="true" />
+      <div class="panel-footer" style="display:flex;justify-content:space-between;align-items:center;gap:0.75rem;margin-top:0.75rem">
+        <div class="powered" aria-hidden="false" style="display:flex;align-items:center;gap:0.5rem">
+          <img src="https://filestore.fortinet.com/fortiguard/static/images/fortiguard-logo-dark-theme.svg" alt="FortiGuard Labs" style="height:24px;display:block" />
+        </div>
+
+        <div id="screen-id" class="screen-id" aria-live="polite">Screen ID: SC-10A7A97674D2</div>
+      </div>
+    </div>
+  </div>
+
+  <script nonce="c37dxmde7TQ+dqnGbkTrow==">
+    (function(){
+      function setDomainTitle(){
+        try{
+          var titleEl = document.getElementById('domain-title');
+          if(!titleEl) return;
+          titleEl.textContent = window.location.host || window.location.hostname || 'unknown host';
+        }catch(e){ /* ignore */ }
+      }
+
+      function setSecurityReview(){
+        try{
+          var reviewEl = document.getElementById('security-review');
+          if(!reviewEl) return;
+          var domain = window.location.host || window.location.hostname || 'this site';
+          reviewEl.textContent = domain + ' needs to review the security of your connection before proceeding.';
+        }catch(e){ /* ignore */ }
+      }
+
+      function setScreenId(){
+        try{
+          var el = document.getElementById('screen-id');
+          if(!el) return;
+          var id = null;
+          if (window.crypto && typeof crypto.randomUUID === 'function'){
+            id = crypto.randomUUID();
+          } else if (window.crypto && crypto.getRandomValues){
+            var bytes = crypto.getRandomValues(new Uint8Array(8));
+            id = Array.from(bytes).map(function(b){ return ('0'+b.toString(16)).slice(-2); }).join('').toUpperCase();
+            id = 'SC-' + id.slice(0,12);
+          } else {
+            id = 'SC-' + Math.random().toString(36).slice(2,12).toUpperCase();
+          }
+          el.textContent = 'Screen ID: ' + id;
+        }catch(e){ /* ignore */ }
+      }
+
+      function ready(){
+        setDomainTitle();
+        setSecurityReview();
+        //setScreenId();
+      }
+
+      if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', ready);
+      else ready();
+    })();
+
+    // When the altcha widget reports verified, ensure the token is included in the form and submit.
+    (function(){
+      function submitViaFetchFallback(form){
+        try{
+          var url = form.action || window.location.href;
+          fetch(url, {method:'POST', credentials:'same-origin', headers:{'Content-Type':'application/x-www-form-urlencoded'}, body: ''})
+            .then(function(res){
+              if(res.redirected) window.location.href = res.url;
+              else window.location.replace(url);
+            })
+            .catch(function(e){ console.error('fetch fallback failed', e); });
+        }catch(e){ console.error('fetch fallback threw', e); }
+      }
+
+      function markCaptchaVerified(){
+        try{ sessionStorage.setItem('captcha_security_check', '1'); }catch(e){}
+      }
+
+      function relocateHistoryToReferrer(){
+        try{
+          var ref = document.referrer;
+          if(ref && ref !== window.location.href){
+            var refUrl = new URL(ref, window.location.href);
+            if(refUrl.origin === window.location.origin){
+              history.replaceState(history.state, '', refUrl.href);
+            }
+          }
+        }catch(e){ console.error('history relocate failed', e); }
+      }
+
+      function ensureAltchaField(token){
+        try{
+          var f = document.getElementById('security-form');
+          if(!f) return;
+          var existing = f.querySelector('input[name="altcha"]');
+          if(existing){ existing.value = token || existing.value; return; }
+          var inp = document.createElement('input');
+          inp.type = 'hidden';
+          inp.name = 'altcha';
+          inp.value = token || '';
+          f.appendChild(inp);
+        }catch(e){ console.error('ensureAltchaField error', e); }
+      }
+
+      function readTokenFromWidget(alt){
+        if(!alt) return null;
+        var selectors = [
+          'input[type="hidden"][name="altcha"]',
+          'input[name="altcha"]',
+          'input[type="hidden"][name*="altcha"]',
+          'input[data-altcha]',
+          'input[name*="altcha"]'
+        ];
+
+        function isLikelyToken(val){
+          if(!val || typeof val !== 'string') return false;
+          val = val.trim();
+          if(val.length < 30) return false;
+          // base64-ish check
+          if(/^[A-Za-z0-9_\-]+=*$/.test(val)) return true;
+          // or contains JSON-like fields
+          if(val.indexOf('"')!==-1 || val.indexOf('{')!==-1) return true;
+          return false;
+        }
+
+        function findIn(root){
+          if(!root || !root.querySelector) return null;
+          for(var i=0;i<selectors.length;i++){
+            try{
+              var el = root.querySelector(selectors[i]);
+              if(!el) continue;
+              // skip checkbox inputs
+              var t = (el.getAttribute && el.getAttribute('type')) || el.type || '';
+              if(t && t.toLowerCase() === 'checkbox') continue;
+              // prefer elements whose value looks like a token
+              var v = el.value || el.getAttribute('value') || el.getAttribute('data-value') || '';
+              if(isLikelyToken(v)) return el;
+              // otherwise return hidden inputs even if pattern doesn't match
+              if(t && t.toLowerCase() === 'hidden') return el;
+              // otherwise keep as fallback
+              return el;
+            }catch(e){/* ignore */}
+          }
+          return null;
+        }
+
+        // 1) try inside the widget element
+        var tokenEl = findIn(alt);
+        // 2) try inside shadowRoot if available
+        if(!tokenEl){
+          try{ if(alt.shadowRoot) tokenEl = findIn(alt.shadowRoot); }catch(e){}
+        }
+        // 3) try document-wide (some implementations render inputs outside the custom element)
+        if(!tokenEl){
+          try{
+            var docCandidate = document.querySelector('input[type="hidden"][name="altcha"]') || document.querySelector('input[name="altcha"]') || document.querySelector('input[type="hidden"][name*="altcha"]') || document.querySelector('input[data-altcha]');
+            tokenEl = docCandidate;
+            if(tokenEl){
+              // avoid checkboxes
+              var tt = (tokenEl.getAttribute && tokenEl.getAttribute('type')) || tokenEl.type || '';
+              if(tt && tt.toLowerCase() === 'checkbox') tokenEl = null;
+            }
+          }catch(e){}
+        }
+        // 4) try widget API (if provided)
+        if(!tokenEl){
+          try{
+            if(typeof alt.getConfiguration === 'function'){
+              var cfg = alt.getConfiguration();
+              if(cfg){
+                if(cfg.token) return cfg.token;
+                if(cfg.value) return cfg.value;
+                if(cfg.challenge) return cfg.challenge;
+              }
+            }
+          }catch(e){}
+        }
+
+        if(tokenEl){
+          return tokenEl.value || tokenEl.getAttribute('value') || tokenEl.getAttribute('data-value') || null;
+        }
+
+        // 5) fallback: attempt to extract from element HTML (last resort)
+        try{
+          var html = alt.innerHTML || '';
+          var m = html.match(/name=["']altcha["'][^>]*value=["']([^"']+)["']/);
+          if(m) return m[1];
+        }catch(e){}
+
+        return null;
+      }
+
+      function bindAlt(alt){
+        if(!alt) return;
+
+        alt.addEventListener('statechange', function(ev){
+          try{
+            if(!(ev && ev.detail && ev.detail.state === 'verified')) return;
+            
+            markCaptchaVerified();
+
+            var attempts = 0;
+            var maxAttempts = 8;
+            var delay = 200;
+
+            var tryReadAndSubmit = function(){
+              attempts++;
+              var token = readTokenFromWidget(alt);
+              if(token){
+                // Only use expiry provided by the challenge API (stored on the widget).
+                // Do NOT accept expiry parsed from the token itself per requirements.
+                var expiresEpoch = null;
+                try{
+                  if(alt && alt._challengeExpires) expiresEpoch = Math.floor(Number(alt._challengeExpires));
+                }catch(e){}
+
+                console.log('Parsed token expiry epoch (from API):', expiresEpoch);
+
+                // Only store `altcha` cookie when the API provided an expiry.
+                try{
+                  if(expiresEpoch){
+                    setCookie('security_check_altcha', token, 7, expiresEpoch);
+                  }else{
+                    console.warn('No API-provided expires_at; skipping setting security_check_altcha cookie');
+                  }
+                }catch(e){ console.error('setCookie error', e); }
+
+                ensureAltchaField(token);
+
+                var f = document.getElementById('security-form');
+
+                relocateHistoryToReferrer();
+
+                try{
+                  if(typeof f.requestSubmit === 'function'){
+                    f.requestSubmit();
+                  }else{
+                    f.submit();
+                  }
+                }catch(err){
+                  console.error('form submit failed, using fetch fallback', err);
+                  submitViaFetchFallback(f);
+                }
+                return;
+              }
+
+              if(attempts < maxAttempts){
+                setTimeout(tryReadAndSubmit, delay);
+              }else{
+                console.warn('Altcha token not found after retries; submitting without token');
+                var f2 = document.getElementById('security-form');
+                relocateHistoryToReferrer();
+                try{ if(typeof f2.requestSubmit === 'function') f2.requestSubmit(); else f2.submit(); }
+                catch(e){ submitViaFetchFallback(f2); }
+              }
+            };
+
+            tryReadAndSubmit();
+          }catch(e){ console.error('statechange handler error', e); }
+        });
+      }
+
+      // Parse expiry timestamp from a token or string. Accepts formats like
+      // - embedded query param: "...expires=1772572760"
+      // - JSON string containing "expires"
+      function parseExpiryFromToken(token){
+        if(!token) return null;
+        try{
+          // try JSON
+          if((token.indexOf('{')!==-1 || token.indexOf('"')!==-1)){
+            try{
+              var j = JSON.parse(token);
+              if(j && j.expires) return Math.floor(Number(j.expires));
+            }catch(e){}
+          }
+
+          // try query param style
+          var m = token.match(/expires=(\d{9,})/);
+          if(m) return parseInt(m[1],10);
+
+          // try float seconds in token
+          var m2 = token.match(/(\d{9,}\.\d+)/);
+          if(m2) return Math.floor(Number(m2[1]));
+        }catch(e){}
+        return null;
+      }
+
+      // Set a cookie; `expiresEpoch` can be seconds or milliseconds since epoch.
+      function setCookie(name, value, days, expiresEpoch){
+        try{
+          var parts = [encodeURIComponent(name) + '=' + encodeURIComponent(value)];
+          var expiresDate = null;
+          if(expiresEpoch){
+            var num = Number(expiresEpoch);
+            if(!isNaN(num)){
+              // if epoch looks like seconds, convert to ms
+              if(num < 1e12) num = num * 1000;
+              expiresDate = new Date(num);
+            }
+          }
+          if(!expiresDate && typeof days === 'number'){
+            expiresDate = new Date(Date.now() + (days*24*60*60*1000));
+          }
+          if(expiresDate) parts.push('Expires=' + expiresDate.toUTCString());
+          parts.push('Path=/');
+          // mark Secure if on HTTPS
+          if(location && location.protocol && location.protocol.indexOf('https')===0) parts.push('Secure');
+          parts.push('SameSite=Lax');
+          document.cookie = parts.join('; ');
+        }catch(e){ console.error('setCookie error', e); }
+      }
+
+      // Read cookie value by name
+      function getCookie(name){
+        try{
+          var re = new RegExp('(?:^|; )' + name.replace(/([.$?*|{}()\[\]\\\/\+^])/g,'\\$1') + '=([^;]*)');
+          var m = document.cookie.match(re);
+          return m ? decodeURIComponent(m[1]) : null;
+        }catch(e){ return null; }
+      }
+
+      // If an `altcha` cookie already exists, use it to submit the form immediately
+      (function submitFromCookieIfPresent(){
+        try{
+          var cookieToken = getCookie('security_check_altcha');
+          if(!cookieToken) return;
+          ensureAltchaField(cookieToken);
+          var f = document.getElementById('security-form');
+          if(!f) return;
+          markCaptchaVerified();
+          relocateHistoryToReferrer();
+          try{
+            if(typeof f.requestSubmit === 'function') f.requestSubmit();
+            else f.submit();
+          }catch(e){
+            console.error('form submit from cookie failed, using fetch fallback', e);
+            submitViaFetchFallback(f);
+          }
+        }catch(e){ /* ignore */ }
+      })();
+
+      // Wait for altcha element to be present (widget may upgrade asynchronously)
+      function waitForAlt(){
+        var alt = document.getElementById('altcha');
+        if(alt){
+          try{
+            if(!alt.customfetch){
+              alt.customfetch = async function(url){
+                // If an altcha cookie already exists, do not call challenge API.
+                try{
+                  var cookieToken = getCookie('security_check_altcha');
+                  if(cookieToken){
+                    var body = JSON.stringify({ from_cookie: true });
+                    return new Response(body, { headers: { 'Content-Type': 'application/json' }, status: 200 });
+                  }
+                }catch(e){ /* ignore cookie read errors and continue */ }
+
+                const challengeUrl = '/v1/challenge';
+                try{
+                  const resp = await fetch(challengeUrl, { credentials: 'same-origin' });
+
+                  // Only reveal the widget when the challenge fetch succeeded.
+                  try{
+                    if(resp && resp.ok){
+                      if(alt && alt.style){
+                        // Theme green for the checked box - altcha reads it from here.
+                        alt.style.setProperty('--altcha-color-success', '#3cb17e');
+                        alt.style.display = '';
+                      }
+                    }
+                  }catch(e){ /* ignore */ }
+
+                  // attempt to read JSON to capture `expires_at` and store it on the widget
+                  try{
+                    const json = await resp.clone().json();
+                    // Only accept explicit `expires_at` from the challenge API.
+                    if(json && json.expires_at){
+                      var maybe = Math.floor(Number(json.expires_at));
+                      if(!isNaN(maybe)) alt._challengeExpires = maybe;
+                    }
+                  }catch(e){ /* ignore JSON parse failures */ }
+                  return resp;
+                }catch(err){
+                  console.error('widget.customfetch failed, falling back to default fetch for', url, err);
+                  try{ return await fetch(url); }catch(e){ return Promise.reject(e); }
+                }
+              };
+            }
+          }catch(e){ console.error('set customfetch failed', e); }
+
+          bindAlt(alt);
+        }else setTimeout(waitForAlt, 200);
+      }
+
+      try{ waitForAlt(); }catch(e){ console.error('failed to bind altcha listener', e); }
+    })();
+  </script>
+</body>
+</html>

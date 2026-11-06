@@ -224,14 +224,33 @@ class OSVAdapter:
         for aff in vuln.get("affected", []) or []:
             pkg = aff.get("package", {}) or {}
             if pkg.get("ecosystem") and pkg.get("name"):
-                packages.append({"ecosystem": pkg["ecosystem"], "name": pkg["name"]})
-        refs = [{"type": r.get("type", "WEB"), "url": r.get("url", "")} for r in vuln.get("references", []) or []]
+                ranges = []
+                for r in aff.get("ranges", []) or []:
+                    if not isinstance(r, dict): continue
+                    ranges.append({"type": r.get("type"), "repo": r.get("repo"),
+                                   "events": [e for e in r.get("events", []) if isinstance(e, dict)],
+                                   "database_specific": r.get("database_specific")})
+                packages.append({"ecosystem": pkg["ecosystem"], "name": pkg["name"],
+                                 "purl": pkg.get("purl"), "versions": aff.get("versions", []),
+                                 "ranges": ranges, "ecosystem_specific": aff.get("ecosystem_specific"),
+                                 "database_specific": aff.get("database_specific")})
+        refs = [{"type": str(r.get("type", "web")).lower(), "url": r.get("url", "")} for r in vuln.get("references", []) or [] if isinstance(r, dict)]
+        severity = []
+        for item in vuln.get("severity", []) or []:
+            if isinstance(item, dict):
+                severity.append({"type": item.get("type") or item.get("score", "").split(":", 1)[0],
+                                 "score": item.get("score")})
+        cwe_ids, cwe_names = [], []
+        for item in vuln.get("database_specific", {}).get("cwe_ids", []) if isinstance(vuln.get("database_specific"), dict) else []:
+            cwe_ids.append(item)
         return SourceRecord(source_record_id=vuln["id"], payload={"id": vuln["id"], "summary": vuln.get("summary", ""),
             "details": vuln.get("details", ""), "cve_id": next((a for a in aliases if isinstance(a, str) and a.startswith("CVE-")), None),
             "title": vuln.get("summary") or vuln["id"], "description": vuln.get("details") or vuln.get("summary") or vuln["id"],
             "published_at": published, "modified_at": modified, "published": published, "modified": modified,
             "aliases": aliases, "affected": packages, "packages": packages,
-            "severity": vuln.get("severity", []), "references": refs},
+            "severity": severity, "references": refs, "related": vuln.get("related", []),
+            "cwe_ids": cwe_ids, "cwe_names": cwe_names, "withdrawn": vuln.get("withdrawn"),
+            "database_specific": vuln.get("database_specific", {}), "credits": vuln.get("credits", [])},
             metadata={"source": "osv", "published_at": published, "modified_at": modified})
 
 
@@ -264,7 +283,8 @@ class OSVTransport:
         except ImportError:
             return {"status_code": 500, "error": "httpx not installed"}
 
-        async with httpx.AsyncClient() as client:
+        from apps.vulntell.sources.http import client_kwargs
+        async with httpx.AsyncClient(**client_kwargs()) as client:
             try:
                 # The public OSV API exposes querybatch as POST.  For
                 # compatibility with the adapter's paging contract, callers

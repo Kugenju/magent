@@ -1,8 +1,7 @@
 """VulnTell Live 适配器工厂（阶段 5，Task 5C.1，阶段 6/7/8 扩展）。
 
-根据配置创建对应的 live adapter，支持 NVD、CISA KEV、OSV、GitHub Advisory、EUVD、
-Microsoft MSRC、Red Hat、Ubuntu、Debian、JVN。
-CNVD、CERT/CC、Cisco、Fortinet、Palo Alto、Exploit-DB 暂不支持 live 模式。
+根据配置创建全部已注册情报源的 live adapter。来源访问失败时由批次采集器
+记录错误并继续其他来源，不会丢失成功来源的数据。
 
 约束：
 - 默认不联网，需要显式传入 transport
@@ -16,6 +15,12 @@ from typing import Optional
 
 from apps.vulntell.config import SOURCE_AVAILABILITY, VulnTellConfig
 from apps.vulntell.sources.cisa_kev import CISAKEVAdapter, CISAKEVConfig
+from apps.vulntell.sources.cnvd import CNVDAdapter, CNVDConfig, CNVDTransport
+from apps.vulntell.sources.certcc import CERTCCAdapter, CERTCCConfig, CERTCCTransport
+from apps.vulntell.sources.cisco import CiscoAdapter, CiscoConfig, CiscoTransport
+from apps.vulntell.sources.fortinet import FortinetAdapter, FortinetConfig, FortinetTransport
+from apps.vulntell.sources.paloalto import PaloAltoAdapter, PaloAltoConfig, PaloAltoTransport
+from apps.vulntell.sources.exploitdb import ExploitDBAdapter, ExploitDBConfig, ExploitDBTransport
 from apps.vulntell.sources.debian import DebianAdapter, DebianConfig
 from apps.vulntell.sources.euvd import EUVDAdapter, EUVDConfig
 from apps.vulntell.sources.github_advisory import GitHubAdvisoryAdapter, GitHubAdvisoryConfig
@@ -54,7 +59,7 @@ class LiveSourceAdapter:
         # observed_at 的一个微秒导致真实 API 永远返回空页。
         end = observed_at if observed_at.tzinfo else observed_at.replace(tzinfo=timezone.utc)
         req = SourceRequest(source=getattr(self, "source", "nvd"), dataset_id=dataset_id,
-                            dataset_version=dataset_version, window_start=end - timedelta(days=30),
+                            dataset_version=dataset_version, window_start=end - timedelta(days=730),
                             window_end=end)
         out=[]; cursor=None
         while True:
@@ -105,6 +110,12 @@ def create_live_adapter(
 
     extra = {
         "osv": (OSVAdapter, OSVConfig, OSVTransport),
+        "cnvd": (CNVDAdapter, CNVDConfig, CNVDTransport),
+        "certcc": (CERTCCAdapter, CERTCCConfig, CERTCCTransport),
+        "cisco": (CiscoAdapter, CiscoConfig, CiscoTransport),
+        "fortinet": (FortinetAdapter, FortinetConfig, FortinetTransport),
+        "paloalto": (PaloAltoAdapter, PaloAltoConfig, PaloAltoTransport),
+        "exploitdb": (ExploitDBAdapter, ExploitDBConfig, ExploitDBTransport),
         "github_advisory": (GitHubAdvisoryAdapter, GitHubAdvisoryConfig, GitHubAdvisoryTransport),
         "euvd": (EUVDAdapter, EUVDConfig, EUVDTransport), "msrc": (MSRCAdapter, MSRCConfig, MSRCTransport),
         "redhat": (RedHatAdapter, RedHatConfig, RedHatTransport), "ubuntu": (UbuntuAdapter, UbuntuConfig, UbuntuTransport),
@@ -112,7 +123,11 @@ def create_live_adapter(
     }
     if config.source in extra:
         cls, cfg, tr = extra[config.source]
-        adapter = cls(config=cfg(), transport=transport or tr())
+        kwargs = {"endpoint": config.get_live_endpoint() or cfg.endpoint,
+                  "timeout_seconds": config.timeout_seconds}
+        if config.source == "cnvd":
+            kwargs["api_key"] = config.get_api_key()
+        adapter = cls(config=cfg(**kwargs), transport=transport or tr())
         adapter.source = config.source
         return adapter
 

@@ -51,7 +51,7 @@ class BatchManifest(BaseModel):
     dataset_version: str
     window_start: str  # RFC 3339 UTC
     window_end: str  # RFC 3339 UTC
-    cosv_schema_version: str = "1.0"
+    cosv_schema_version: str = "1.0.0"
     cosv_parser_version: str = "1.0"
     created_at: str = Field(
         default_factory=lambda: datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")

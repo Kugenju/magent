@@ -12,14 +12,14 @@ from typing import Any
 
 from pydantic import ValidationError
 
-from apps.vulntell.cosv.models import COSVDocument
+from apps.vulntell.cosv.models import COSVDocument, SUPPORTED_COSV_SCHEMA_VERSIONS
 
 # RFC 3339 UTC 时间格式
 _RFC3339_PATTERN = re.compile(
     r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?Z$"
 )
 
-# COSV 1.0 JSON Schema（简化版）
+# COSV-Schema 1.0.0 JSON Schema
 COSV_SCHEMA = {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
     "title": "COSV Document",
@@ -30,7 +30,7 @@ COSV_SCHEMA = {
         "schema_version": {
             "type": "string",
             "description": "COSV schema version",
-            "const": "1.0",
+            "const": "1.0.0",
         },
         "id": {
             "type": "string",
@@ -103,10 +103,7 @@ COSV_SCHEMA = {
             "items": {
                 "type": "object",
                 "properties": {
-                    "type": {
-                        "type": "string",
-                        "enum": ["CVSS_V2", "CVSS_V3", "CVSS_V31", "CVSS_V4"],
-                    },
+                    "type": {"type": "string"},
                     "score": {"type": ["string", "null"]},
                     "vector": {"type": ["string", "null"]},
                 },
@@ -118,10 +115,7 @@ COSV_SCHEMA = {
                 "type": "object",
                 "required": ["type", "url"],
                 "properties": {
-                    "type": {
-                        "type": "string",
-                        "enum": ["ADVISORY", "WEB", "FIX", "REPORT", "PACKAGE"],
-                    },
+                    "type": {"type": "string"},
                     "url": {"type": "string"},
                 },
             },
@@ -164,7 +158,7 @@ def validate_cosv_record(record: dict[str, Any]) -> tuple[bool, list[str]]:
         return False, errors
 
     # 2. schema_version 校验
-    if record.get("schema_version") != "1.0":
+    if record.get("schema_version") not in SUPPORTED_COSV_SCHEMA_VERSIONS:
         errors.append(f"invalid schema_version: {record.get('schema_version')}")
 
     # 3. id 校验
@@ -181,6 +175,11 @@ def validate_cosv_record(record: dict[str, Any]) -> tuple[bool, list[str]]:
     if published is not None and published != "":
         if not _RFC3339_PATTERN.match(published):
             errors.append(f"published must be RFC 3339 UTC: {published}")
+
+    withdrawn = record.get("withdrawn")
+    if withdrawn is not None and withdrawn != "":
+        if not _RFC3339_PATTERN.match(withdrawn):
+            errors.append(f"withdrawn must be RFC 3339 UTC: {withdrawn}")
 
     # 6. affected 数组校验
     affected = record.get("affected", [])
@@ -199,6 +198,18 @@ def validate_cosv_record(record: dict[str, Any]) -> tuple[bool, list[str]]:
                     errors.append(f"affected[{i}].package.name is required")
                 if "ecosystem" not in package or not package["ecosystem"]:
                     errors.append(f"affected[{i}].package.ecosystem is required")
+            for j, version_range in enumerate(item.get("ranges", []) or []):
+                if not isinstance(version_range, dict):
+                    continue
+                range_type = version_range.get("type")
+                if range_type and str(range_type).upper() not in {"ECOSYSTEM", "GIT", "SEMVER"}:
+                    errors.append(f"affected[{i}].ranges[{j}].type is invalid")
+                for k, event in enumerate(version_range.get("events", []) or []):
+                    if not isinstance(event, dict):
+                        continue
+                    endpoints = [x for x in ("introduced", "fixed", "last_affected", "limit") if event.get(x) is not None]
+                    if len(endpoints) != 1:
+                        errors.append(f"affected[{i}].ranges[{j}].events[{k}] must contain exactly one endpoint")
 
     # 7. severity 数组校验
     severity = record.get("severity", [])
@@ -211,10 +222,10 @@ def validate_cosv_record(record: dict[str, Any]) -> tuple[bool, list[str]]:
                 errors.append(f"severity[{i}] must be an object")
                 continue
             stype = item.get("type")
-            if stype not in valid_severity_types:
-                errors.append(
-                    f"severity[{i}].type must be one of {valid_severity_types}"
-                )
+            if not isinstance(stype, str) or not stype.strip():
+                errors.append(f"severity[{i}].type must be a non-empty string")
+            if item.get("score_num") is not None and not isinstance(item.get("score_num"), str):
+                errors.append(f"severity[{i}].score_num must be a string")
 
     # 8. references 数组校验
     references = record.get("references", [])
@@ -227,13 +238,17 @@ def validate_cosv_record(record: dict[str, Any]) -> tuple[bool, list[str]]:
                 errors.append(f"references[{i}] must be an object")
                 continue
             rtype = item.get("type")
-            if rtype not in valid_ref_types:
-                errors.append(
-                    f"references[{i}].type must be one of {valid_ref_types}"
-                )
+            if not isinstance(rtype, str) or not rtype.strip():
+                errors.append(f"references[{i}].type must be a non-empty string")
             url = item.get("url")
             if not url or not isinstance(url, str):
                 errors.append(f"references[{i}].url is required")
+
+    confirm_type = record.get("confirm_type")
+    if confirm_type is not None and confirm_type not in {
+        "manual_confirmed", "algorithm_confirmed", "double_confirmed"
+    }:
+        errors.append("confirm_type is invalid")
 
     # 9. Pydantic 模型校验
     try:

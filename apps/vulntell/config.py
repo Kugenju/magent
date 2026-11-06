@@ -25,6 +25,7 @@ _KNOWN_SOURCES_FIXTURE_ONLY: FrozenSet[str] = frozenset()
 _LIVE_ENDPOINTS: dict[str, str] = {
     "nvd": "https://services.nvd.nist.gov/rest/json/cves/2.0",
     "cisa_kev": "https://www.cisa.gov/sites/default/files/feeds/known_exploited_vulnerabilities.json",
+    "cnvd": "https://www.cnvd.org.cn/flaw/list",
     "osv": "https://osv.dev/list",
     "github_advisory": "https://api.github.com/advisories",
     "euvd": "https://euvd.enisa.europa.eu/api",
@@ -35,16 +36,16 @@ _LIVE_ENDPOINTS: dict[str, str] = {
     "jvn": "https://jvndb.jvn.jp/myjvnxmlfeed",
     "certcc": "https://www.kb.cert.org/vuls/api/vulnnotes",
     "cisco": "https://tools.cisco.com/security/center/servicesxml",
-    "fortinet": "https://www.fortinet.com/fortiguard/psirt",
-    "paloalto": "https://security.paloaltonetworks.com/api/v1/advisories",
-    "exploitdb": "https://www.exploit-db.com/api",
+    "fortinet": "https://www.fortiguard.com/psirt",
+    "paloalto": "https://security.paloaltonetworks.com/rss.xml",
+    "exploitdb": "https://gitlab.com/exploit-database/exploitdb/-/raw/main/files_exploits.csv",
 }
 
 # 来源可用性状态
 SOURCE_AVAILABILITY: dict[str, str] = {
     "nvd": "available",
     "cisa_kev": "available",
-    "cnvd": "manual_required",  # 官方 API 不可用
+    "cnvd": "available",  # 官方接口可能受 WAF 限制，失败会记录在批次清单
     "osv": "available",
     "github_advisory": "available",
     "euvd": "available",
@@ -53,11 +54,11 @@ SOURCE_AVAILABILITY: dict[str, str] = {
     "ubuntu": "available",
     "debian": "available",
     "jvn": "available",
-    "certcc": "manual_required",  # 需要 API 密钥
-    "cisco": "manual_required",  # 需要特殊认证
-    "fortinet": "manual_required",  # 需要特殊认证
-    "paloalto": "manual_required",  # 需要特殊认证
-    "exploitdb": "manual_required",  # 需要特殊认证
+    "certcc": "available",
+    "cisco": "available",
+    "fortinet": "available",
+    "paloalto": "available",
+    "exploitdb": "available",
 }
 
 
@@ -77,7 +78,7 @@ class VulnTellConfig:
     live: bool = False
     mode: Optional[str] = None  # fixture/live；未指定时由 live 推导
     source: Optional[str] = None  # nvd, cisa_kev, cnvd
-    window_days: int = 30  # 默认回溯天数
+    window_days: int = 730  # 默认回溯两年（半开 UTC 窗口）
     endpoint: Optional[str] = None
     endpoint_allowlist: tuple[str, ...] = tuple(_LIVE_ENDPOINTS.values())
     timeout_seconds: float = 30.0
@@ -185,7 +186,7 @@ class VulnTellConfig:
         trace: Optional[str] = None,
         live: bool = False,
         source: Optional[str] = None,
-        window_days: int = 30,
+        window_days: int = 730,
         mode: Optional[str] = None,
         endpoint: Optional[str] = None,
         endpoint_allowlist: Optional[Sequence[str]] = None,

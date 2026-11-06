@@ -291,7 +291,8 @@ class MSRCTransport:
         except ImportError:
             return {"status_code": 500, "error": "httpx not installed"}
 
-        async with httpx.AsyncClient() as client:
+        from apps.vulntell.sources.http import client_kwargs
+        async with httpx.AsyncClient(**client_kwargs()) as client:
             try:
                 if endpoint.rstrip("/").endswith("/updates"):
                     # The updates collection is only an index. Follow every

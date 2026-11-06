@@ -41,7 +41,7 @@ class TestCOSVModels:
             id="CVE-2024-0001",
             modified="2024-01-01T00:00:00Z",
         )
-        assert doc.schema_version == "1.0"
+        assert doc.schema_version == "1.0.0"
         assert doc.id == "CVE-2024-0001"
         assert doc.modified == "2024-01-01T00:00:00Z"
 
@@ -61,14 +61,15 @@ class TestCOSVModels:
                         VersionRange(
                             type="semver",
                             events=[
-                                VersionEvent(introduced="0.0.0", fixed="1.0.0"),
+                                VersionEvent(introduced="0.0.0"),
+                                VersionEvent(fixed="1.0.0"),
                             ],
                         )
                     ],
                 )
             ],
             severity=[
-                Severity(type=SeverityType.CVSS_V31, score="9.8", vector="CVSS:3.1/AV:N")
+                Severity(type=SeverityType.CVSS_V31, score="CVSS:3.1/AV:N", score_num="9.8")
             ],
             references=[
                 Reference(type=ReferenceType.ADVISORY, url="https://example.com/advisory"),
@@ -96,7 +97,7 @@ class TestCOSVSchema:
     def test_validate_valid_record(self):
         """测试有效记录校验。"""
         record = {
-            "schema_version": "1.0",
+            "schema_version": "1.0.0",
             "id": "CVE-2024-0001",
             "modified": "2024-01-01T00:00:00Z",
         }
@@ -114,7 +115,7 @@ class TestCOSVSchema:
     def test_validate_invalid_modified_format(self):
         """测试无效的 modified 格式。"""
         record = {
-            "schema_version": "1.0",
+            "schema_version": "1.0.0",
             "id": "CVE-2024-0001",
             "modified": "2024-01-01",
         }
@@ -131,8 +132,8 @@ class TestCOSVSchema:
     def test_validate_valid_file(self):
         """测试有效 JSONL 文件。"""
         with tempfile.NamedTemporaryFile(mode="w", suffix=".jsonl", delete=False) as f:
-            f.write('{"schema_version":"1.0","id":"CVE-2024-0001","modified":"2024-01-01T00:00:00Z"}\n')
-            f.write('{"schema_version":"1.0","id":"CVE-2024-0002","modified":"2024-01-02T00:00:00Z"}\n')
+            f.write('{"schema_version":"1.0.0","id":"CVE-2024-0001","modified":"2024-01-01T00:00:00Z"}\n')
+            f.write('{"schema_version":"1.0.0","id":"CVE-2024-0002","modified":"2024-01-02T00:00:00Z"}\n')
             temp_path = f.name
 
         try:
@@ -192,7 +193,7 @@ class TestCOSVSerializer:
 
     def test_deserialize_cosv(self):
         """测试反序列化。"""
-        line = '{"schema_version":"1.0","id":"CVE-2024-0001","modified":"2024-01-01T00:00:00Z"}'
+        line = '{"schema_version":"1.0.0","id":"CVE-2024-0001","modified":"2024-01-01T00:00:00Z"}'
         doc = deserialize_cosv(line)
         assert doc is not None
         assert doc.id == "CVE-2024-0001"
@@ -275,7 +276,7 @@ class TestCOSVMapper:
         })
         doc = observation_to_cosv(obs)
         assert doc.affected[0].package.name == "demo"
-        assert doc.severity[0].score == "7.5"
+        assert doc.severity[0].score_num == "7.5"
 
 
 class TestCredentialLeakage:

@@ -45,9 +45,9 @@ def _extract_severity(normalized: dict[str, Any]) -> list[Severity]:
             SeverityType.CVSS_V3 if version.startswith("3") else SeverityType.CVSS_V2
         )
         severity.append(Severity(
-            type=severity_type,
-            score=str(cvss.get("score")) if cvss.get("score") is not None else None,
-            vector=cvss.get("vector"),
+            type=severity_type.value,
+            score=cvss.get("vector"),
+            score_num=str(cvss.get("score")) if cvss.get("score") is not None else None,
         ))
 
     # 检查 cvss3
@@ -56,9 +56,9 @@ def _extract_severity(normalized: dict[str, Any]) -> list[Severity]:
         if isinstance(cvss3, dict):
             vector = cvss3.get("vectorString") or cvss3.get("vector")
             score = str(cvss3.get("baseScore", ""))
-            severity.append(Severity(type=SeverityType.CVSS_V31, score=score, vector=vector))
+            severity.append(Severity(type=SeverityType.CVSS_V31.value, score=vector, score_num=score))
         elif isinstance(cvss3, str):
-            severity.append(Severity(type=SeverityType.CVSS_V31, vector=cvss3))
+            severity.append(Severity(type=SeverityType.CVSS_V31.value, score=cvss3))
 
     # 检查 cvss2
     cvss2 = normalized.get("cvss2")
@@ -66,9 +66,9 @@ def _extract_severity(normalized: dict[str, Any]) -> list[Severity]:
         if isinstance(cvss2, dict):
             vector = cvss2.get("vectorString") or cvss2.get("vector")
             score = str(cvss2.get("baseScore", ""))
-            severity.append(Severity(type=SeverityType.CVSS_V2, score=score, vector=vector))
+            severity.append(Severity(type=SeverityType.CVSS_V2.value, score=vector, score_num=score))
         elif isinstance(cvss2, str):
-            severity.append(Severity(type=SeverityType.CVSS_V2, vector=cvss2))
+            severity.append(Severity(type=SeverityType.CVSS_V2.value, score=cvss2))
 
     # OSV/GitHub/MSRC 等来源使用 severity 数组；不要因字段名不同而丢弃。
     for item in normalized.get("severity", []) or []:
@@ -86,7 +86,7 @@ def _extract_severity(normalized: dict[str, Any]) -> list[Severity]:
         else:
             stype = SeverityType.CVSS_V3
         if score is not None or vector:
-            severity.append(Severity(type=stype, score=str(score) if score is not None else None, vector=vector))
+            severity.append(Severity(type=stype.value, score=vector, score_num=str(score) if score is not None else None))
 
     return severity
 
@@ -135,13 +135,14 @@ def _extract_affected(normalized: dict[str, Any]) -> list[Affected]:
                         events = []
                         for e in r.get("events", []):
                             if isinstance(e, dict):
-                                events.append(VersionEvent(
-                                    introduced=e.get("introduced"),
-                                    fixed=e.get("fixed"),
-                                    last_affected=e.get("last_affected"),
-                                    limit=e.get("limit"),
-                                ))
-                        ranges.append(VersionRange(type=r.get("type"), events=events))
+                                for endpoint in ("introduced", "fixed", "last_affected", "limit"):
+                                    if e.get(endpoint) is not None:
+                                        events.append(VersionEvent(**{endpoint: e[endpoint]}))
+                        if not events: continue
+                        ranges.append(VersionRange(
+                            type=r.get("type") or "ECOSYSTEM", repo=r.get("repo"), events=events,
+                            database_specific=r.get("database_specific"),
+                        ))
 
                 versions = pkg.get("versions", [])
                 if isinstance(versions, list):
@@ -150,7 +151,14 @@ def _extract_affected(normalized: dict[str, Any]) -> list[Affected]:
                     versions = []
 
                 affected.append(Affected(
-                    package=Package(name=name, ecosystem=ecosystem),
+                    package=Package(
+                        name=name, ecosystem=ecosystem,
+                        purl=pkg.get("purl"), language=pkg.get("language"),
+                        repository=pkg.get("repository"),
+                        introduced_commits=pkg.get("introduced_commits", []),
+                        fixed_commits=pkg.get("fixed_commits", []),
+                        home_page=pkg.get("home_page"), edition=pkg.get("edition"),
+                    ),
                     ranges=ranges,
                     versions=versions,
                 ))
@@ -213,18 +221,27 @@ def observation_to_cosv(obs: SourceObservation) -> COSVDocument:
     published = _to_rfc3339_utc(obs.published_at)
 
     return COSVDocument(
-        schema_version="1.0",
+        schema_version="1.0.0",
         id=doc_id,
         modified=modified,
         published=published,
+        withdrawn=normalized.get("withdrawn"),
         aliases=aliases,
+        related=normalized.get("related", []),
+        cwe_ids=normalized.get("cwe_ids", normalized.get("cwe", [])),
+        cwe_names=normalized.get("cwe_names", []),
+        time_line=normalized.get("time_line", []),
         summary=summary,
         details=details,
         affected=_extract_affected(normalized),
         severity=_extract_severity(normalized),
         references=_extract_references(normalized),
+        patches_detail=normalized.get("patches_detail", []),
+        contributors=normalized.get("contributors", []),
+        confirm_type=normalized.get("confirm_type"),
         credits=normalized.get("credits", []),
-        database_specific=_extract_database_specific(obs, normalized),
+        database_specific={**_extract_database_specific(obs, normalized).model_dump(exclude_none=True),
+                           **(normalized.get("database_specific") or {})},
     )
 
 

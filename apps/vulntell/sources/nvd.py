@@ -334,9 +334,35 @@ class NVDAdapter:
         record_id = cve.get("id", "")
         descriptions = [d for d in cve.get("descriptions", []) if d.get("lang") == "en"][:1]
         metrics = cve.get("metrics", {}) or {}
-        metric = (metrics.get("cvssMetricV31") or metrics.get("cvssMetricV30") or metrics.get("cvssMetricV2") or [{}])[0]
+        metric = (metrics.get("cvssMetricV40") or metrics.get("cvssMetricV31") or metrics.get("cvssMetricV30") or metrics.get("cvssMetricV2") or [{}])[0]
         cvss_data = metric.get("cvssData", {}) if isinstance(metric, dict) else {}
-        return SourceRecord(source_record_id=record_id, payload={"id": record_id, "published": cve.get("published"), "lastModified": cve.get("lastModified"), "descriptions": descriptions, "cve_id": record_id, "title": descriptions[0].get("value") if descriptions else record_id, "description": descriptions[0].get("value") if descriptions else None, "published_at": cve.get("published"), "modified_at": cve.get("lastModified"), "cvss_score": cvss_data.get("baseScore"), "cvss_vector": cvss_data.get("vectorString"), "cvss_version": cvss_data.get("version")}, metadata={"source": "nvd", "published_at": cve.get("published"), "modified_at": cve.get("lastModified"), "window_slice": window_slice})
+        descriptions_all = cve.get("descriptions", []) or []
+        refs = [{"type": "web", "url": r.get("url"), "tags": r.get("tags", [])}
+                for r in cve.get("references", []) or [] if isinstance(r, dict) and r.get("url")]
+        weaknesses = []
+        for w in cve.get("weaknesses", []) or []:
+            for d in w.get("description", []) if isinstance(w, dict) else []:
+                if d.get("value"): weaknesses.append(d["value"])
+        configs = []
+        for node in cve.get("configurations", []) or []:
+            for n in node.get("nodes", []) if isinstance(node, dict) else []:
+                for match in n.get("cpeMatch", []) if isinstance(n, dict) else []:
+                    if match.get("criteria"):
+                        configs.append({"cpe": match.get("criteria"), "vulnerable": match.get("vulnerable"),
+                                        "version_start_including": match.get("versionStartIncluding"),
+                                        "version_start_excluding": match.get("versionStartExcluding"),
+                                        "version_end_including": match.get("versionEndIncluding"),
+                                        "version_end_excluding": match.get("versionEndExcluding")})
+        payload = {"id": record_id, "published": cve.get("published"), "lastModified": cve.get("lastModified"),
+                   "descriptions": descriptions_all, "cve_id": record_id,
+                   "title": descriptions[0].get("value") if descriptions else record_id,
+                   "description": descriptions[0].get("value") if descriptions else None,
+                   "published_at": cve.get("published"), "modified_at": cve.get("lastModified"),
+                   "cvss_score": cvss_data.get("baseScore"), "cvss_vector": cvss_data.get("vectorString"),
+                   "cvss_version": cvss_data.get("version"), "references": refs,
+                   "cwe": weaknesses, "affected": [{"name": x["cpe"], "ecosystem": "CPE", "versions": [], "ranges": []} for x in configs],
+                   "database_specific": {"source_identifier": cve.get("sourceIdentifier"), "vuln_status": cve.get("vulnStatus"), "cve_tags": cve.get("cveTags", [])}}
+        return SourceRecord(source_record_id=record_id, payload=payload, metadata={"source": "nvd", "published_at": cve.get("published"), "modified_at": cve.get("lastModified"), "window_slice": window_slice})
 
         # 检查 HTTP 状态码
         if response.get("status_code", 200) != 200:
@@ -504,7 +530,8 @@ class NVDTransport:
         if api_key:
             headers["apiKey"] = api_key
 
-        async with httpx.AsyncClient() as client:
+        from apps.vulntell.sources.http import client_kwargs
+        async with httpx.AsyncClient(**client_kwargs()) as client:
             try:
                 response = await client.get(
                     endpoint,

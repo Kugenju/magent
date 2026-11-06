@@ -112,7 +112,7 @@ async def run_vulntell(
     provider=None,
     live: bool = False,
     source: Optional[str] = None,
-    window_days: int = 30,
+    window_days: int = 730,
 ) -> VulnTellRunResult:
     """兼容便捷函数：构造配置并运行（默认 fixture 为 apps 内置）。"""
     config = VulnTellConfig(

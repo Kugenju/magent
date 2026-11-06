@@ -224,6 +224,7 @@ class GitHubAdvisoryAdapter:
                         "description": description,
                         "published_at": published_at,
                         "updated_at": updated_at,
+                        "modified_at": updated_at,
                         "severity": severity,
                         "cvss_score": cvss_score,
                         "cvss_vector": cvss_vector,
@@ -232,6 +233,12 @@ class GitHubAdvisoryAdapter:
                         "packages": packages,
                         "references": references,
                         "cwes": cwes,
+                        "cwe": cwes,
+                        "cwe_ids": cwes,
+                        "database_specific": advisory.get("database_specific", {}),
+                        "withdrawn": advisory.get("withdrawn_at"),
+                        "published": published_at,
+                        "modified": updated_at,
                     },
                     metadata={
                         "source": "github_advisory",
@@ -317,7 +324,8 @@ class GitHubAdvisoryTransport:
         if token:
             headers["Authorization"] = f"Bearer {token}"
 
-        async with httpx.AsyncClient() as client:
+        from apps.vulntell.sources.http import client_kwargs
+        async with httpx.AsyncClient(**client_kwargs()) as client:
             try:
                 if endpoint.rstrip("/").endswith("/v1/query"):
                     response = await client.post(endpoint, json=params, headers=headers, timeout=timeout)

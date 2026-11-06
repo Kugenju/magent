@@ -164,6 +164,14 @@ class DebianAdapter:
                         "stable": stable,
                         "testing": testing,
                         "unstable": unstable,
+                        "cve_id": vuln_id if isinstance(vuln_id, str) and vuln_id.startswith("CVE-") else None,
+                        "title": f"Debian security issue {vuln_id or package_name}",
+                        "description": f"Debian security tracker entry for {package_name}",
+                        "affected": [{"name": package_name, "ecosystem": "Debian", "edition": scope,
+                                      "versions": [v for v in (stable, testing, unstable) if v], "ranges": []}],
+                        "severity": ([{"type": "Debian urgency", "level": urgency}] if urgency else []),
+                        "references": ([{"type": "advisory", "url": f"https://security-tracker.debian.org/tracker/{vuln_id}"}]
+                                       if vuln_id else []),
                     },
                     metadata={
                         "source": "debian",
@@ -222,7 +230,8 @@ class DebianTransport:
         except ImportError:
             return {"status_code": 500, "error": "httpx not installed"}
 
-        async with httpx.AsyncClient() as client:
+        from apps.vulntell.sources.http import client_kwargs
+        async with httpx.AsyncClient(**client_kwargs()) as client:
             try:
                 response = await client.get(
                     endpoint,

@@ -26,7 +26,10 @@ from apps.vulntell.sources.protocol import SourcePage, SourceRecord, SourceReque
 @dataclass
 class FortinetConfig:
     """Fortinet PSIRT 配置。"""
-    endpoint: str = "https://www.fortinet.com/fortiguard/psirt"
+    # Current public FortiGuard PSIRT page.  The former fortinet.com path
+    # permanently returned 404; this page is protected by an anti-bot
+    # challenge and may require a browser/session for actual advisory data.
+    endpoint: str = "https://www.fortiguard.com/psirt"
     timeout_seconds: float = 30.0
     page_size: int = 100
 
@@ -221,13 +224,24 @@ class FortinetTransport:
         except ImportError:
             return {"status_code": 500, "error": "httpx not installed"}
 
-        async with httpx.AsyncClient() as client:
+        from apps.vulntell.sources.http import client_kwargs
+        async with httpx.AsyncClient(**client_kwargs()) as client:
             try:
                 response = await client.get(
                     endpoint,
                     params=params,
+                    follow_redirects=True,
+                    headers={"User-Agent": "Mozilla/5.0 (compatible; VulnTell COSV collector)"},
                     timeout=timeout,
                 )
+                # FortiGuard's current PSIRT page rejects the legacy page /
+                # limit query parameters. Retry the public page without them.
+                if response.status_code == 422 and endpoint.rstrip("/").endswith("/psirt"):
+                    response = await client.get(endpoint, follow_redirects=True,
+                                                headers={"User-Agent": "Mozilla/5.0 (compatible; VulnTell COSV collector)"},
+                                                timeout=timeout)
+                if response.status_code == 200 and "json" not in response.headers.get("content-type", ""):
+                    return {"status_code": 503, "error": "FortiGuard PSIRT returned anti-bot HTML; browser/session required"}
                 return {
                     "status_code": response.status_code,
                     "data": response.json() if response.status_code == 200 else None,

@@ -51,7 +51,7 @@ def main() -> int:
     # Live 模式参数
     parser.add_argument("--live", action="store_true", help="启用 live 模式（需要网络）")
     parser.add_argument("--source", choices=["nvd", "cisa_kev", "cnvd", "osv", "github_advisory", "euvd", "msrc", "redhat", "ubuntu", "debian", "jvn", "certcc", "cisco", "fortinet", "paloalto", "exploitdb"], help="live 模式数据源")
-    parser.add_argument("--window-days", type=int, default=30, help="回溯天数（默认 30）")
+    parser.add_argument("--window-days", type=int, default=730, help="回溯天数（默认两年：730 天）")
     args = parser.parse_args()
 
     config = VulnTellConfig.from_cli_args(

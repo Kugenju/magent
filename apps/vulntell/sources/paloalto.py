@@ -26,7 +26,7 @@ from apps.vulntell.sources.protocol import SourcePage, SourceRecord, SourceReque
 @dataclass
 class PaloAltoConfig:
     """Palo Alto Networks PSIRT 配置。"""
-    endpoint: str = "https://security.paloaltonetworks.com/api/v1/advisories"
+    endpoint: str = "https://security.paloaltonetworks.com/rss.xml"
     timeout_seconds: float = 30.0
     page_size: int = 100
 
@@ -111,19 +111,19 @@ class PaloAltoAdapter:
         # 解析响应
         try:
             data = response.get("data", {})
-            advisories = data.get("advisories", [])
+            advisories = data.get("advisories", []) if isinstance(data, dict) else (data or [])
 
             # 转换为 SourceRecord
             records = []
             for adv in advisories:
-                pan_id = adv.get("pan_id", "")
+                pan_id = adv.get("pan_id") or adv.get("id") or adv.get("cve_id") or ""
                 if not pan_id:
                     continue
 
                 # 提取关键字段
                 title = adv.get("title", "")
                 summary = adv.get("summary", "")
-                published = adv.get("published")
+                published = adv.get("published") or adv.get("pubDate")
                 updated = adv.get("updated")
                 severity = adv.get("severity")
                 cvss_score = adv.get("cvss_score")
@@ -144,7 +144,7 @@ class PaloAltoAdapter:
                     })
 
                 # 提取引用
-                references = []
+                references = ([{"type": "advisory", "url": adv["url"]}] if adv.get("url") else [])
                 for ref in adv.get("references", []):
                     references.append({
                         "type": ref.get("type", "WEB"),
@@ -175,8 +175,8 @@ class PaloAltoAdapter:
                 records.append(record)
 
             # 计算是否有更多页
-            total = data.get("total", 0)
-            has_more = page * self._config.page_size < total
+            total = data.get("total", len(advisories)) if isinstance(data, dict) else len(advisories)
+            has_more = bool(isinstance(data, dict) and data.get("paginated") and page * self._config.page_size < total)
             next_cursor = str(page + 1) if has_more else None
 
             return SourcePage(
@@ -221,13 +221,22 @@ class PaloAltoTransport:
         except ImportError:
             return {"status_code": 500, "error": "httpx not installed"}
 
-        async with httpx.AsyncClient() as client:
+        from apps.vulntell.sources.http import client_kwargs
+        async with httpx.AsyncClient(**client_kwargs()) as client:
             try:
-                response = await client.get(
-                    endpoint,
-                    params=params,
-                    timeout=timeout,
-                )
+                response = await client.get(endpoint, params=params, follow_redirects=True,
+                                            headers={"User-Agent": "VulnTell/1.0 (+COSV collector)"}, timeout=timeout)
+                if response.status_code == 200 and "xml" in response.headers.get("content-type", ""):
+                    import xml.etree.ElementTree as ET
+                    root = ET.fromstring(response.content)
+                    advisories = []
+                    for item in root.findall(".//item"):
+                        def value(name): return (item.findtext(name) or "").strip()
+                        title, url, pub = value("title"), value("link"), value("pubDate")
+                        cve = title.split()[0] if title.startswith("CVE-") else None
+                        advisories.append({"id": cve or url, "cve_id": cve, "title": title,
+                                           "summary": title, "published": pub, "pubDate": pub, "url": url})
+                    return {"status_code": 200, "data": advisories, "error": None}
                 return {
                     "status_code": response.status_code,
                     "data": response.json() if response.status_code == 200 else None,

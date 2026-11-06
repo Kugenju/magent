@@ -31,6 +31,7 @@ class CISAKEVConfig:
     catalog_version: Optional[str] = None  # 当前 catalog 版本
     batch_size: int = 500  # 每批记录数
     max_records: Optional[int] = None  # 最大记录数（用于测试）
+    proxy: Optional[str] = None
 
 
 class CISAKEVAdapter:
@@ -218,6 +219,11 @@ class CISAKEVAdapter:
                     "published_at": vuln.get("dateAdded"),
                     "modified_at": vuln.get("dateAdded"),
                     "source_added_at": vuln.get("dateAdded"),
+                    "kev_date_added": vuln.get("dateAdded"),
+                    "kev_due_date": vuln.get("dueDate"),
+                    "kev_ransomware_use": vuln.get("knownRansomwareCampaignUse"),
+                    "references": ([{"type": "advisory", "url": vuln.get("notes")}]
+                                   if vuln.get("notes", "").startswith(("http://", "https://")) else []),
                 },
                 metadata={
                     "source": "cisa_kev",
@@ -259,7 +265,8 @@ class CISAKEVAdapter:
             import httpx
         except ImportError:
             return {"status_code": 500, "error": "httpx not installed"}
-        async with httpx.AsyncClient() as client:
+        from apps.vulntell.sources.http import proxy_url
+        async with httpx.AsyncClient(proxy=self._proxy if hasattr(self, "_proxy") else proxy_url()) as client:
             try:
                 response = await client.get(endpoint, timeout=timeout)
                 return {
@@ -288,7 +295,8 @@ class CISAKEVTransport:
         except ImportError:
             return {"status_code": 500, "error": "httpx not installed"}
 
-        async with httpx.AsyncClient() as client:
+        from apps.vulntell.sources.http import client_kwargs
+        async with httpx.AsyncClient(**client_kwargs()) as client:
             try:
                 response = await client.get(endpoint, timeout=timeout)
                 return {

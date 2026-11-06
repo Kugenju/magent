@@ -225,7 +225,8 @@ class CNVDTransport:
         if api_key:
             headers["Authorization"] = f"Bearer {api_key}"
 
-        async with httpx.AsyncClient() as client:
+        from apps.vulntell.sources.http import client_kwargs
+        async with httpx.AsyncClient(**client_kwargs()) as client:
             try:
                 response = await client.get(
                     endpoint,

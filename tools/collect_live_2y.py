@@ -1,4 +1,4 @@
-"""Collect the eight configured live sources for the paper's two-year window."""
+"""Collect all registered live sources for the latest rolling two-year window."""
 
 from __future__ import annotations
 
@@ -6,7 +6,7 @@ import asyncio
 import argparse
 import json
 import os
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from pathlib import Path
 
 from apps.vulntell.batch import collect_adapter
@@ -27,6 +27,9 @@ from apps.vulntell.sources import (
     DebianConfig,
     GitHubAdvisoryAdapter,
     GitHubAdvisoryConfig,
+    CNVDAdapter, CNVDConfig, CERTCCAdapter, CERTCCConfig, CiscoAdapter, CiscoConfig,
+    FortinetAdapter, FortinetConfig, PaloAltoAdapter, PaloAltoConfig,
+    ExploitDBAdapter, ExploitDBConfig, JVNAdapter, JVNConfig, EUVDAdapter, EUVDConfig,
 )
 from apps.vulntell.sources.cisa_kev import CISAKEVTransport
 from apps.vulntell.sources.msrc import MSRCTransport
@@ -36,19 +39,25 @@ from apps.vulntell.sources.redhat import RedHatTransport
 from apps.vulntell.sources.ubuntu import UbuntuTransport
 from apps.vulntell.sources.debian import DebianTransport
 from apps.vulntell.sources.github_advisory import GitHubAdvisoryTransport
+from apps.vulntell.sources.cnvd import CNVDTransport
+from apps.vulntell.sources.certcc import CERTCCTransport
+from apps.vulntell.sources.cisco import CiscoTransport
+from apps.vulntell.sources.fortinet import FortinetTransport
+from apps.vulntell.sources.paloalto import PaloAltoTransport
+from apps.vulntell.sources.exploitdb import ExploitDBTransport
+from apps.vulntell.sources.jvn import JVNTransport
+from apps.vulntell.sources.euvd import EUVDTransport
 from apps.vulntell.sources.protocol import SourceRequest
 
-START = datetime(2024, 9, 10, tzinfo=timezone.utc)
-# Include the current UTC calendar day.  The collection window is half-open,
-# so ending at midnight on 2026-09-10 would exclude all records published or
-# updated during that day by sources such as Ubuntu and MSRC.
-END = datetime(2026, 9, 15, tzinfo=timezone.utc)
-ROOT = Path("deliveries/live-2y-20260910")
-VERSION = "2024-09-10_2026-09-15"
+END = datetime.now(timezone.utc)
+START = END - timedelta(days=730)
+STAMP = END.strftime("%Y%m%dT%H%M%SZ")
+ROOT = Path(f"deliveries/live-2y-{END.strftime('%Y%m%d')}")
+VERSION = f"{START.strftime('%Y-%m-%d')}_{END.strftime('%Y-%m-%d')}"
 
 
 async def collect_one(name: str, adapter, page_size: int, license_name: str) -> dict:
-    output = ROOT / name / "batch-20260910T000000Z"
+    output = ROOT / name / f"batch-{STAMP}"
     request = SourceRequest(
         source=name,
         dataset_id=f"{name}-cve",
@@ -92,9 +101,12 @@ async def collect_one(name: str, adapter, page_size: int, license_name: str) -> 
 
 async def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--sources", nargs="*", choices=["nvd", "cisa_kev", "redhat", "ubuntu", "msrc", "osv", "debian", "github_advisory"],
+    parser.add_argument("--sources", nargs="*", choices=["nvd", "cisa_kev", "cnvd", "osv", "github_advisory", "euvd", "msrc", "redhat", "ubuntu", "debian", "jvn", "certcc", "cisco", "fortinet", "paloalto", "exploitdb"],
                         help="采集指定来源；默认采集全部来源")
+    parser.add_argument("--proxy", default=None, help="HTTP(S) 代理，例如 http://127.0.0.1:7890")
     args = parser.parse_args()
+    if args.proxy:
+        os.environ["VULNTELL_PROXY"] = args.proxy
     ROOT.mkdir(parents=True, exist_ok=True)
     jobs = [
         ("nvd", NVDAdapter(config=NVDConfig(use_bulk=True, page_size=200, max_response_bytes=20 * 1024 * 1024, timeout_seconds=180), transport=NVDTransport()), 200, "NVD-terms"),
@@ -107,6 +119,14 @@ async def main() -> None:
         # therefore performs no synthetic pagination).
         ("debian", DebianAdapter(config=DebianConfig(page_size=100, timeout_seconds=120), transport=DebianTransport()), 100, "Debian-terms"),
         ("github_advisory", GitHubAdvisoryAdapter(config=GitHubAdvisoryConfig(page_size=100, timeout_seconds=60), transport=GitHubAdvisoryTransport(), token=os.getenv("GITHUB_TOKEN")), 100, "GitHub-terms"),
+        ("cnvd", CNVDAdapter(config=CNVDConfig(page_size=100, timeout_seconds=120), transport=CNVDTransport()), 100, "CNVD-terms"),
+        ("euvd", EUVDAdapter(config=EUVDConfig(page_size=100, timeout_seconds=120), transport=EUVDTransport()), 100, "EUVD-terms"),
+        ("jvn", JVNAdapter(config=JVNConfig(page_size=100, timeout_seconds=120), transport=JVNTransport()), 100, "JVN-terms"),
+        ("certcc", CERTCCAdapter(config=CERTCCConfig(page_size=100, timeout_seconds=120), transport=CERTCCTransport()), 100, "CERTCC-terms"),
+        ("cisco", CiscoAdapter(config=CiscoConfig(page_size=100, timeout_seconds=120), transport=CiscoTransport()), 100, "Cisco-terms"),
+        ("fortinet", FortinetAdapter(config=FortinetConfig(page_size=100, timeout_seconds=120), transport=FortinetTransport()), 100, "Fortinet-terms"),
+        ("paloalto", PaloAltoAdapter(config=PaloAltoConfig(page_size=100, timeout_seconds=120), transport=PaloAltoTransport()), 100, "PaloAlto-terms"),
+        ("exploitdb", ExploitDBAdapter(config=ExploitDBConfig(page_size=100, timeout_seconds=120), transport=ExploitDBTransport()), 100, "ExploitDB-terms"),
     ]
     results = []
     selected = set(args.sources or [j[0] for j in jobs])
@@ -126,7 +146,7 @@ async def main() -> None:
         except (OSError, ValueError, TypeError):
             prior = {}
     prior.update({item["source"]: item for item in results})
-    results = [prior[name] for name in ("nvd", "cisa_kev", "redhat", "ubuntu", "msrc", "osv", "debian", "github_advisory") if name in prior]
+    results = [prior[name] for name in [j[0] for j in jobs] if name in prior]
     summary = {
         "window_start": START.isoformat(),
         "window_end": END.isoformat(),

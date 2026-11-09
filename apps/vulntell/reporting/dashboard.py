@@ -285,11 +285,12 @@ tr:hover td {{ background:#f3f6fd; }}
         for c in ordered:
             score = c.cvss.score if c.cvss else None
             stamp_text = (c.modified_at or c.published_at or "") if (c.modified_at or c.published_at) else "—"
+            source_text = f"{len(c.sources)} ({', '.join(sorted(c.sources))})"
             rows.append(
                 f"<tr><td><b>{_esc(c.cve_id)}</b></td>"
                 f"<td>{_esc((c.title or (c.description or ''))[:80])}</td>"
                 f"{_cells(score, cls='pi')}"
-                f"{_cells(f'{len(c.sources)} ({", ".join(sorted(c.sources))})', cls='pi')}"
+                f"{_cells(source_text, cls='pi')}"
                 f"{_cells(stamp_text, cls='pi')}</tr>"
             )
         parts.append(

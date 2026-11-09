@@ -74,7 +74,7 @@ def _extract_severity(normalized: dict[str, Any]) -> list[Severity]:
     for item in normalized.get("severity", []) or []:
         if not isinstance(item, dict):
             continue
-        score = item.get("score") or item.get("baseScore")
+        severity_score = item.get("score") or item.get("baseScore")
         vector = item.get("vector") or item.get("vectorString")
         raw_type = str(item.get("type") or item.get("method") or "").lower()
         if "4" in raw_type:
@@ -85,8 +85,8 @@ def _extract_severity(normalized: dict[str, Any]) -> list[Severity]:
             stype = SeverityType.CVSS_V31
         else:
             stype = SeverityType.CVSS_V3
-        if score is not None or vector:
-            severity.append(Severity(type=stype.value, score=vector, score_num=str(score) if score is not None else None))
+        if severity_score is not None or vector:
+            severity.append(Severity(type=stype.value, score=vector, score_num=str(severity_score) if severity_score is not None else None))
 
     return severity
 
@@ -171,17 +171,17 @@ def _extract_database_specific(
     normalized: dict[str, Any],
 ) -> DatabaseSpecific:
     """从 SourceObservation 和 normalized_fields 提取 database_specific 信息。"""
-    return DatabaseSpecific(
-        source=obs.source,
-        source_id=obs.source_record_id,
-        import_batch=normalized.get("import_batch"),
-        import_sha256=normalized.get("import_sha256"),
-        cnvd_level=normalized.get("cnvd_level"),
-        kev_date_added=normalized.get("kev_date_added"),
-        kev_due_date=normalized.get("kev_due_date"),
-        kev_ransomware_use=normalized.get("kev_ransomware_use"),
-        source_version_text=normalized.get("source_version_text"),
-    )
+    return DatabaseSpecific.model_validate({
+        "source": obs.source,
+        "source_id": obs.source_record_id,
+        "import_batch": normalized.get("import_batch"),
+        "import_sha256": normalized.get("import_sha256"),
+        "cnvd_level": normalized.get("cnvd_level"),
+        "kev_date_added": normalized.get("kev_date_added"),
+        "kev_due_date": normalized.get("kev_due_date"),
+        "kev_ransomware_use": normalized.get("kev_ransomware_use"),
+        "source_version_text": normalized.get("source_version_text"),
+    })
 
 
 def observation_to_cosv(obs: SourceObservation) -> COSVDocument:
@@ -218,6 +218,8 @@ def observation_to_cosv(obs: SourceObservation) -> COSVDocument:
 
     # 时间处理
     modified = _to_rfc3339_utc(obs.modified_at) or _to_rfc3339_utc(obs.observed_at)
+    if modified is None:
+        raise ValueError("COSV modified timestamp is required")
     published = _to_rfc3339_utc(obs.published_at)
 
     return COSVDocument(

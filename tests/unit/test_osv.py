@@ -7,6 +7,7 @@ import io
 import json
 import zipfile
 from datetime import datetime, timezone, timedelta
+from typing import Any
 
 import pytest
 
@@ -15,9 +16,9 @@ from apps.vulntell.sources.errors import SourceErrorKind
 from apps.vulntell.sources.protocol import SourcePage, SourceRequest
 
 
-def _make_request(**kwargs) -> SourceRequest:
+def _make_request(**kwargs: Any) -> SourceRequest:
     now = datetime.now(timezone.utc)
-    defaults = {
+    defaults: dict[str, Any] = {
         "source": "osv",
         "dataset_id": "test",
         "dataset_version": "1.0",

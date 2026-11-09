@@ -11,7 +11,7 @@
 
 from __future__ import annotations
 
-from typing import Optional
+from typing import Any, Optional
 
 from apps.vulntell.config import SOURCE_AVAILABILITY, VulnTellConfig
 from apps.vulntell.sources.cisa_kev import CISAKEVAdapter, CISAKEVConfig
@@ -37,6 +37,7 @@ from apps.vulntell.sources.debian import DebianAdapter, DebianConfig, DebianTran
 from apps.vulntell.sources.jvn import JVNAdapter, JVNConfig, JVNTransport
 from apps.vulntell.sources.osv import OSVAdapter, OSVConfig
 from apps.vulntell.sources.protocol import SourcePage, SourceRecord, SourceRequest
+from apps.vulntell.sources.errors import SourceError
 from apps.vulntell.sources.redhat import RedHatAdapter, RedHatConfig
 from apps.vulntell.sources.ubuntu import UbuntuAdapter, UbuntuConfig
 
@@ -44,28 +45,34 @@ from apps.vulntell.sources.ubuntu import UbuntuAdapter, UbuntuConfig
 class LiveSourceAdapter:
     """Live 模式数据源 adapter 接口。"""
 
+    def __init__(self, source: str, adapter: Any) -> None:
+        self.source = source
+        self._adapter = adapter
+
     async def fetch_page(
         self, request: SourceRequest, cursor: Optional[str] = None
-    ) -> SourcePage:
-        raise NotImplementedError
+    ) -> SourcePage | SourceError:
+        return await self._adapter.fetch_page(request, cursor)
 
-    async def fetch(self, dataset_id: str, dataset_version: str, observed_at):
+    async def fetch(
+        self, dataset_id: str, dataset_version: str, observed_at
+    ) -> list[Any]:
         """兼容旧 CollectAgent 的批量接口，拉取所有分页并转换为 RawSourceRecord。"""
         from apps.vulntell.domain.models import RawSourceRecord
         from magent.checkpoint.models import canonical_json, checksum_of
-        from datetime import timedelta, timezone, datetime
+        from datetime import timedelta, timezone
         from apps.vulntell.sources.protocol import SourceRequest
         # 旧批量接口没有显式窗口：使用最近 30 天的稳定窗口，避免仅查询
         # observed_at 的一个微秒导致真实 API 永远返回空页。
         end = observed_at if observed_at.tzinfo else observed_at.replace(tzinfo=timezone.utc)
-        req = SourceRequest(source=getattr(self, "source", "nvd"), dataset_id=dataset_id,
+        req = SourceRequest(source=self.source, dataset_id=dataset_id,
                             dataset_version=dataset_version, window_start=end - timedelta(days=730),
                             window_end=end)
         out=[]; cursor=None
         while True:
             page = await self.fetch_page(req, cursor)
-            if not hasattr(page, "records"):
-                raise RuntimeError(getattr(page, "message", "source error"))
+            if isinstance(page, SourceError):
+                raise RuntimeError(page.message)
             for rec in page.records:
                 out.append(RawSourceRecord(source=rec.metadata.get("source", req.source), record_id=rec.source_record_id,
                     observed_at=page.observed_at, dataset_id=dataset_id, dataset_version=dataset_version,
@@ -77,7 +84,7 @@ class LiveSourceAdapter:
 
 def create_live_adapter(
     config: VulnTellConfig,
-    transport: Optional[object] = None,
+    transport: Optional[Any] = None,
 ) -> Optional[LiveSourceAdapter]:
     """根据配置创建 live adapter。
 
@@ -88,27 +95,28 @@ def create_live_adapter(
     Returns:
         LiveSourceAdapter 或 None（如果配置不支持 live 模式）
     """
-    if not config.is_live_mode:
+    source = config.source
+    if not config.is_live_mode or source is None:
         return None
 
     # 检查来源可用性
-    availability = SOURCE_AVAILABILITY.get(config.source, "manual_required")
+    availability = SOURCE_AVAILABILITY.get(source, "manual_required")
     if availability == "manual_required":
         raise ValueError(
-            f"来源 '{config.source}' 暂不支持 live 模式。请使用人工 fixture 模式。"
+            f"来源 '{source}' 暂不支持 live 模式。请使用人工 fixture 模式。"
         )
 
-    if config.source == "nvd":
+    adapter: Any
+    if source == "nvd":
         nvd_config = NVDConfig(
             api_key=config.get_api_key(),
-            endpoint=config.get_live_endpoint() or NVDConfig.endpoint,
+            endpoint=config.get_live_endpoint() or NVDConfig().endpoint,
             timeout_seconds=config.timeout_seconds,
         )
         adapter = NVDAdapter(config=nvd_config, transport=transport)
-        adapter.source = "nvd"
-        return adapter
+        return LiveSourceAdapter(source, adapter)
 
-    extra = {
+    extra: dict[str, tuple[Any, Any, Any]] = {
         "osv": (OSVAdapter, OSVConfig, OSVTransport),
         "cnvd": (CNVDAdapter, CNVDConfig, CNVDTransport),
         "certcc": (CERTCCAdapter, CERTCCConfig, CERTCCTransport),
@@ -121,37 +129,40 @@ def create_live_adapter(
         "redhat": (RedHatAdapter, RedHatConfig, RedHatTransport), "ubuntu": (UbuntuAdapter, UbuntuConfig, UbuntuTransport),
         "debian": (DebianAdapter, DebianConfig, DebianTransport), "jvn": (JVNAdapter, JVNConfig, JVNTransport),
     }
-    if config.source in extra:
-        cls, cfg, tr = extra[config.source]
-        kwargs = {"endpoint": config.get_live_endpoint() or cfg.endpoint,
-                  "timeout_seconds": config.timeout_seconds}
-        if config.source == "cnvd":
+    if source in extra:
+        cls, cfg, tr = extra[source]
+        kwargs: dict[str, Any] = {
+            "endpoint": config.get_live_endpoint() or getattr(cfg(), "endpoint", None),
+            "timeout_seconds": config.timeout_seconds,
+        }
+        if source == "cnvd":
             kwargs["api_key"] = config.get_api_key()
-        adapter = cls(config=cfg(**kwargs), transport=transport or tr())
-        adapter.source = config.source
-        return adapter
+        if source == "github_advisory":
+            adapter = cls(config=cfg(**kwargs), transport=transport or tr(),
+                          token=config.get_github_token())
+        else:
+            adapter = cls(config=cfg(**kwargs), transport=transport or tr())
+        return LiveSourceAdapter(source, adapter)
 
     elif config.source == "cisa_kev":
         cisa_config = CISAKEVConfig(
-            endpoint=config.get_live_endpoint() or CISAKEVConfig.endpoint,
+            endpoint=config.get_live_endpoint() or CISAKEVConfig().endpoint,
             timeout_seconds=config.timeout_seconds,
         )
         adapter = CISAKEVAdapter(config=cisa_config, transport=transport)
-        adapter.source = "cisa_kev"
-        return adapter
+        return LiveSourceAdapter(source, adapter)
 
     elif config.source == "osv":
         osv_config = OSVConfig(
-            endpoint=config.get_live_endpoint() or OSVConfig.endpoint,
+            endpoint=config.get_live_endpoint() or OSVConfig().endpoint,
             timeout_seconds=config.timeout_seconds,
         )
         adapter = OSVAdapter(config=osv_config, transport=transport)
-        adapter.source = "osv"
-        return adapter
+        return LiveSourceAdapter(source, adapter)
 
     elif config.source == "github_advisory":
         github_config = GitHubAdvisoryConfig(
-            endpoint=config.get_live_endpoint() or GitHubAdvisoryConfig.endpoint,
+            endpoint=config.get_live_endpoint() or GitHubAdvisoryConfig().endpoint,
             timeout_seconds=config.timeout_seconds,
         )
         adapter = GitHubAdvisoryAdapter(
@@ -159,62 +170,55 @@ def create_live_adapter(
             transport=transport,
             token=config.get_github_token(),
         )
-        adapter.source = "github_advisory"
-        return adapter
+        return LiveSourceAdapter(source, adapter)
 
     elif config.source == "euvd":
         euvd_config = EUVDConfig(
-            endpoint=config.get_live_endpoint() or EUVDConfig.endpoint,
+            endpoint=config.get_live_endpoint() or EUVDConfig().endpoint,
             timeout_seconds=config.timeout_seconds,
         )
         adapter = EUVDAdapter(config=euvd_config, transport=transport)
-        adapter.source = "euvd"
-        return adapter
+        return LiveSourceAdapter(source, adapter)
 
     elif config.source == "msrc":
         msrc_config = MSRCConfig(
-            endpoint=config.get_live_endpoint() or MSRCConfig.endpoint,
+            endpoint=config.get_live_endpoint() or MSRCConfig().endpoint,
             timeout_seconds=config.timeout_seconds,
         )
         adapter = MSRCAdapter(config=msrc_config, transport=transport)
-        adapter.source = "msrc"
-        return adapter
+        return LiveSourceAdapter(source, adapter)
 
     elif config.source == "redhat":
         redhat_config = RedHatConfig(
-            endpoint=config.get_live_endpoint() or RedHatConfig.endpoint,
+            endpoint=config.get_live_endpoint() or RedHatConfig().endpoint,
             timeout_seconds=config.timeout_seconds,
         )
         adapter = RedHatAdapter(config=redhat_config, transport=transport)
-        adapter.source = "redhat"
-        return adapter
+        return LiveSourceAdapter(source, adapter)
 
     elif config.source == "ubuntu":
         ubuntu_config = UbuntuConfig(
-            endpoint=config.get_live_endpoint() or UbuntuConfig.endpoint,
+            endpoint=config.get_live_endpoint() or UbuntuConfig().endpoint,
             timeout_seconds=config.timeout_seconds,
         )
         adapter = UbuntuAdapter(config=ubuntu_config, transport=transport)
-        adapter.source = "ubuntu"
-        return adapter
+        return LiveSourceAdapter(source, adapter)
 
     elif config.source == "debian":
         debian_config = DebianConfig(
-            endpoint=config.get_live_endpoint() or DebianConfig.endpoint,
+            endpoint=config.get_live_endpoint() or DebianConfig().endpoint,
             timeout_seconds=config.timeout_seconds,
         )
         adapter = DebianAdapter(config=debian_config, transport=transport)
-        adapter.source = "debian"
-        return adapter
+        return LiveSourceAdapter(source, adapter)
 
     elif config.source == "jvn":
         jvn_config = JVNConfig(
-            endpoint=config.get_live_endpoint() or JVNConfig.endpoint,
+            endpoint=config.get_live_endpoint() or JVNConfig().endpoint,
             timeout_seconds=config.timeout_seconds,
         )
         adapter = JVNAdapter(config=jvn_config, transport=transport)
-        adapter.source = "jvn"
-        return adapter
+        return LiveSourceAdapter(source, adapter)
 
     return None
 

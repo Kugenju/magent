@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import asyncio
 from datetime import datetime, timezone, timedelta
+from typing import Any
 
 import pytest
 
@@ -12,9 +13,9 @@ from apps.vulntell.sources.errors import SourceErrorKind
 from apps.vulntell.sources.protocol import SourcePage, SourceRequest
 
 
-def _make_request(**kwargs) -> SourceRequest:
+def _make_request(**kwargs: Any) -> SourceRequest:
     now = datetime.now(timezone.utc)
-    defaults = {
+    defaults: dict[str, Any] = {
         "source": "nvd",
         "dataset_id": "test",
         "dataset_version": "1.0",
@@ -32,7 +33,7 @@ class MockTransport:
     def __init__(self, response: dict, status_code: int = 200) -> None:
         self._response = response
         self._status_code = status_code
-        self._calls = []
+        self._calls: list[dict[str, Any]] = []
 
     async def __call__(self, **kwargs) -> dict:
         self._calls.append(kwargs)

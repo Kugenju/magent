@@ -1,7 +1,7 @@
 # VulnTell 阶段 0 基线冻结
 
 本文档冻结 `examples.vulntell` 在迁移到 `apps/vulntell` 之前的“黄金基线”行为
-（依据 `PHASE0_1_PLAN.md` Task 0.1）。
+（依据 `PHASES.md#phase-doc-phase0-1-plan` Task 0.1）。
 
 ## 一、基线事实
 

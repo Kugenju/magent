@@ -277,7 +277,7 @@ class NVDAdapter:
             if yi < 0 or yi >= len(years) or offset < 0:
                 return SourceError(source="nvd", kind=SourceErrorKind.INVALID_RESPONSE, message="Invalid cursor values", retryable=False)
             if not hasattr(self, "_bulk_cache"):
-                self._bulk_cache = {}
+                self._bulk_cache: dict[int, tuple[SourceRecord, ...]] = {}
             year = years[yi]
             records = self._bulk_cache.get(year)
             if records is None:
@@ -297,7 +297,7 @@ class NVDAdapter:
                 raw = gzip.decompress(blob) if bytes(blob)[:2] == b"\x1f\x8b" else bytes(blob)
                 data = json.loads(raw.decode("utf-8"))
                 vulns = data.get("vulnerabilities", []) if isinstance(data, dict) else []
-                parsed = []
+                parsed: list[SourceRecord] = []
                 for vuln in vulns:
                     cve = vuln.get("cve", {}) if isinstance(vuln, dict) else {}
                     pub, mod = cve.get("published"), cve.get("lastModified")
@@ -363,134 +363,6 @@ class NVDAdapter:
                    "cwe": weaknesses, "affected": [{"name": x["cpe"], "ecosystem": "CPE", "versions": [], "ranges": []} for x in configs],
                    "database_specific": {"source_identifier": cve.get("sourceIdentifier"), "vuln_status": cve.get("vulnStatus"), "cve_tags": cve.get("cveTags", [])}}
         return SourceRecord(source_record_id=record_id, payload=payload, metadata={"source": "nvd", "published_at": cve.get("published"), "modified_at": cve.get("lastModified"), "window_slice": window_slice})
-
-        # 检查 HTTP 状态码
-        if response.get("status_code", 200) != 200:
-            status_code = response.get("status_code", 500)
-            error = SourceError.from_http_status(
-                "nvd",
-                status_code,
-                response.get("error", ""),
-            )
-            return error
-
-        # 解析响应
-        try:
-            data = response.get("data", {})
-            # 限制响应大小，避免误将巨大 payload 写入内存/状态
-            try:
-                if len(json.dumps(data, ensure_ascii=False).encode("utf-8")) > self._config.max_response_bytes:
-                    return SourceError(source="nvd", kind=SourceErrorKind.INVALID_RESPONSE,
-                                        message="Response exceeds size limit", retryable=False)
-            except (TypeError, ValueError):
-                return SourceError(source="nvd", kind=SourceErrorKind.INVALID_RESPONSE,
-                                   message="Invalid response payload", retryable=False)
-            vulnerabilities = data.get("vulnerabilities", [])
-            total_results = data.get("totalResults", 0)
-
-            if not isinstance(vulnerabilities, list) or len(vulnerabilities) > self._config.max_records_per_page:
-                return SourceError(source="nvd", kind=SourceErrorKind.INVALID_RESPONSE,
-                                   message="Response record count exceeds limit", retryable=False)
-
-            # NVD 返回通常已排序，但显式以 modified time + id 稳定排序，确保分片间可重现
-            vulnerabilities = sorted(
-                vulnerabilities,
-                key=lambda v: ((v.get("cve", {}).get("lastModified") or ""),
-                               (v.get("cve", {}).get("id") or "")),
-            )
-
-            # 转换为 SourceRecord
-            records = []
-            for vuln in vulnerabilities:
-                cve = vuln.get("cve", {})
-                record_id = cve.get("id", "")
-                if not record_id:
-                    continue
-
-                # 提取关键字段（不保存完整 payload）
-                descriptions = [
-                    d for d in cve.get("descriptions", [])
-                    if d.get("lang") == "en"
-                ][:1]
-                metrics = cve.get("metrics", {}) or {}
-                metric = (metrics.get("cvssMetricV31") or metrics.get("cvssMetricV30") or metrics.get("cvssMetricV2") or [{}])[0]
-                cvss_data = metric.get("cvssData", {}) if isinstance(metric, dict) else {}
-                references = [
-                    {"type": "WEB", "url": r.get("url", "")}
-                    for r in cve.get("references", [])
-                    if isinstance(r, dict) and r.get("url")
-                ]
-                record = SourceRecord(
-                    source_record_id=record_id,
-                    payload={
-                        "id": record_id,
-                        "published": cve.get("published"),
-                        "lastModified": cve.get("lastModified"),
-                        "descriptions": descriptions,  # 只保留英文描述
-                        # Canonical fields consumed by domain normalization.
-                        "cve_id": record_id,
-                        "title": (descriptions[0].get("value") if descriptions else record_id),
-                        "description": (descriptions[0].get("value") if descriptions else None),
-                        "published_at": cve.get("published"),
-                        "modified_at": cve.get("lastModified"),
-                        "cvss_score": cvss_data.get("baseScore"),
-                        "cvss_vector": cvss_data.get("vectorString"),
-                        "cvss_version": cvss_data.get("version"),
-                        "references": references,
-                    },
-                    metadata={
-                        "source": "nvd",
-                        "published_at": cve.get("published"),
-                        "modified_at": cve.get("lastModified"),
-                        "window_slice": f"{slice_start.isoformat()}/{slice_end.isoformat()}",
-                    },
-                )
-                records.append(record)
-
-            # 计算是否有更多页
-            # 游标必须使用服务端偏移，而非过滤后的有效记录数；否则坏记录会导致重复/跳过 CVE
-            server_count = data.get("resultsPerPage", len(vulnerabilities))
-            try:
-                server_count = int(server_count)
-            except (TypeError, ValueError):
-                server_count = len(vulnerabilities)
-            server_count = max(0, server_count)
-            next_index = start_index + server_count
-            has_more_in_slice = next_index < total_results
-            has_more_slices = len(slices) > 1
-
-            # 构建下一页游标
-            if has_more_in_slice:
-                # 当前分片还有更多页
-                next_cursor = NVDCursor(
-                    window_start=nvd_cursor.window_start if nvd_cursor else request.window_start,
-                    window_end=nvd_cursor.window_end if nvd_cursor else request.window_end,
-                    start_index=next_index,
-                    slice_index=nvd_cursor.slice_index if nvd_cursor else 0,
-                ).to_string()
-            elif has_more_slices:
-                # 还有更多分片
-                next_cursor = NVDCursor(
-                    window_start=nvd_cursor.window_start if nvd_cursor else request.window_start,
-                    window_end=nvd_cursor.window_end if nvd_cursor else request.window_end,
-                    start_index=0,
-                    slice_index=(nvd_cursor.slice_index if nvd_cursor else 0) + 1,
-                ).to_string()
-            else:
-                next_cursor = None
-
-            return SourcePage(
-                records=tuple(records),
-                next_cursor=next_cursor,
-                has_more=next_cursor is not None,
-                page_index=start_index // request.page_size,
-                source="nvd",
-                observed_at=datetime.now(timezone.utc),
-                request_fingerprint=request.request_fingerprint,
-            )
-
-        except Exception as exc:
-            return SourceError.from_exception("nvd", exc)
 
     async def _default_transport(
         self,

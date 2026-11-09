@@ -14,7 +14,7 @@ from __future__ import annotations
 
 import pathlib
 from dataclasses import dataclass
-from typing import Optional
+from typing import Any, Optional, cast
 
 from magent import ExecutionReport, GraphExecutor
 from magent.checkpoint import SideEffectSink, SqliteCheckpointStore
@@ -67,11 +67,12 @@ class VulnTellJobRunner:
         provider = self._provider if self._provider is not None else (FakeProvider() if not self._config.no_llm else None)
 
         # 创建 live adapters
-        live_adapters = {}
-        if self._config.is_live_mode:
+        live_adapters: dict[str, Any] = {}
+        source = self._config.source
+        if self._config.is_live_mode and source is not None:
             live_adapter = create_live_adapter(self._config)
             if live_adapter:
-                live_adapters[self._config.source] = live_adapter
+                live_adapters[source] = live_adapter
 
         graph = build_vulntell_graph(
             meta,
@@ -94,6 +95,7 @@ class VulnTellJobRunner:
         finally:
             store.close()
             await checkpoint_store.close()
+        final_state = cast(VulnTellState, final_state)
         report = Report(**final_state.report) if final_state.report else None
         return VulnTellRunResult(
             final_state=final_state, execution_report=execution_report, report=report

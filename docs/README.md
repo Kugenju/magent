@@ -7,7 +7,9 @@
 1. [下一阶段决策与路线](NEXT_STAGE.md)：是否继续在本仓库开发 VulnTell，以及阶段 10+ 的交付顺序。
 2. [架构设计](architecture/DESIGN.md)：框架与业务边界、执行语义和安全约束。
 3. [公共 API](architecture/API.md)：可依赖的 Python 接口和当前限制。
-4. [路线图](phases/ROADMAP.md)：阶段 0–9 的完成情况。
+4. [网络策略](architecture/NETWORK_POLICY.md)：分层网络策略（默认离线 + 显式联网能力）。
+5. [路线图](phases/ROADMAP.md)：阶段 0–9 的完成情况。
+6. [Phase 10 计划](phases/PHASES.md#phase-doc-phase10)：MCP 客户端适配（进行中）。
 
 ## 主题目录
 
@@ -29,4 +31,4 @@
 - 阶段文档描述“为什么做、如何验收”，完成后保留，不覆盖历史结论。
 - VulnTell 业务文档不得把领域模型或依赖倒灌到 `src/magent`。
 - benchmark 结果必须带数据集、版本、环境和样本量；小样本不做排名。
-- 默认示例保持离线；真实网络、LLM 和生产部署另设明确开关与验收。
+- 默认示例保持离线；联网是显式声明的一等能力（开关/allowlist/环境变量密钥），见[网络策略](architecture/NETWORK_POLICY.md)。真实网络、LLM 和生产部署另设明确开关与验收。

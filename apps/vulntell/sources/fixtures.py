@@ -21,6 +21,10 @@ from .errors import SourceError, SourceErrorKind
 from .protocol import SourcePage, SourceRecord, SourceRequest
 
 
+class _InvalidFixtureCursor(ValueError):
+    """Raised while parsing an invalid opaque fixture cursor."""
+
+
 @dataclass
 class PagedFixtureConfig:
     """Fixture 分页配置（可注入故障）。
@@ -94,29 +98,14 @@ class PagedFixtureSource:
     def _parse_cursor(self, cursor: str) -> tuple[str, int]:
         """解析游标，返回 (request_fingerprint, page_index)。"""
         if not cursor:
-            raise SourceError(
-                source=self.source,
-                kind=SourceErrorKind.INVALID_RESPONSE,
-                message="Invalid cursor format",
-                retryable=False,
-            )
+            raise _InvalidFixtureCursor("Invalid cursor format")
         parts = cursor.split(":")
         if len(parts) != 2:
-            raise SourceError(
-                source=self.source,
-                kind=SourceErrorKind.INVALID_RESPONSE,
-                message="Invalid cursor format",
-                retryable=False,
-            )
+            raise _InvalidFixtureCursor("Invalid cursor format")
         try:
             page_index = int(parts[1])
         except ValueError:
-            raise SourceError(
-                source=self.source,
-                kind=SourceErrorKind.INVALID_RESPONSE,
-                message="Invalid cursor page index",
-                retryable=False,
-            )
+            raise _InvalidFixtureCursor("Invalid cursor page index")
         return parts[0], page_index
 
     def _make_cursor(self, request_fingerprint: str, page_index: int) -> str:
@@ -159,8 +148,13 @@ class PagedFixtureSource:
                         message="Cursor fingerprint mismatch",
                         retryable=False,
                     )
-            except SourceError as e:
-                return e
+            except _InvalidFixtureCursor as exc:
+                return SourceError(
+                    source=self.source,
+                    kind=SourceErrorKind.INVALID_RESPONSE,
+                    message=str(exc),
+                    retryable=False,
+                )
         else:
             page_index = 0
 
@@ -189,7 +183,7 @@ class PagedFixtureSource:
             )
 
         # 构造 SourceRecord 列表（包含坏记录标记）
-        safe_records = []
+        safe_records: list[SourceRecord] = []
         for r in records:
             # 简单坏记录检测：source_record_id 为空
             if not r.source_record_id:

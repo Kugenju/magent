@@ -3,7 +3,8 @@ from pathlib import Path
 from datetime import datetime, timezone, timedelta
 
 from apps.vulntell.sources.cnvd_manual import CNVDManualConfig, CNVDManualFileSource
-from apps.vulntell.sources.protocol import SourceRequest
+from apps.vulntell.sources.errors import SourceError
+from apps.vulntell.sources.protocol import SourcePage, SourceRequest
 
 
 def req(cursor=None):
@@ -17,9 +18,11 @@ async def test_manual_json_is_paged_and_hashed(tmp_path: Path):
     p.write_text(json.dumps(payload, ensure_ascii=False), encoding="utf-8")
     src = CNVDManualFileSource(CNVDManualConfig(p))
     first = await src.fetch_page(req())
+    assert isinstance(first, SourcePage)
     assert first.record_count == 1
     assert first.next_cursor == "1"
     second = await src.fetch_page(req(first.next_cursor), first.next_cursor)
+    assert isinstance(second, SourcePage)
     assert second.records[0].source_record_id == "CNVD-2"
     assert len(second.records[0].metadata["file_sha256"]) == 64
 
@@ -27,4 +30,5 @@ async def test_manual_json_is_paged_and_hashed(tmp_path: Path):
 async def test_manual_missing_file_returns_structured_error(tmp_path: Path):
     src = CNVDManualFileSource(CNVDManualConfig(tmp_path / "missing.csv"))
     result = await src.fetch_page(req())
+    assert isinstance(result, SourceError)
     assert result.kind.value == "not_found"

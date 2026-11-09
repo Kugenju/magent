@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import asyncio
 from datetime import datetime, timezone, timedelta
+from typing import Any
 
 import pytest
 
@@ -12,9 +13,9 @@ from apps.vulntell.sources.errors import SourceErrorKind
 from apps.vulntell.sources.protocol import SourcePage, SourceRequest
 
 
-def _make_request(**kwargs) -> SourceRequest:
+def _make_request(**kwargs: Any) -> SourceRequest:
     now = datetime.now(timezone.utc)
-    defaults = {
+    defaults: dict[str, Any] = {
         "source": "cisa_kev",
         "dataset_id": "test",
         "dataset_version": "1.0",
@@ -195,3 +196,31 @@ def test_cisa_kev_adapter_max_records():
     result = asyncio.run(adapter.fetch_page(req))
     assert isinstance(result, SourcePage)
     assert result.record_count == 10  # 受 max_records 限制
+
+
+@pytest.mark.parametrize("max_records", [500, 600])
+def test_cisa_kev_max_records_is_total_cap_across_pages(max_records: int):
+    """上限等于或超过一页时，后续游标也不能突破总上限。"""
+    vulnerabilities = [
+        {"cveID": f"CVE-2024-{i:04d}", "vendorProject": "Test", "product": "Test"}
+        for i in range(1200)
+    ]
+    transport = MockTransport({"catalogVersion": "2024.01.01", "vulnerabilities": vulnerabilities})
+    adapter = CISAKEVAdapter(
+        transport=transport,
+        config=CISAKEVConfig(batch_size=500, max_records=max_records),
+    )
+    req = _make_request()
+
+    first = asyncio.run(adapter.fetch_page(req))
+    assert isinstance(first, SourcePage)
+    assert first.record_count == 500
+    if max_records == 500:
+        assert not first.has_more
+        return
+
+    assert first.has_more and first.next_cursor
+    second = asyncio.run(adapter.fetch_page(req, cursor=first.next_cursor))
+    assert isinstance(second, SourcePage)
+    assert second.record_count == 100
+    assert not second.has_more

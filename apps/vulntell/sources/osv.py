@@ -169,7 +169,7 @@ class OSVAdapter:
             ecosystem = self._config.bulk_ecosystems[ec_idx]
             cache_key = ecosystem
             if not hasattr(self, "_bulk_cache"):
-                self._bulk_cache = {}
+                self._bulk_cache: dict[str, tuple[SourceRecord, ...]] = {}
             records = self._bulk_cache.get(cache_key)
             if records is None:
                 endpoint = f"{self._config.bulk_base_url.rstrip('/')}/{ecosystem}/all.zip"
@@ -179,7 +179,7 @@ class OSVAdapter:
                 blob = response.get("content")
                 if not blob:
                     return SourceError.from_exception("osv", ValueError("bulk snapshot response missing content"))
-                parsed = []
+                parsed: list[SourceRecord] = []
                 with zipfile.ZipFile(io.BytesIO(blob)) as archive:
                     for name in archive.namelist():
                         if not name.endswith(".json"):
@@ -235,12 +235,13 @@ class OSVAdapter:
                                  "ranges": ranges, "ecosystem_specific": aff.get("ecosystem_specific"),
                                  "database_specific": aff.get("database_specific")})
         refs = [{"type": str(r.get("type", "web")).lower(), "url": r.get("url", "")} for r in vuln.get("references", []) or [] if isinstance(r, dict)]
-        severity = []
+        severity: list[dict[str, Any]] = []
         for item in vuln.get("severity", []) or []:
             if isinstance(item, dict):
                 severity.append({"type": item.get("type") or item.get("score", "").split(":", 1)[0],
                                  "score": item.get("score")})
-        cwe_ids, cwe_names = [], []
+        cwe_ids: list[str] = []
+        cwe_names: list[str] = []
         for item in vuln.get("database_specific", {}).get("cwe_ids", []) if isinstance(vuln.get("database_specific"), dict) else []:
             cwe_ids.append(item)
         return SourceRecord(source_record_id=vuln["id"], payload={"id": vuln["id"], "summary": vuln.get("summary", ""),

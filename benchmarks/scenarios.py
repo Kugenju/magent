@@ -6,6 +6,8 @@
 
 from __future__ import annotations
 
+from typing import cast
+
 import asyncio
 import datetime as dt
 import pathlib
@@ -96,6 +98,10 @@ async def run_recovery(config: ExperimentConfig, *, clock=None, rng=None) -> Sce
     duration = (end - start) * 1000 if clock else 0.0
     store.close()
 
+    final1 = cast(VulnTellState, final1)
+    final2 = cast(VulnTellState, final2)
+    if final1.report is None or final2.report is None:
+        raise AssertionError("recovery run did not produce reports")
     rep1 = Report(**final1.report)
     rep2 = Report(**final2.report)
     consistent = rep1.model_dump() == rep2.model_dump()

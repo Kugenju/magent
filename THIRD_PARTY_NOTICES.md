@@ -16,6 +16,21 @@ licenses, reference-project attribution, dataset/fixture provenance, and safe-us
   VulnTell uses the deterministic `FakeProvider` for non-binding textual explanations. No API key or
   network access is needed for any default command.
 
+## Optional MCP / network extension
+
+- **mcp** (official Model Context Protocol SDK; pinned `mcp>=1.10,<2`, optional `.[mcp]` extra): MIT
+  licensed. https://github.com/modelcontextprotocol/python-sdk — used only by the real transports in
+  `magent/mcp/stdio.py` (streamable HTTP is planned). Every SDK import is lazy, inside functions; the
+  core, the default test suite and CI never require it (`magent.mcp.fake` covers all offline flows).
+  pip pulls transitive runtime deps of the SDK client (e.g. `httpx`, `sse-starlette`, `uvicorn`,
+  `starlette`) under the `mcp` extra only.
+- **httpx** (>=0.27,<1, optional `.[net]` extra): BSD-3-Clause. https://github.com/encode/httpx —
+  reserved for the L3 application layer (per `docs/architecture/NETWORK_POLICY.md`; VulnTell live
+  mode imports it lazily inside its per-source adapters). Not imported by the framework core.
+- Third-party MCP **servers** (e.g., the official GitHub MCP server) are *no code brought into this
+  repository*; adopting one requires a supply-chain/provenance review first — see
+  `docs/phases/PHASE10_MCP_CLIENT.md` §10 (evaluation record, not yet adopted).
+
 ## Reference frameworks (comparison only)
 
 The following projects are referenced **only** for design comparison in `docs/architecture/COMPARISON.md` and recorded

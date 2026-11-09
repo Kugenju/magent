@@ -6,6 +6,7 @@ import json
 import tempfile
 from datetime import datetime, timezone
 from pathlib import Path
+from typing import Any
 
 import pytest
 
@@ -215,9 +216,9 @@ class TestCOSVSerializer:
 class TestCOSVMapper:
     """COSV 映射器测试。"""
 
-    def _make_observation(self, **kwargs) -> SourceObservation:
+    def _make_observation(self, **kwargs: Any) -> SourceObservation:
         """创建测试用 SourceObservation。"""
-        defaults = {
+        defaults: dict[str, Any] = {
             "source": "nvd",
             "source_record_id": "CVE-2024-0001",
             "cve_id": "CVE-2024-0001",

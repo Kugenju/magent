@@ -83,8 +83,6 @@ class VulnTellConfig:
     endpoint_allowlist: tuple[str, ...] = tuple(_LIVE_ENDPOINTS.values())
     timeout_seconds: float = 30.0
     api_key: Optional[str] = None  # 从环境变量注入，不序列化
-    endpoint: Optional[str] = None
-    timeout_seconds: float = 30.0
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "mode", self.mode or ("live" if self.live else "fixture"))
@@ -146,13 +144,15 @@ class VulnTellConfig:
 
     def get_live_endpoint(self) -> Optional[str]:
         """获取 live 模式的 API endpoint。"""
-        if not self.is_live_mode:
+        source = self.source
+        if not self.is_live_mode or source is None:
             return None
-        return self.endpoint or _LIVE_ENDPOINTS.get(self.source)
+        return self.endpoint or _LIVE_ENDPOINTS.get(source)
 
     def get_api_key(self) -> Optional[str]:
         """获取 API key（仅从环境变量）。"""
-        if not self.is_live_mode:
+        source = self.source
+        if not self.is_live_mode or source is None:
             return None
         import os
         env_key_map = {
@@ -162,7 +162,7 @@ class VulnTellConfig:
             "github_advisory": "GITHUB_TOKEN",
             "euvd": None,  # EUVD 不需要 API key
         }
-        env_var = env_key_map.get(self.source)
+        env_var = env_key_map.get(source)
         if env_var:
             return os.environ.get(env_var)
         return None

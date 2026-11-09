@@ -55,18 +55,18 @@ CVE/NVD/CVSS 模型加入 `magent`。
 
 ## 详细设计与路线图
 
-- [阶段 3：Graph 与任务层迁移实施计划](vulntell/PHASE3_PLAN.md)
-- [阶段 3 审查记录](vulntell/PHASE3_REVIEW.md)
-- [阶段 4：数据源契约与增量模型实施计划](vulntell/PHASE4_PLAN.md)
-- [阶段 4 审查记录](vulntell/PHASE4_REVIEW.md)
-- [阶段 5：真实数据源接入实施计划](vulntell/PHASE5_PLAN.md)
-- [阶段 5 审查记录](vulntell/PHASE5_REVIEW.md)
-- [阶段 5 收尾实施计划](vulntell/PHASE5_CLOSEOUT_PLAN.md)
-- [阶段 5 收尾复核](vulntell/PHASE5_CLOSEOUT_REVIEW.md)
+- [阶段 3：Graph 与任务层迁移实施计划](vulntell/PHASES.md#phase-doc-phase3-plan)
+- [阶段 3 审查记录](vulntell/PHASES.md#phase-doc-phase3-review)
+- [阶段 4：数据源契约与增量模型实施计划](vulntell/PHASES.md#phase-doc-phase4-plan)
+- [阶段 4 审查记录](vulntell/PHASES.md#phase-doc-phase4-review)
+- [阶段 5：真实数据源接入实施计划](vulntell/PHASES.md#phase-doc-phase5-plan)
+- [阶段 5 审查记录](vulntell/PHASES.md#phase-doc-phase5-review)
+- [阶段 5 收尾实施计划](vulntell/PHASES.md#phase-doc-phase5-closeout-plan)
+- [阶段 5 收尾复核](vulntell/PHASES.md#phase-doc-phase5-closeout-review)
 - [最终框架实现设计](vulntell/FINAL_DESIGN.md)
 - [产品化实施路线图](vulntell/ROADMAP.md)
 - [MVP 范围与验收](vulntell/PRODUCT_SCOPE.md)
-- [阶段完成汇总](vulntell/PHASE_COMPLETION_SUMMARY.md)
+- [阶段完成汇总](vulntell/PHASES.md#phase-doc-phase-completion-summary)
 - [情报源采集与批次交付指南](vulntell/INTELLIGENCE_COLLECTION_GUIDE.md)
 
 ## 下一步（真实采集与批次验收）
@@ -75,8 +75,8 @@ CVE/NVD/CVSS 模型加入 `magent`。
 manifest、校验、导入和合并 API；默认流程仍保持 fixture-first、离线运行。真实来源整体尚未完成：
 最新 smoke 证据显示 17 个登记来源中仅 NVD 与 CISA KEV（2/17）完成真实 COSV 批次闭环，
 其余来源仍需真实 API/feed 验证或合规人工导入证据。下一步按
-[真实采集与分布式合并实施规范](vulntell/NEXT_PHASE_IMPLEMENTATION.md)、
-[真实 smoke 报告](vulntell/PHASEB_REAL_SMOKE_REPORT.md) 和
+[真实采集与分布式合并实施规范](vulntell/PHASES.md#phase-doc-next-phase-implementation)、
+[真实 smoke 报告](vulntell/PHASES.md#phase-doc-phaseb-real-smoke-report) 和
 [批次交付指南](vulntell/INTELLIGENCE_COLLECTION_GUIDE.md) 完成来源验收、批次交换和端到端合并；
 不得仅以 adapter 类、fake transport 或单元测试宣称来源完成。
 

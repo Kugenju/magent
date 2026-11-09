@@ -242,7 +242,8 @@ class UbuntuAdapter:
                         if parsed.tzinfo is None:
                             parsed = parsed.replace(tzinfo=timezone.utc)
                         parsed = parsed.astimezone(timezone.utc)
-                        oldest_in_page = parsed if oldest_in_page is None else min(oldest_in_page, parsed)
+                        if oldest_in_page is None or parsed < oldest_in_page:
+                            oldest_in_page = parsed
                     except ValueError:
                         pass
             total_results = data.get("total_results") if isinstance(data, dict) else None
@@ -299,8 +300,11 @@ class UbuntuTransport:
             return {"status_code": 500, "error": "httpx not installed"}
 
         proxy = os.environ.get("HTTPS_PROXY") or os.environ.get("HTTP_PROXY")
-        client_kwargs = {"proxy": proxy} if proxy else {}
-        async with httpx.AsyncClient(**client_kwargs) as client:
+        if proxy:
+            client = httpx.AsyncClient(proxy=proxy)
+        else:
+            client = httpx.AsyncClient()
+        async with client:
             for attempt in range(3):
                 try:
                     response = await client.get(endpoint, params=params, timeout=timeout)
@@ -322,3 +326,4 @@ class UbuntuTransport:
                         await asyncio.sleep(2 ** attempt)
                         continue
                     return {"status_code": 500, "error": str(exc)}
+        return {"status_code": 500, "error": "Request retries exhausted"}

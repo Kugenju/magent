@@ -245,7 +245,7 @@ class MSRCAdapter:
             return None
 
         release = first_text(root, {"InitialReleaseDate", "CurrentReleaseDate"})
-        rows = []
+        rows: list[dict[str, Any]] = []
         for vuln in (n for n in root.iter() if local(n.tag) == "Vulnerability"):
             cve = first_text(vuln, {"CVE"})
             if not cve or not re.fullmatch(r"CVE-\d{4}-\d{4,}", cve):
@@ -376,7 +376,7 @@ class MSRCTransport:
                 )
                 content_type = response.headers.get("content-type", "")
                 if "xml" in content_type or response.text.lstrip().startswith("<"):
-                    data = response.text
+                    data: Any = response.text
                 else:
                     data = response.json() if response.status_code == 200 else None
                 return {

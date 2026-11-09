@@ -24,7 +24,7 @@ from apps.vulntell.domain.models import (
     SyncRunStatus,
     utc,
 )
-from apps.vulntell.sources.errors import SourceError
+from apps.vulntell.sources.errors import SourceError, SourceErrorKind
 from apps.vulntell.sources.fixtures import PagedFixtureSource
 from apps.vulntell.sources.protocol import SourcePage, SourceRequest
 
@@ -273,7 +273,7 @@ class SyncRunner:
         )
         return await self._handle_error(run, SourceError(
             source=run.source,
-            kind="transient",
+            kind=SourceErrorKind.TRANSIENT,
             message="Persist failed",
             retryable=False,
         ), page.page_index)

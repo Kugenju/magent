@@ -22,7 +22,7 @@ framework. Its current implementation lives under `apps/vulntell`; the
 pollutes the `magent` core.
 
 VulnTell 当前产品化状态、阶段完成汇总以及情报源采集/批次交付方法，见
-[`docs/vulntell/PHASE_COMPLETION_SUMMARY.md`](docs/vulntell/PHASE_COMPLETION_SUMMARY.md)、
+[`docs/vulntell/PHASES.md#phase-doc-phase-completion-summary`](docs/vulntell/PHASES.md#phase-doc-phase-completion-summary)、
 [`docs/vulntell/INTELLIGENCE_COLLECTION_GUIDE.md`](docs/vulntell/INTELLIGENCE_COLLECTION_GUIDE.md)
 和 [`docs/NEXT_STAGE.md`](docs/NEXT_STAGE.md)。
 
@@ -31,7 +31,7 @@ VulnTell 当前产品化状态、阶段完成汇总以及情报源采集/批次�
 > Phase 9 hardens the project for public release: documentation consistency, a framework
 > comparison (`docs/architecture/COMPARISON.md`), license/third-party notices, CI quality gates, clean-install
 > verification and a release checklist. It does **not** change execution semantics. See
-> [`docs/phases/PHASE9.md`](docs/phases/PHASE9.md).
+> [`docs/phases/PHASES.md#phase-doc-phase9`](docs/phases/PHASES.md#phase-doc-phase9).
 
 | In scope | Out of scope (later phases) |
 |----------|------------------------------|
@@ -51,7 +51,7 @@ VulnTell 当前产品化状态、阶段完成汇总以及情报源采集/批次�
 | VulnTell source-quality evaluation + reference comparison recorder | External ranking |
 
 阶段 8 的评测、统一 trace、benchmark 和参考框架对比已实现并随仓库提交；详见
-[`docs/phases/PHASE8.md`](docs/phases/PHASE8.md) 与
+[`docs/phases/PHASES.md#phase-doc-phase8`](docs/phases/PHASES.md#phase-doc-phase8) 与
 [`benchmarks/README.md`](benchmarks/README.md)。
 
 ## Install
@@ -62,7 +62,8 @@ pip install -e ".[dev]"   # dev extras add pytest + pytest-asyncio + mypy
 
 The install is **offline-first**: it needs only `pydantic` at runtime and no API key, network access, or
 external service. `import magent` and the version string (`import importlib.metadata; version("magent")`)
-work after install.
+work after install. Networking is available as a documented, explicitly-configured capability via
+optional extras — see [`docs/architecture/NETWORK_POLICY.md`](docs/architecture/NETWORK_POLICY.md).
 
 ### Packaging scope
 
@@ -82,6 +83,7 @@ python -m apps.vulntell                   # VulnTell application (offline)
 python -m apps.vulntell --json            # machine-readable report
 python -m apps.vulntell --trace benchmarks/out/vulntell   # emit trace + summary
 python -m benchmarks.cli --out benchmarks/out   # phase 8: offline evaluation suite
+python -m apps.vulntell.daily             # daily briefing (live, keyless; see docs/vulntell/daily_briefing.md)
 ```
 
 `ProducerAgent` writes a value, `ConsumerAgent` reads it — proving that one
@@ -359,8 +361,8 @@ All tests are offline (no network, external services, or production database).
 The VulnTell vertical example (phase 7) is implemented and committed under
 `apps/vulntell`; `examples/vulntell` remains a compatibility entry point. Phase 8 (observability + offline evaluation) is implemented
 and committed under `src/magent/observability` and `benchmarks/`. See
-`docs/architecture/DESIGN.md`, `docs/phases/ROADMAP.md`, `docs/phases/PHASE6.md`, `docs/phases/PHASE7.md` and
-`docs/phases/PHASE8.md` and `docs/phases/PHASE9.md` for the current boundaries and acceptance criteria.
+`docs/architecture/DESIGN.md`, `docs/phases/ROADMAP.md`, `docs/phases/PHASES.md#phase-doc-phase6`, `docs/phases/PHASES.md#phase-doc-phase7` and
+`docs/phases/PHASES.md#phase-doc-phase8` and `docs/phases/PHASES.md#phase-doc-phase9` for the current boundaries and acceptance criteria.
 
 Phase 7 and phase 8 are implemented and committed. Phase 9 (release,
 documentation, CI and presentation) is the current development stage. The `magent` core remains

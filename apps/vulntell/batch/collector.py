@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 from datetime import datetime, timezone
 from pathlib import Path
+from typing import Any
 from magent.checkpoint.models import canonical_json, checksum_of
 from apps.vulntell.domain.models import RawSourceRecord
 from apps.vulntell.domain.normalize import normalize_record
@@ -47,11 +48,12 @@ async def collect_adapter(
             break
         cursor=page.next_cursor
         next_cursor = cursor
-    observations=[]; issues=[]
+    observations=[]; issues: list[dict[str, Any]]=[]
     if max_records is not None:
         raw = raw[:max_records]
     for item in raw:
-        obs, qi=normalize_record(item); observations.append(obs); issues.extend(qi)
+        obs, qi=normalize_record(item); observations.append(obs)
+        issues.extend(issue.model_dump(mode="json") for issue in qi)
     docs, map_issues=batch_observations_to_cosv(observations); issues.extend(map_issues)
     # Do not deliver a batch whose normalized documents fail the COSV contract.
     valid_docs = []

@@ -13,7 +13,7 @@ Graph 自身不含业务库连接或 provider 细节；store 通过依赖注入�
 from __future__ import annotations
 
 import pathlib
-from typing import Optional
+from typing import Any, Mapping, Optional
 
 from magent import AgentResult, BaseAgent, CompiledGraph, END, GraphBuilder
 from magent.llm import LLMProvider
@@ -144,6 +144,52 @@ def build_vulntell_graph(
     builder.add_edge("normalize_nvd", "dedupe")
     builder.add_edge("normalize_cnvd", "dedupe")
     builder.add_join("dedupe", ["normalize_nvd", "normalize_cnvd"])
+    builder.add_edge("dedupe", "persist")
+    builder.add_edge("persist", "evaluate")
+    builder.add_edge("evaluate", "report")
+    builder.add_edge("report", END)
+
+    return builder.compile()
+
+
+def build_daily_vulntell_graph(
+    meta,
+    store: VulnTellStore,
+    sink,
+    provider: LLMProvider | None = None,
+    *,
+    adapters: Mapping[str, Any],
+) -> CompiledGraph:
+    """每日简报图：对任意来源集合做并行扇出（阶段 10 桥接，Task daily.1）。"""
+    collected = sorted(adapters.items())
+    if not collected:
+        raise ValueError("daily graph 需要至少一个数据源 adapter")
+
+    registry = ToolRegistry(allowlist=["persist_batch"])
+    registry.register(_make_persist_tool(store))
+
+    builder = GraphBuilder()
+    builder.add_node("dispatch", _Dispatch("dispatch"))
+    collect_nodes: list[str] = []
+    normalize_nodes: list[str] = []
+    for source, adapter in collected:
+        collect_node = f"collect_{source}"
+        normalize_node = f"normalize_{source}"
+        builder.add_node(collect_node, CollectAgent(source, adapter))
+        builder.add_node(normalize_node, NormalizeAgent(source))
+        collect_nodes.append(collect_node)
+        normalize_nodes.append(normalize_node)
+    builder.add_node("dedupe", DedupeAgent("dedupe"))
+    builder.add_node("persist", PersistAgent(registry, sink))
+    builder.add_node("evaluate", EvaluateAgent("evaluate"))
+    builder.add_node("report", ReportAgent(provider))
+
+    builder.set_entry_point("dispatch")
+    builder.add_parallel_edges("dispatch", collect_nodes)
+    for collect_node, normalize_node in zip(collect_nodes, normalize_nodes):
+        builder.add_edge(collect_node, normalize_node)
+        builder.add_edge(normalize_node, "dedupe")
+    builder.add_join("dedupe", normalize_nodes)
     builder.add_edge("dedupe", "persist")
     builder.add_edge("persist", "evaluate")
     builder.add_edge("evaluate", "report")

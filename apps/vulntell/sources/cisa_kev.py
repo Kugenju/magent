@@ -171,11 +171,12 @@ class CISAKEVAdapter:
         batch_size = self._config.batch_size
         start_idx = batch_index * batch_size
         end_idx = min(start_idx + batch_size, total_records)
-
-        # 应用最大记录数限制（用于测试）
-        if self._config.max_records:
-            end_idx = min(end_idx, self._config.max_records)
-
+        # max_records 是整个游标序列的上限，而不是每页的上限。这样当
+        # 上限恰好等于 batch_size，或跨越多个批次时，也不会继续翻页超限。
+        sampling_total = total_records
+        if self._config.max_records and self._config.max_records > 0:
+            sampling_total = min(total_records, self._config.max_records)
+            end_idx = min(end_idx, sampling_total)
         selected = vulnerabilities[start_idx:end_idx]
         windowed = []
         for vuln in selected:
@@ -231,13 +232,13 @@ class CISAKEVAdapter:
                     "modified_at": vuln.get("dateAdded"),
                     "catalog_version": catalog_version,
                     "batch_index": batch_index,
-                    "total_batches": (total_records + batch_size - 1) // batch_size,
+                    "total_batches": (sampling_total + batch_size - 1) // batch_size,
                 },
             )
             records.append(record)
 
-        # 计算是否有更多批次
-        has_more = end_idx < total_records
+        # 计算是否有更多批次（抽样截断后不再翻页）
+        has_more = end_idx < sampling_total
         next_batch_index = batch_index + 1 if has_more else None
 
         # 构建下一页游标

@@ -76,7 +76,7 @@
 
 ### 目标
 
-领域模型和纯业务规则已迁移到 apps/vulntell/domain，输入输出保持不变。详细完成记录见 [PHASE2_RESULT.md](PHASE2_RESULT.md)。
+领域模型和纯业务规则已迁移到 apps/vulntell/domain，输入输出保持不变。详细完成记录见 [PHASES.md#phase-doc-phase2-result](PHASES.md#phase-doc-phase2-result)。
 
 ### 工作项
 
@@ -97,7 +97,7 @@
 
 ### 目标
 
-建立 pipeline、VulnTellApplication、VulnTellState、业务 Graph 和任务服务，移除 Application 对 examples.vulntell.run/state 的运行时依赖。详细计划见 [PHASE3_PLAN.md](PHASE3_PLAN.md)，完成记录见 [PHASE3_RESULT.md](PHASE3_RESULT.md)。
+建立 pipeline、VulnTellApplication、VulnTellState、业务 Graph 和任务服务，移除 Application 对 examples.vulntell.run/state 的运行时依赖。详细计划见 [PHASES.md#phase-doc-phase3-plan](PHASES.md#phase-doc-phase3-plan)，完成记录见 [PHASES.md#phase-doc-phase3-result](PHASES.md#phase-doc-phase3-result)。
 
 ### 工作项
 
@@ -118,7 +118,7 @@
 
 ### 目标
 
-详细实施方案见 [PHASE4_PLAN.md](PHASE4_PLAN.md)，审查记录见 [PHASE4_REVIEW.md](PHASE4_REVIEW.md)。阶段 4 协议、fixture、错误分类、恢复和测试门禁已通过。
+详细实施方案见 [PHASES.md#phase-doc-phase4-plan](PHASES.md#phase-doc-phase4-plan)，审查记录见 [PHASES.md#phase-doc-phase4-review](PHASES.md#phase-doc-phase4-review)。阶段 4 协议、fixture、错误分类、恢复和测试门禁已通过。
 
 在接入真实网络前冻结 SourceAdapter、分页/游标、同步运行和错误语义。
 
@@ -139,7 +139,7 @@
 
 ## 8. 阶段 5：真实数据源接入（收尾中）
 
-阶段 5 实施计划见 [PHASE5_PLAN.md](PHASE5_PLAN.md)，实现记录见 [PHASE5_RESULT.md](PHASE5_RESULT.md)，收尾记录见 [PHASE5_CLOSEOUT_RESULT.md](PHASE5_CLOSEOUT_RESULT.md)，最新复核见 [PHASE5_CLOSEOUT_REVIEW.md](PHASE5_CLOSEOUT_REVIEW.md)。adapter 代码已完成，但 live CLI/Application 和端到端门禁尚未完成。
+阶段 5 实施计划见 [PHASES.md#phase-doc-phase5-plan](PHASES.md#phase-doc-phase5-plan)，实现记录见 [PHASES.md#phase-doc-phase5-result](PHASES.md#phase-doc-phase5-result)，收尾记录见 [PHASES.md#phase-doc-phase5-closeout-result](PHASES.md#phase-doc-phase5-closeout-result)，最新复核见 [PHASES.md#phase-doc-phase5-closeout-review](PHASES.md#phase-doc-phase5-closeout-review)。adapter 代码已完成，但 live CLI/Application 和端到端门禁尚未完成。
 
 ### 目标
 

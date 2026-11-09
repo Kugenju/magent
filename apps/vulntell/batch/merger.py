@@ -106,7 +106,7 @@ def _merge_cve_documents(docs: list[COSVDocument]) -> COSVDocument:
     sorted_docs = sorted(
         docs,
         key=lambda d: _get_source_priority(
-            d.database_specific.source if d.database_specific else "unknown"
+            d.database_specific.get("source", "unknown") if d.database_specific else "unknown"
         ),
     )
 

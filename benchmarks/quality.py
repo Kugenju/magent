@@ -6,6 +6,8 @@
 
 from __future__ import annotations
 
+from typing import cast
+
 import datetime as dt
 import pathlib
 
@@ -66,7 +68,7 @@ async def run_pipeline(*, faulty=(), provider=None) -> VulnTellState:
     state = VulnTellState(meta=meta)
     final, _report = await GraphExecutor(graph, run_id="quality", max_concurrency=4).run(state)
     store.close()
-    return final
+    return cast(VulnTellState, final)
 
 
 def evaluate_vulntell_quality(
